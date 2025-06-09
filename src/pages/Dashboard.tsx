@@ -181,7 +181,7 @@ const AppJujuDashboard = () => {
       
     if (data) {
       setUserData(data);
-      setUserName(data.nome);
+      setUserName(data.nome); // Update userName when loading user data
     }
   };
 
@@ -224,6 +224,11 @@ const AppJujuDashboard = () => {
     if (data) {
       setUserPhotos(data);
     }
+  };
+
+  // Handler for when profile is updated
+  const handleProfileUpdate = () => {
+    loadUserData(); // This will refresh userData and update userName
   };
 
   // Calcular progresso baseado em múltiplos fatores
@@ -527,7 +532,7 @@ const AppJujuDashboard = () => {
                     <span className="text-2xl">👩‍💪</span>
                   </div>
                   <div className="space-y-2">
-                    <p className="font-bold text-gray-800 text-lg">{userData?.nome || userName}</p>
+                    <p className="font-bold text-gray-800 text-lg">{userName}</p>
                     {userData ? (
                       <>
                         <p className="text-gray-600">{userData.email}</p>
@@ -592,7 +597,7 @@ const AppJujuDashboard = () => {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         userData={userData}
-        onUpdate={loadUserData}
+        onUpdate={handleProfileUpdate}
       />
     </div>
   );

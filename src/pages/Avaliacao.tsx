@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
@@ -82,7 +81,13 @@ const Avaliacao = () => {
           .eq('user_id', user.id)
           .eq('evaluation_period', currentMonth);
 
-        setCurrentPhotos(photosData || []);
+        // Type casting para garantir compatibilidade de tipos
+        const typedPhotos = (photosData || []).map(photo => ({
+          ...photo,
+          photo_type: photo.photo_type as 'frente' | 'costas' | 'lado'
+        }));
+
+        setCurrentPhotos(typedPhotos);
       }
     } catch (error) {
       console.error('Erro ao carregar dados da avaliação:', error);

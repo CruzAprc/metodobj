@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -362,12 +361,9 @@ const QuizAlimentar = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          {currentQuiz.foods.map((item, index) => (
-            <motion.button
+          {currentQuiz.foods.map((item) => (
+            <button
               key={item.id}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.05 }}
               onClick={() => toggleSelection(item.id)}
               className={`relative p-4 rounded-2xl border-2 transition-all duration-300 group ${
                 selectedItems.includes(item.id)
@@ -399,7 +395,7 @@ const QuizAlimentar = () => {
                   {item.name}
                 </p>
               </div>
-            </motion.button>
+            </button>
           ))}
         </motion.div>
 

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/Header';
@@ -27,7 +28,7 @@ const QuizTreino = () => {
     },
     {
       id: 2,
-      title: "🔹 Objetivo Principal",
+      title: "🎯 Objetivo Principal",
       question: "Qual seu objetivo principal com o treino?",
       options: [
         { value: 'massa_muscular', label: 'Ganho de massa muscular' },

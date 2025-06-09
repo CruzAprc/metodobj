@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/Header';
@@ -52,7 +50,7 @@ const QuizTreino = () => {
     },
     {
       id: 4,
-      title: "🔹 Frequência Semanal",
+      title: "📅 Frequência Semanal",
       question: "Quantos dias por semana você pode treinar?",
       options: [
         { value: '1_2_dias', label: '1 a 2 dias' },
@@ -230,4 +228,3 @@ const QuizTreino = () => {
 };
 
 export default QuizTreino;
-

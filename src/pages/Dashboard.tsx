@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
 import { 
@@ -264,13 +263,6 @@ const AppJujuDashboard = () => {
           className="w-full max-w-4xl"
         >
           <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-5 mb-6">
-              <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-              <TabsTrigger value="dieta">Dieta</TabsTrigger>
-              <TabsTrigger value="treinos">Treinos</TabsTrigger>
-              <TabsTrigger value="avaliacao">Avaliação</TabsTrigger>
-              <TabsTrigger value="perfil">Perfil</TabsTrigger>
-            </TabsList>
 
             <TabsContent value="dashboard" className="mt-0">
               <div className="text-center space-y-6">

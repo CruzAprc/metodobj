@@ -153,6 +153,7 @@ const AppJujuDashboard = () => {
   const [userData, setUserData] = useState<any>(null);
   const [dietData, setDietData] = useState<any>(null);
   const [workoutData, setWorkoutData] = useState<any>(null);
+  const [userPhotos, setUserPhotos] = useState<any[]>([]);
   const { user } = useAuth();
 
   const iconSize = 22;
@@ -163,6 +164,7 @@ const AppJujuDashboard = () => {
       loadUserData();
       loadDietData();
       loadWorkoutData();
+      loadUserPhotos();
     }
   }, [user]);
 
@@ -207,6 +209,45 @@ const AppJujuDashboard = () => {
     if (data) {
       setWorkoutData(data);
     }
+  };
+
+  const loadUserPhotos = async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('user_photos')
+      .select('*')
+      .eq('user_id', user.id);
+      
+    if (data) {
+      setUserPhotos(data);
+    }
+  };
+
+  // Calcular progresso baseado em múltiplos fatores
+  const calculateProgress = () => {
+    let progress = 0;
+    
+    // Quiz alimentar (25%)
+    if (userData?.quiz_alimentar_concluido) {
+      progress += 25;
+    }
+    
+    // Quiz treino (25%)
+    if (userData?.quiz_treino_concluido) {
+      progress += 25;
+    }
+    
+    // Fotos enviadas (30% - máximo 3 tipos: frente, costas, lado)
+    const uniquePhotoTypes = [...new Set(userPhotos.map(photo => photo.photo_type))];
+    const photoProgress = Math.min(uniquePhotoTypes.length / 3, 1) * 30;
+    progress += photoProgress;
+    
+    // Dias no app (20% - máximo aos 30 dias)
+    const diasProgress = Math.min((userData?.dias_no_app || 0) / 30, 1) * 20;
+    progress += diasProgress;
+    
+    return Math.round(progress);
   };
 
   const dockItems = [
@@ -293,11 +334,52 @@ const AppJujuDashboard = () => {
                     <TrendingUp className="text-purple-500 mx-auto mb-2" size={24} />
                     <p className="text-sm text-gray-600">Progresso</p>
                     <p className="font-bold text-gray-800">
-                      {userData?.quiz_alimentar_concluido && userData?.quiz_treino_concluido ? '100%' : 
-                       userData?.quiz_alimentar_concluido || userData?.quiz_treino_concluido ? '50%' : '0%'}
+                      {calculateProgress()}%
                     </p>
                   </motion.div>
                 </div>
+
+                {/* Detalhes do progresso */}
+                <motion.div 
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-white p-6 rounded-2xl shadow-lg max-w-md mx-auto border border-gray-100"
+                >
+                  <h3 className="text-lg font-bold text-gray-800 mb-4">Detalhes do Progresso</h3>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between items-center">
+                      <span className={userData?.quiz_alimentar_concluido ? 'text-green-600' : 'text-gray-500'}>
+                        Quiz Alimentar
+                      </span>
+                      <span className={userData?.quiz_alimentar_concluido ? 'text-green-600 font-bold' : 'text-gray-400'}>
+                        {userData?.quiz_alimentar_concluido ? '✓ 25%' : '○ 0%'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className={userData?.quiz_treino_concluido ? 'text-green-600' : 'text-gray-500'}>
+                        Quiz Treino
+                      </span>
+                      <span className={userData?.quiz_treino_concluido ? 'text-green-600 font-bold' : 'text-gray-400'}>
+                        {userData?.quiz_treino_concluido ? '✓ 25%' : '○ 0%'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className={userPhotos.length > 0 ? 'text-green-600' : 'text-gray-500'}>
+                        Fotos de Avaliação
+                      </span>
+                      <span className={userPhotos.length > 0 ? 'text-green-600 font-bold' : 'text-gray-400'}>
+                        {userPhotos.length > 0 ? `✓ ${Math.round(Math.min([...new Set(userPhotos.map(photo => photo.photo_type))].length / 3, 1) * 30)}%` : '○ 0%'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-blue-600">
+                        Dias de Uso ({userData?.dias_no_app || 0}/30)
+                      </span>
+                      <span className="text-blue-600 font-bold">
+                        {Math.round(Math.min((userData?.dias_no_app || 0) / 30, 1) * 20)}%
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
               </div>
             </TabsContent>
 

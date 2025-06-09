@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,7 +16,7 @@ import {
   Heart
 } from 'lucide-react';
 
-const Onboarding = () => {
+const OnboardingOtimizado = () => {
   const navigate = useNavigate();
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
@@ -68,8 +67,12 @@ const Onboarding = () => {
         className="flex justify-center pt-8 pb-4"
       >
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-pink-400 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg">
-            <span className="text-2xl">👩‍💪</span>
+          <div className="w-12 h-12 bg-gradient-to-br from-pink-400 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg p-1">
+            <img 
+              src="/lovable-uploads/02d55ca0-b017-487b-a9a2-275d8eef05b6.png" 
+              alt="JS Logo" 
+              className="w-full h-full object-contain"
+            />
           </div>
           <div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
@@ -280,4 +283,4 @@ const Onboarding = () => {
   );
 };
 
-export default Onboarding;
+export default OnboardingOtimizado;

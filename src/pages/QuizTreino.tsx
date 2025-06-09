@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,7 +13,6 @@ const QuizTreino = () => {
   
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [customAnswer, setCustomAnswer] = useState<string>('');
-  const [animatingStep, setAnimatingStep] = useState(false);
 
   const questions = [
     {
@@ -216,18 +214,13 @@ const QuizTreino = () => {
       return;
     }
 
-    setAnimatingStep(true);
-    
-    setTimeout(async () => {
-      if (currentStep < questions.length) {
-        navigate(`/quiz-treino/${currentStep + 1}`);
-      } else {
-        await saveToDatabase(answers);
-        localStorage.setItem('quizTreinoConcluido', 'true');
-        navigate('/dashboard');
-      }
-      setAnimatingStep(false);
-    }, 300);
+    if (currentStep < questions.length) {
+      navigate(`/quiz-treino/${currentStep + 1}`);
+    } else {
+      await saveToDatabase(answers);
+      localStorage.setItem('quizTreinoConcluido', 'true');
+      navigate('/dashboard');
+    }
   };
 
   const handleBack = () => {
@@ -262,7 +255,7 @@ const QuizTreino = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
       
-      {/* Header melhorado */}
+      {/* Header */}
       <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-pink-100 z-10">
         <div className="flex items-center justify-between p-4 max-w-md mx-auto">
           <button 
@@ -289,7 +282,7 @@ const QuizTreino = () => {
             {questions.map((_, index) => (
               <div
                 key={index + 1}
-                className={`h-1.5 rounded-full flex-1 transition-all duration-500 ${
+                className={`h-1.5 rounded-full flex-1 ${
                   index + 1 <= currentStep 
                     ? 'bg-gradient-to-r from-pink-400 to-pink-600' 
                     : 'bg-gray-200'
@@ -303,12 +296,7 @@ const QuizTreino = () => {
       <div className="px-4 pb-6 max-w-md mx-auto">
         
         {/* Título da pergunta */}
-        <motion.div 
-          key={currentStep}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center py-6 space-y-4"
-        >
+        <div className="text-center py-6 space-y-4">
           <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl flex items-center justify-center mx-auto border border-purple-200 shadow-sm">
             {currentQuestion.icon}
           </div>
@@ -325,45 +313,33 @@ const QuizTreino = () => {
               {currentQuestion.question}
             </p>
           </div>
-        </motion.div>
+        </div>
 
         {/* Opções de resposta */}
-        <motion.div 
-          className="space-y-3 mb-8"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          {currentQuestion.options.map((option, index) => {
+        <div className="space-y-3 mb-8">
+          {currentQuestion.options.map((option) => {
             const isSelected = selectedAnswer === option.id;
             
             return (
-              <motion.button
+              <button
                 key={option.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
                 onClick={() => handleAnswer(option.id)}
-                className={`w-full p-4 rounded-2xl border-2 text-left transition-all duration-300 ${
+                className={`w-full p-4 rounded-2xl border-2 text-left transition-all ${
                   getColorClasses(option.color, isSelected)
-                } ${isSelected ? 'shadow-lg scale-[1.02]' : 'hover:shadow-md'}`}
+                } ${isSelected ? 'shadow-lg' : 'hover:shadow-md'}`}
               >
                 <div className="flex items-center space-x-3">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                     isSelected 
                       ? `border-${option.color}-500 bg-${option.color}-500` 
                       : 'border-gray-300'
                   }`}>
                     {isSelected && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="w-2 h-2 bg-white rounded-full"
-                      />
+                      <div className="w-2 h-2 bg-white rounded-full" />
                     )}
                   </div>
                   
-                  <span className={`font-medium transition-colors ${
+                  <span className={`font-medium ${
                     isSelected ? '' : 'text-gray-700'
                   }`}>
                     {option.label}
@@ -372,9 +348,7 @@ const QuizTreino = () => {
                 
                 {/* Campo de input adicional se necessário */}
                 {option.hasInput && isSelected && (
-                  <motion.input
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
+                  <input
                     type="text"
                     value={customAnswer}
                     onChange={(e) => setCustomAnswer(e.target.value)}
@@ -382,51 +356,25 @@ const QuizTreino = () => {
                     className="w-full mt-3 p-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-pink-300"
                   />
                 )}
-              </motion.button>
+              </button>
             );
           })}
-        </motion.div>
+        </div>
 
         {/* Botão continuar */}
-        <motion.button
+        <button
           onClick={handleContinue}
-          disabled={!selectedAnswer || animatingStep}
-          whileHover={{ scale: selectedAnswer ? 1.02 : 1 }}
-          whileTap={{ scale: selectedAnswer ? 0.98 : 1 }}
-          className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg transition-all duration-300 flex items-center justify-center space-x-2 ${
+          disabled={!selectedAnswer}
+          className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg flex items-center justify-center space-x-2 ${
             !selectedAnswer
               ? 'bg-gray-300 cursor-not-allowed'
-              : animatingStep
-              ? 'bg-gray-400 cursor-not-allowed'
               : 'bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 hover:shadow-xl'
           }`}
         >
-          {animatingStep ? (
-            <div className="flex space-x-1">
-              {[0, 1, 2].map((i) => (
-                <motion.div
-                  key={i}
-                  className="w-2 h-2 bg-white rounded-full"
-                  animate={{
-                    scale: [1, 1.5, 1],
-                    opacity: [0.5, 1, 0.5]
-                  }}
-                  transition={{
-                    duration: 1,
-                    repeat: Infinity,
-                    delay: i * 0.2
-                  }}
-                />
-              ))}
-            </div>
-          ) : (
-            <>
-              <Sparkles size={18} />
-              <span>{currentStep === questions.length ? 'Finalizar' : 'Próxima Pergunta'}</span>
-              <ArrowRight size={18} />
-            </>
-          )}
-        </motion.button>
+          <Sparkles size={18} />
+          <span>{currentStep === questions.length ? 'Finalizar' : 'Próxima Pergunta'}</span>
+          <ArrowRight size={18} />
+        </button>
         
         {/* Informação de progresso */}
         <p className="text-center text-xs text-gray-500 mt-4">

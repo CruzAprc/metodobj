@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
 import { 
@@ -524,16 +525,37 @@ const AppJujuDashboard = () => {
                   <div className="w-20 h-20 bg-gradient-to-br from-pink-400 to-pink-500 rounded-full flex items-center justify-center mx-auto">
                     <span className="text-2xl">👩‍💪</span>
                   </div>
-                  <div>
-                    <p className="font-bold text-gray-800 text-lg">{userName}</p>
-                    {userData && (
+                  <div className="space-y-2">
+                    <p className="font-bold text-gray-800 text-lg">{userData?.nome || userName}</p>
+                    {userData ? (
                       <>
                         <p className="text-gray-600">{userData.email}</p>
                         <p className="text-gray-600">{userData.whatsapp}</p>
-                        <p className="text-sm text-gray-500">
-                          Membro desde: {new Date(userData.created_at).toLocaleDateString('pt-BR')}
-                        </p>
+                        <div className="pt-2 space-y-1">
+                          <p className="text-sm text-gray-500">
+                            Membro desde: {new Date(userData.created_at).toLocaleDateString('pt-BR')}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            Dias no app: {userData.dias_no_app} dias
+                          </p>
+                          <div className="flex justify-center gap-4 pt-2">
+                            <div className="text-center">
+                              <p className="text-xs text-gray-400">Quiz Alimentar</p>
+                              <p className={`text-sm font-bold ${userData.quiz_alimentar_concluido ? 'text-green-600' : 'text-gray-400'}`}>
+                                {userData.quiz_alimentar_concluido ? '✓ Concluído' : '○ Pendente'}
+                              </p>
+                            </div>
+                            <div className="text-center">
+                              <p className="text-xs text-gray-400">Quiz Treino</p>
+                              <p className={`text-sm font-bold ${userData.quiz_treino_concluido ? 'text-green-600' : 'text-gray-400'}`}>
+                                {userData.quiz_treino_concluido ? '✓ Concluído' : '○ Pendente'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
                       </>
+                    ) : (
+                      <p className="text-gray-500">Carregando dados...</p>
                     )}
                   </div>
                   <button className="bg-gradient-to-r from-pink-500 to-pink-600 text-white px-6 py-2 rounded-xl hover:from-pink-600 hover:to-pink-700 transition-all">

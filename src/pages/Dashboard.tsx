@@ -13,6 +13,9 @@ import {
   Calendar,
   TrendingUp
 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 // Componente Dock Item
 const DockItem = ({ children, onClick, mouseX, spring, distance, magnification, baseItemSize, className = "" }: any) => {
@@ -145,156 +148,95 @@ const Dock = ({ items, className = "", spring = { mass: 0.1, stiffness: 150, dam
 };
 
 // Dashboard Principal
-const Dashboard = () => {
-  const [currentPage, setCurrentPage] = useState('dashboard');
-  const [userName] = useState('Juju'); // Nome da usuária
+const AppJujuDashboard = () => {
+  const [currentTab, setCurrentTab] = useState('dashboard');
+  const [userName, setUserName] = useState('Juju');
+  const [userData, setUserData] = useState<any>(null);
+  const [dietData, setDietData] = useState<any>(null);
+  const [workoutData, setWorkoutData] = useState<any>(null);
+  const { user } = useAuth();
 
   const iconSize = 22;
+
+  // Carregar dados do usuário
+  useEffect(() => {
+    if (user) {
+      loadUserData();
+      loadDietData();
+      loadWorkoutData();
+    }
+  }, [user]);
+
+  const loadUserData = async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('teste_app')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+      
+    if (data) {
+      setUserData(data);
+      setUserName(data.nome);
+    }
+  };
+
+  const loadDietData = async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('teste_dieta')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+      
+    if (data) {
+      setDietData(data);
+    }
+  };
+
+  const loadWorkoutData = async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('teste_treino')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+      
+    if (data) {
+      setWorkoutData(data);
+    }
+  };
 
   const dockItems = [
     {
       icon: <TrendingUp size={iconSize} />,
       label: 'Dashboard',
-      onClick: () => setCurrentPage('dashboard')
+      onClick: () => setCurrentTab('dashboard')
     },
     {
       icon: <Coffee size={iconSize} />,
       label: 'Dieta',
-      onClick: () => setCurrentPage('dieta')
+      onClick: () => setCurrentTab('dieta')
     },
     {
       icon: <Dumbbell size={iconSize} />,
       label: 'Treinos',
-      onClick: () => setCurrentPage('treinos')
+      onClick: () => setCurrentTab('treinos')
     },
     {
       icon: <Camera size={iconSize} />,
       label: 'Avaliação',
-      onClick: () => setCurrentPage('avaliacao')
+      onClick: () => setCurrentTab('avaliacao')
     },
     {
       icon: <User size={iconSize} />,
       label: 'Perfil',
-      onClick: () => setCurrentPage('perfil')
+      onClick: () => setCurrentTab('perfil')
     }
   ];
-
-  // Componente de cada página
-  const renderPage = () => {
-    switch (currentPage) {
-      case 'dashboard':
-        return (
-          <div className="text-center space-y-6">
-            <div className="space-y-2">
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-500 to-pink-600 bg-clip-text text-transparent">
-                Olá, {userName}! 👋
-              </h1>
-              <p className="text-gray-600 text-lg">Pronta para mais um dia incrível?</p>
-            </div>
-            
-            {/* Cards de resumo */}
-            <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
-              <motion.div 
-                whileHover={{ scale: 1.05 }}
-                className="bg-gradient-to-br from-pink-100 to-pink-200 p-4 rounded-2xl border border-pink-200"
-              >
-                <Calendar className="text-pink-500 mx-auto mb-2" size={24} />
-                <p className="text-sm text-gray-600">Dia</p>
-                <p className="font-bold text-gray-800">7/30</p>
-              </motion.div>
-              
-              <motion.div 
-                whileHover={{ scale: 1.05 }}
-                className="bg-gradient-to-br from-purple-100 to-purple-200 p-4 rounded-2xl border border-purple-200"
-              >
-                <TrendingUp className="text-purple-500 mx-auto mb-2" size={24} />
-                <p className="text-sm text-gray-600">Progresso</p>
-                <p className="font-bold text-gray-800">85%</p>
-              </motion.div>
-            </div>
-          </div>
-        );
-      
-      case 'dieta':
-        return (
-          <div className="text-center space-y-6">
-            <h2 className="text-3xl font-bold text-gray-800">Sua Dieta 🍽️</h2>
-            <div className="grid grid-cols-2 gap-4 max-w-lg mx-auto">
-              {[
-                { icon: <Coffee size={20} />, label: 'Café da Manhã', color: 'from-orange-100 to-orange-200 border-orange-200' },
-                { icon: <Utensils size={20} />, label: 'Almoço', color: 'from-green-100 to-green-200 border-green-200' },
-                { icon: <Sandwich size={20} />, label: 'Lanche', color: 'from-yellow-100 to-yellow-200 border-yellow-200' },
-                { icon: <Moon size={20} />, label: 'Jantar', color: 'from-blue-100 to-blue-200 border-blue-200' }
-              ].map((meal, index) => (
-                <motion.div
-                  key={index}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`bg-gradient-to-br ${meal.color} p-6 rounded-2xl border cursor-pointer`}
-                >
-                  <div className="text-gray-600 mb-2">{meal.icon}</div>
-                  <p className="font-medium text-gray-700">{meal.label}</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        );
-      
-      case 'treinos':
-        return (
-          <div className="text-center space-y-6">
-            <h2 className="text-3xl font-bold text-gray-800">Seus Treinos 💪</h2>
-            <div className="space-y-4 max-w-md mx-auto">
-              {['Segunda - Superiores', 'Terça - Inferiores', 'Quarta - Cardio', 'Quinta - Funcionais'].map((treino, index) => (
-                <motion.div
-                  key={index}
-                  whileHover={{ scale: 1.02 }}
-                  className="bg-gradient-to-r from-pink-50 to-pink-100 p-4 rounded-xl border border-pink-200 text-left"
-                >
-                  <p className="font-medium text-gray-800">{treino}</p>
-                  <p className="text-sm text-gray-600">45 min • 12 exercícios</p>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        );
-      
-      case 'avaliacao':
-        return (
-          <div className="text-center space-y-6">
-            <h2 className="text-3xl font-bold text-gray-800">Avaliação 📸</h2>
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-2xl border border-gray-200 max-w-md mx-auto">
-              <Camera className="text-gray-400 mx-auto mb-4" size={48} />
-              <p className="text-gray-600 mb-2">Liberação em:</p>
-              <p className="text-2xl font-bold text-pink-600">7 dias</p>
-              <p className="text-sm text-gray-500 mt-2">Continue seguindo seu plano! 💪</p>
-            </div>
-          </div>
-        );
-      
-      case 'perfil':
-        return (
-          <div className="text-center space-y-6">
-            <h2 className="text-3xl font-bold text-gray-800">Perfil 👤</h2>
-            <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-2xl border border-pink-200 max-w-md mx-auto space-y-4">
-              <div className="w-20 h-20 bg-gradient-to-br from-pink-400 to-pink-500 rounded-full flex items-center justify-center mx-auto">
-                <span className="text-2xl">👩‍💪</span>
-              </div>
-              <div>
-                <p className="font-bold text-gray-800 text-lg">{userName}</p>
-                <p className="text-gray-600">Objetivo: Emagrecimento</p>
-              </div>
-              <button className="bg-gradient-to-r from-pink-500 to-pink-600 text-white px-6 py-2 rounded-xl hover:from-pink-600 hover:to-pink-700 transition-all">
-                Editar Perfil
-              </button>
-            </div>
-          </div>
-        );
-      
-      default:
-        return null;
-    }
-  };
 
   return (
     <div className="flex flex-col w-full h-screen justify-center items-center relative bg-gradient-to-br from-pink-50 via-white to-pink-100 transition-colors duration-300">
@@ -312,16 +254,222 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Conteúdo principal */}
+      {/* Conteúdo principal com abas */}
       <div className="flex-1 flex items-center justify-center w-full px-4">
         <motion.div 
-          key={currentPage}
+          key={currentTab}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="w-full max-w-2xl"
+          className="w-full max-w-4xl"
         >
-          {renderPage()}
+          <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-5 mb-6">
+              <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+              <TabsTrigger value="dieta">Dieta</TabsTrigger>
+              <TabsTrigger value="treinos">Treinos</TabsTrigger>
+              <TabsTrigger value="avaliacao">Avaliação</TabsTrigger>
+              <TabsTrigger value="perfil">Perfil</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="dashboard" className="mt-0">
+              <div className="text-center space-y-6">
+                <div className="space-y-2">
+                  <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-500 to-pink-600 bg-clip-text text-transparent">
+                    Olá, {userName}! 👋
+                  </h1>
+                  <p className="text-gray-600 text-lg">Pronta para mais um dia incrível?</p>
+                </div>
+                
+                {/* Cards de resumo */}
+                <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
+                  <motion.div 
+                    whileHover={{ scale: 1.05 }}
+                    className="bg-gradient-to-br from-pink-100 to-pink-200 p-4 rounded-2xl border border-pink-200"
+                  >
+                    <Calendar className="text-pink-500 mx-auto mb-2" size={24} />
+                    <p className="text-sm text-gray-600">Quiz Completos</p>
+                    <p className="font-bold text-gray-800">
+                      {userData?.quiz_alimentar_concluido && userData?.quiz_treino_concluido ? '2/2' : 
+                       userData?.quiz_alimentar_concluido || userData?.quiz_treino_concluido ? '1/2' : '0/2'}
+                    </p>
+                  </motion.div>
+                  
+                  <motion.div 
+                    whileHover={{ scale: 1.05 }}
+                    className="bg-gradient-to-br from-purple-100 to-purple-200 p-4 rounded-2xl border border-purple-200"
+                  >
+                    <TrendingUp className="text-purple-500 mx-auto mb-2" size={24} />
+                    <p className="text-sm text-gray-600">Progresso</p>
+                    <p className="font-bold text-gray-800">
+                      {userData?.quiz_alimentar_concluido && userData?.quiz_treino_concluido ? '100%' : 
+                       userData?.quiz_alimentar_concluido || userData?.quiz_treino_concluido ? '50%' : '0%'}
+                    </p>
+                  </motion.div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="dieta" className="mt-0">
+              <div className="text-center space-y-6">
+                <h2 className="text-3xl font-bold text-gray-800">Sua Dieta 🍽️</h2>
+                {dietData ? (
+                  <div className="space-y-4 max-w-2xl mx-auto">
+                    <div className="text-left bg-white p-6 rounded-2xl shadow-lg">
+                      <h3 className="text-xl font-bold mb-4 text-pink-600">Restrições Alimentares</h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <h4 className="font-semibold text-gray-700 flex items-center gap-2">
+                            <Coffee size={16} /> Café da Manhã
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            {dietData.cafe_da_manha?.naoGosta?.length > 0 
+                              ? `Não gosta de: ${dietData.cafe_da_manha.naoGosta.join(', ')}`
+                              : 'Nenhuma restrição'}
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <h4 className="font-semibold text-gray-700 flex items-center gap-2">
+                            <Utensils size={16} /> Almoço
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            {dietData.almoco?.naoGosta?.length > 0 
+                              ? `Não gosta de: ${dietData.almoco.naoGosta.join(', ')}`
+                              : 'Nenhuma restrição'}
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <h4 className="font-semibold text-gray-700 flex items-center gap-2">
+                            <Sandwich size={16} /> Lanche
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            {dietData.lanche?.naoGosta?.length > 0 
+                              ? `Não gosta de: ${dietData.lanche.naoGosta.join(', ')}`
+                              : 'Nenhuma restrição'}
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <h4 className="font-semibold text-gray-700 flex items-center gap-2">
+                            <Moon size={16} /> Jantar
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            {dietData.jantar?.naoGosta?.length > 0 
+                              ? `Não gosta de: ${dietData.jantar.naoGosta.join(', ')}`
+                              : 'Nenhuma restrição'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500 text-lg">Complete o quiz alimentar para ver suas preferências aqui!</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="treinos" className="mt-0">
+              <div className="text-center space-y-6">
+                <h2 className="text-3xl font-bold text-gray-800">Seus Treinos 💪</h2>
+                {workoutData ? (
+                  <div className="space-y-4 max-w-2xl mx-auto">
+                    <div className="text-left bg-white p-6 rounded-2xl shadow-lg">
+                      <h3 className="text-xl font-bold mb-4 text-pink-600">Perfil de Treino</h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <h4 className="font-semibold text-gray-700">Objetivo</h4>
+                          <p className="text-sm text-gray-600">{workoutData.objetivo}</p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <h4 className="font-semibold text-gray-700">Experiência</h4>
+                          <p className="text-sm text-gray-600">{workoutData.experiencia}</p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <h4 className="font-semibold text-gray-700">Frequência</h4>
+                          <p className="text-sm text-gray-600">{workoutData.frequencia}</p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <h4 className="font-semibold text-gray-700">Tempo por Sessão</h4>
+                          <p className="text-sm text-gray-600">{workoutData.tempo_sessao}</p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <h4 className="font-semibold text-gray-700">Foco</h4>
+                          <p className="text-sm text-gray-600">{workoutData.foco_regiao}</p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <h4 className="font-semibold text-gray-700">Intensidade</h4>
+                          <p className="text-sm text-gray-600">{workoutData.intensidade}</p>
+                        </div>
+
+                        {workoutData.lesoes && workoutData.lesoes !== 'nao' && (
+                          <div className="space-y-2 md:col-span-2">
+                            <h4 className="font-semibold text-gray-700">Lesões/Limitações</h4>
+                            <p className="text-sm text-gray-600">
+                              {workoutData.lesoes}
+                              {workoutData.lesao_especifica && ` - ${workoutData.lesao_especifica}`}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <p className="text-gray-500 text-lg">Complete o quiz de treino para ver seu perfil aqui!</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="avaliacao" className="mt-0">
+              <div className="text-center space-y-6">
+                <h2 className="text-3xl font-bold text-gray-800">Avaliação 📸</h2>
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-2xl border border-gray-200 max-w-md mx-auto">
+                  <Camera className="text-gray-400 mx-auto mb-4" size={48} />
+                  <p className="text-gray-600 mb-2">Liberação em:</p>
+                  <p className="text-2xl font-bold text-pink-600">7 dias</p>
+                  <p className="text-sm text-gray-500 mt-2">Continue seguindo seu plano! 💪</p>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="perfil" className="mt-0">
+              <div className="text-center space-y-6">
+                <h2 className="text-3xl font-bold text-gray-800">Perfil 👤</h2>
+                <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-2xl border border-pink-200 max-w-md mx-auto space-y-4">
+                  <div className="w-20 h-20 bg-gradient-to-br from-pink-400 to-pink-500 rounded-full flex items-center justify-center mx-auto">
+                    <span className="text-2xl">👩‍💪</span>
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-800 text-lg">{userName}</p>
+                    {userData && (
+                      <>
+                        <p className="text-gray-600">{userData.email}</p>
+                        <p className="text-gray-600">{userData.whatsapp}</p>
+                        <p className="text-sm text-gray-500">
+                          Membro desde: {new Date(userData.created_at).toLocaleDateString('pt-BR')}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                  <button className="bg-gradient-to-r from-pink-500 to-pink-600 text-white px-6 py-2 rounded-xl hover:from-pink-600 hover:to-pink-700 transition-all">
+                    Editar Perfil
+                  </button>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         </motion.div>
       </div>
 
@@ -343,4 +491,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default AppJujuDashboard;

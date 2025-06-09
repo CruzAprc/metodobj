@@ -1,12 +1,16 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/Header';
 import ProgressBar from '../components/ProgressBar';
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const QuizTreino = () => {
   const navigate = useNavigate();
   const { pergunta } = useParams();
   const currentQuestion = parseInt(pergunta || '1');
+  const { user } = useAuth();
   
   const [selectedAnswer, setSelectedAnswer] = useState<string>('');
   const [customAnswer, setCustomAnswer] = useState<string>('');
@@ -118,7 +122,56 @@ const QuizTreino = () => {
     }
   }, [currentQuestion]);
 
-  const handleNext = () => {
+  const saveToDatabase = async (finalData: Record<string, any>) => {
+    if (!user) return;
+
+    try {
+      const workoutData = {
+        user_id: user.id,
+        lesoes: finalData.pergunta1?.answer || '',
+        lesao_especifica: finalData.pergunta1?.custom || null,
+        objetivo: finalData.pergunta2?.answer || '',
+        tempo_sessao: finalData.pergunta3?.answer || '',
+        frequencia: finalData.pergunta4?.answer || '',
+        experiencia: finalData.pergunta5?.answer || '',
+        foco_regiao: finalData.pergunta6?.answer || '',
+        intensidade: finalData.pergunta7?.answer || '',
+        desafio: finalData.pergunta8?.answer || ''
+      };
+
+      // Verificar se já existe um registro
+      const { data: existingData } = await supabase
+        .from('teste_treino')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (existingData) {
+        // Atualizar registro existente
+        await supabase
+          .from('teste_treino')
+          .update(workoutData)
+          .eq('user_id', user.id);
+      } else {
+        // Criar novo registro
+        await supabase
+          .from('teste_treino')
+          .insert(workoutData);
+      }
+
+      // Atualizar status do quiz na tabela teste_app
+      await supabase
+        .from('teste_app')
+        .update({ quiz_treino_concluido: true })
+        .eq('user_id', user.id);
+
+      console.log('Dados de treino salvos no banco com sucesso!');
+    } catch (error) {
+      console.error('Erro ao salvar dados de treino no banco:', error);
+    }
+  };
+
+  const handleNext = async () => {
     if (!selectedAnswer) {
       alert('Por favor, selecione uma resposta!');
       return;
@@ -142,6 +195,8 @@ const QuizTreino = () => {
     if (currentQuestion < 8) {
       navigate(`/quiz-treino/${currentQuestion + 1}`);
     } else {
+      // Quiz concluído - salvar no banco
+      await saveToDatabase(newQuizData);
       localStorage.setItem('quizTreinoConcluido', 'true');
       navigate('/dashboard');
     }

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { X } from 'lucide-react';
 import Header from '../components/Header';
 import ProgressBar from '../components/ProgressBar';
+import { useAuth } from '../context/AuthContext';
 
 interface FoodOption {
   id: string;
@@ -14,6 +15,7 @@ const QuizAlimentar = () => {
   const navigate = useNavigate();
   const { etapa } = useParams();
   const currentStep = parseInt(etapa || '1');
+  const { user } = useAuth();
   
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [quizData, setQuizData] = useState<Record<string, string[]>>({});
@@ -162,7 +164,52 @@ const QuizAlimentar = () => {
     });
   };
 
-  const handleNext = () => {
+  const saveToDatabase = async (finalData: Record<string, string[]>) => {
+    if (!user) return;
+
+    try {
+      const dietData = {
+        user_id: user.id,
+        cafe_da_manha: { naoGosta: finalData.etapa1 || [] },
+        almoco: { naoGosta: finalData.etapa2 || [] },
+        lanche: { naoGosta: finalData.etapa3 || [] },
+        jantar: { naoGosta: finalData.etapa4 || [] },
+        ceia: { naoGosta: finalData.etapa5 || [] }
+      };
+
+      // Verificar se já existe um registro
+      const { data: existingData } = await supabase
+        .from('teste_dieta')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (existingData) {
+        // Atualizar registro existente
+        await supabase
+          .from('teste_dieta')
+          .update(dietData)
+          .eq('user_id', user.id);
+      } else {
+        // Criar novo registro
+        await supabase
+          .from('teste_dieta')
+          .insert(dietData);
+      }
+
+      // Atualizar status do quiz na tabela teste_app
+      await supabase
+        .from('teste_app')
+        .update({ quiz_alimentar_concluido: true })
+        .eq('user_id', user.id);
+
+      console.log('Dados salvos no banco com sucesso!');
+    } catch (error) {
+      console.error('Erro ao salvar dados no banco:', error);
+    }
+  };
+
+  const handleNext = async () => {
     console.log('Saving selection:', selectedItems);
     // Salvar seleção atual
     const newQuizData = {
@@ -175,21 +222,14 @@ const QuizAlimentar = () => {
     if (currentStep < 5) {
       navigate(`/quiz-alimentar/${currentStep + 1}`);
     } else {
-      // Quiz concluído
+      // Quiz concluído - salvar no banco
+      await saveToDatabase(newQuizData);
       localStorage.setItem('quizAlimentarConcluido', 'true');
       navigate('/quiz-treino/1');
     }
   };
 
-  const handleBack = () => {
-    if (currentStep > 1) {
-      navigate(`/quiz-alimentar/${currentStep - 1}`);
-    } else {
-      navigate('/onboarding');
-    }
-  };
-
-  const handleSkip = () => {
+  const handleSkip = async () => {
     // Pular etapa (útil para ceia ou quando não tem restrições)
     const newQuizData = {
       ...quizData,
@@ -201,8 +241,18 @@ const QuizAlimentar = () => {
     if (currentStep < 5) {
       navigate(`/quiz-alimentar/${currentStep + 1}`);
     } else {
+      // Quiz concluído - salvar no banco
+      await saveToDatabase(newQuizData);
       localStorage.setItem('quizAlimentarConcluido', 'true');
       navigate('/quiz-treino/1');
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      navigate(`/quiz-alimentar/${currentStep - 1}`);
+    } else {
+      navigate('/onboarding');
     }
   };
 

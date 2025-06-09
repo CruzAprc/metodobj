@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { X } from 'lucide-react';
 import Header from '../components/Header';
 import ProgressBar from '../components/ProgressBar';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
 interface FoodOption {
   id: string;

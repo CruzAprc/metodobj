@@ -15,11 +15,11 @@ import {
 } from 'lucide-react';
 
 // Componente Dock Item
-const DockItem = ({ children, onClick, mouseX, spring, distance, magnification, baseItemSize, className = "" }) => {
-  const ref = React.useRef(null);
+const DockItem = ({ children, onClick, mouseX, spring, distance, magnification, baseItemSize, className = "" }: any) => {
+  const ref = React.useRef<HTMLDivElement>(null);
   const isHovered = useMotionValue(0);
 
-  const mouseDistance = useTransform(mouseX, (val) => {
+  const mouseDistance = useTransform(mouseX, (val: number) => {
     const rect = ref.current?.getBoundingClientRect() ?? { x: 0, width: baseItemSize };
     return val - rect.x - rect.width / 2;
   });
@@ -49,19 +49,19 @@ const DockItem = ({ children, onClick, mouseX, spring, distance, magnification, 
       role="button"
     >
       {React.Children.map(children, (child) =>
-        React.cloneElement(child, { isHovered })
+        React.isValidElement(child) ? React.cloneElement(child as React.ReactElement<any>, { isHovered }) : child
       )}
     </motion.div>
   );
 };
 
 // Componente Dock Label
-const DockLabel = ({ children, isHovered }) => {
+const DockLabel = ({ children, isHovered }: any) => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     if (!isHovered) return;
-    const unsubscribe = isHovered.on("change", (latest) => {
+    const unsubscribe = isHovered.on("change", (latest: number) => {
       setIsVisible(latest === 1);
     });
     return () => unsubscribe();
@@ -89,7 +89,7 @@ const DockLabel = ({ children, isHovered }) => {
 };
 
 // Componente Dock Icon
-const DockIcon = ({ children }) => {
+const DockIcon = ({ children }: any) => {
   return (
     <div className="flex items-center justify-center w-full h-full text-pink-600">
       {children}
@@ -98,7 +98,7 @@ const DockIcon = ({ children }) => {
 };
 
 // Componente Dock Principal
-const Dock = ({ items, className = "", spring = { mass: 0.1, stiffness: 150, damping: 12 }, magnification = 70, distance = 200, panelHeight = 64, baseItemSize = 50 }) => {
+const Dock = ({ items, className = "", spring = { mass: 0.1, stiffness: 150, damping: 12 }, magnification = 70, distance = 200, panelHeight = 64, baseItemSize = 50 }: any) => {
   const mouseX = useMotionValue(Infinity);
   const isPanelHovered = useMotionValue(0);
 
@@ -125,7 +125,7 @@ const Dock = ({ items, className = "", spring = { mass: 0.1, stiffness: 150, dam
                     shadow-2xl`}
         style={{ height: panelHeight }}
       >
-        {items.map((item, index) => (
+        {items.map((item: any, index: number) => (
           <DockItem
             key={index}
             onClick={item.onClick}

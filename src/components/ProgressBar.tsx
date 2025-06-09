@@ -20,9 +20,9 @@ const ProgressBar = ({ current, total, label }: ProgressBarProps) => {
           </span>
         </div>
       )}
-      <div className="progress-indicator">
+      <div className="w-full bg-pink-100 rounded-full h-3 overflow-hidden">
         <div 
-          className="progress-fill"
+          className="h-full bg-gradient-to-r from-pink-500 to-pink-600 rounded-full transition-all duration-300 ease-out"
           style={{ width: `${percentage}%` }}
         />
       </div>

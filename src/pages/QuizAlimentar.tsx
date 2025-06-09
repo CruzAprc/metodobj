@@ -137,26 +137,33 @@ const QuizAlimentar = () => {
   const currentQuiz = quizSteps.find(step => step.id === currentStep);
 
   useEffect(() => {
+    console.log('Loading quiz data for step:', currentStep);
     // Carregar dados salvos do quiz
     const savedData = localStorage.getItem('quizAlimentar');
     if (savedData) {
       const parsed = JSON.parse(savedData);
       setQuizData(parsed);
-      setSelectedItems(parsed[`etapa${currentStep}`] || []);
+      const stepData = parsed[`etapa${currentStep}`] || [];
+      setSelectedItems(stepData);
+      console.log('Loaded data for step:', stepData);
+    } else {
+      setSelectedItems([]);
     }
   }, [currentStep]);
 
   const toggleSelection = (itemId: string) => {
+    console.log('Toggling selection for:', itemId);
     setSelectedItems(prev => {
-      if (prev.includes(itemId)) {
-        return prev.filter(id => id !== itemId);
-      } else {
-        return [...prev, itemId];
-      }
+      const newSelection = prev.includes(itemId) 
+        ? prev.filter(id => id !== itemId)
+        : [...prev, itemId];
+      console.log('New selection:', newSelection);
+      return newSelection;
     });
   };
 
   const handleNext = () => {
+    console.log('Saving selection:', selectedItems);
     // Salvar seleção atual
     const newQuizData = {
       ...quizData,
@@ -208,7 +215,7 @@ const QuizAlimentar = () => {
       <Header showBack onBack={handleBack} title="Anamnese Alimentar" />
       
       <div className="max-w-2xl mx-auto px-4 py-6">
-        <ProgressBar current={currentStep} total={5} label="Progresso do Quiz Alimentar" />
+        <ProgressBar current={currentStep} total={5} label="Anamnese Alimentar" />
         
         <div className="juju-card animate-fade-in-up">
           <div className="text-center mb-8">
@@ -230,14 +237,23 @@ const QuizAlimentar = () => {
               <div
                 key={food.id}
                 onClick={() => toggleSelection(food.id)}
-                className={`juju-quiz-option text-center ${
-                  selectedItems.includes(food.id) ? 'selected' : ''
-                }`}
+                className={`
+                  p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 text-center
+                  ${selectedItems.includes(food.id) 
+                    ? 'border-pink-500 bg-pink-50 shadow-md transform scale-105' 
+                    : 'border-gray-200 bg-white hover:border-pink-300 hover:bg-pink-25 hover:shadow-sm'
+                  }
+                `}
               >
                 <div className="text-2xl mb-2">{food.emoji}</div>
                 <div className="text-sm font-medium text-gray-700">
                   {food.name}
                 </div>
+                {selectedItems.includes(food.id) && (
+                  <div className="mt-2 text-pink-600 font-bold text-xs">
+                    ✓ SELECIONADO
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -247,7 +263,7 @@ const QuizAlimentar = () => {
               onClick={handleNext}
               className="w-full juju-button"
             >
-              {currentStep === 5 ? 'Finalizar Quiz Alimentar' : 'Continuar'}
+              {currentStep === 5 ? 'Finalizar Anamnese Alimentar' : 'Continuar'}
             </button>
             
             {currentStep === 5 && (

@@ -61,7 +61,7 @@ const QuizTreino = () => {
     },
     {
       id: 5,
-      title: "🔹 Nível de Experiência",
+      title: "💪 Nível de Experiência",
       question: "Qual seu nível atual de experiência com treinos?",
       options: [
         { value: 'nunca', label: 'Nunca treinei / vou começar agora' },

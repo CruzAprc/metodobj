@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/Header';
@@ -223,7 +222,7 @@ const QuizAlimentar = () => {
               {currentQuiz.title}
             </h2>
             <p className="text-gray-600 font-medium">
-              {currentQuiz.subtitle}
+              Selecione os alimentos que você <span className="text-red-600 font-bold">NÃO GOSTA ou NÃO CONSOME</span>
             </p>
             {currentStep === 5 && (
               <p className="text-sm text-pink-600 mt-2">

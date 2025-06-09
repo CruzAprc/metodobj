@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
 import { 
@@ -213,6 +214,16 @@ const AppJujuDashboard = () => {
         { nome: "Batata doce", quantidade: "100g", calorias: 90 },
         { nome: "Brócolis refogado", quantidade: "1 xícara", calorias: 60 }
       ]
+    },
+    ceia: {
+      nome: "Ceia Opcional",
+      horario: "21:30",
+      calorias: 150,
+      macros: { proteina: 15, carboidrato: 8, gordura: 6 },
+      alimentos: [
+        { nome: "Iogurte natural", quantidade: "1 pote", calorias: 100 },
+        { nome: "Chia", quantidade: "1 colher", calorias: 50 }
+      ]
     }
   };
 
@@ -335,6 +346,14 @@ const AppJujuDashboard = () => {
       icon: <Moon className="text-blue-500" size={24} />,
       cor: 'from-blue-100 to-blue-200 border-blue-200',
       corTexto: 'text-blue-700'
+    },
+    {
+      id: 'ceia',
+      nome: 'Ceia',
+      emoji: '🌟',
+      icon: <Moon className="text-purple-500" size={24} />,
+      cor: 'from-purple-100 to-purple-200 border-purple-200',
+      corTexto: 'text-purple-700'
     }
   ];
 
@@ -525,7 +544,7 @@ const AppJujuDashboard = () => {
                           <p className="text-sm text-gray-600">Calorias Totais</p>
                         </div>
                         <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
-                          <p className="text-2xl font-bold text-blue-600">4</p>
+                          <p className="text-2xl font-bold text-blue-600">5</p>
                           <p className="text-sm text-gray-600">Refeições</p>
                         </div>
                         <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl">
@@ -540,7 +559,7 @@ const AppJujuDashboard = () => {
                     </motion.div>
 
                     {/* Grid de refeições */}
-                    <div className="grid gap-6 md:grid-cols-2">
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                       {refeicoes.map((tipoRefeicao, index) => {
                         const refeicaoData = mockDietData[tipoRefeicao.id];
                         
@@ -628,7 +647,7 @@ const AppJujuDashboard = () => {
                       <p className="text-sm text-gray-500">
                         💡 Sua dieta é atualizada automaticamente baseada nas suas preferências
                       </p>
-                    </div>
+                    </motion.div>
                   </>
                 ) : (
                   <div className="text-center py-12">

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { X } from 'lucide-react';
 import Header from '../components/Header';
 import ProgressBar from '../components/ProgressBar';
 
@@ -237,9 +238,9 @@ const QuizAlimentar = () => {
                 key={food.id}
                 onClick={() => toggleSelection(food.id)}
                 className={`
-                  p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 text-center
+                  relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 text-center
                   ${selectedItems.includes(food.id) 
-                    ? 'border-pink-500 bg-pink-50 shadow-md transform scale-105' 
+                    ? 'border-red-500 bg-red-50 shadow-md transform scale-105' 
                     : 'border-gray-200 bg-white hover:border-pink-300 hover:bg-pink-25 hover:shadow-sm'
                   }
                 `}
@@ -249,8 +250,10 @@ const QuizAlimentar = () => {
                   {food.name}
                 </div>
                 {selectedItems.includes(food.id) && (
-                  <div className="mt-2 text-pink-600 font-bold text-xs">
-                    ✓ SELECIONADO
+                  <div className="absolute inset-0 flex items-center justify-center bg-red-500/20 rounded-xl">
+                    <div className="bg-red-500 rounded-full p-2 animate-pulse">
+                      <X className="w-6 h-6 text-white font-bold" />
+                    </div>
                   </div>
                 )}
               </div>

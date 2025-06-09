@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
 import { 
@@ -16,6 +15,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import EditProfileModal from '@/components/EditProfileModal';
 
 // Componente Dock Item
 const DockItem = ({ children, onClick, mouseX, spring, distance, magnification, baseItemSize, className = "" }: any) => {
@@ -155,6 +155,7 @@ const AppJujuDashboard = () => {
   const [dietData, setDietData] = useState<any>(null);
   const [workoutData, setWorkoutData] = useState<any>(null);
   const [userPhotos, setUserPhotos] = useState<any[]>([]);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { user } = useAuth();
 
   const iconSize = 22;
@@ -558,7 +559,10 @@ const AppJujuDashboard = () => {
                       <p className="text-gray-500">Carregando dados...</p>
                     )}
                   </div>
-                  <button className="bg-gradient-to-r from-pink-500 to-pink-600 text-white px-6 py-2 rounded-xl hover:from-pink-600 hover:to-pink-700 transition-all">
+                  <button 
+                    onClick={() => setIsEditModalOpen(true)}
+                    className="bg-gradient-to-r from-pink-500 to-pink-600 text-white px-6 py-2 rounded-xl hover:from-pink-600 hover:to-pink-700 transition-all"
+                  >
                     Editar Perfil
                   </button>
                 </div>
@@ -582,6 +586,14 @@ const AppJujuDashboard = () => {
       <p className="fixed bottom-2 left-1/2 -translate-x-1/2 text-center text-xs text-gray-400">
         Navegue pelas opções no dock 💕
       </p>
+
+      {/* Modal de Edição de Perfil */}
+      <EditProfileModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        userData={userData}
+        onUpdate={loadUserData}
+      />
     </div>
   );
 };

@@ -758,6 +758,129 @@ export type Database = {
         }
         Relationships: []
       }
+      teste_app: {
+        Row: {
+          created_at: string
+          data_registro: string
+          email: string
+          id: string
+          nome: string
+          quiz_alimentar_concluido: boolean
+          quiz_treino_concluido: boolean
+          updated_at: string
+          user_id: string
+          whatsapp: string
+        }
+        Insert: {
+          created_at?: string
+          data_registro?: string
+          email: string
+          id?: string
+          nome: string
+          quiz_alimentar_concluido?: boolean
+          quiz_treino_concluido?: boolean
+          updated_at?: string
+          user_id: string
+          whatsapp: string
+        }
+        Update: {
+          created_at?: string
+          data_registro?: string
+          email?: string
+          id?: string
+          nome?: string
+          quiz_alimentar_concluido?: boolean
+          quiz_treino_concluido?: boolean
+          updated_at?: string
+          user_id?: string
+          whatsapp?: string
+        }
+        Relationships: []
+      }
+      teste_dieta: {
+        Row: {
+          almoco: Json
+          cafe_da_manha: Json
+          ceia: Json
+          created_at: string
+          id: string
+          jantar: Json
+          lanche: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          almoco?: Json
+          cafe_da_manha?: Json
+          ceia?: Json
+          created_at?: string
+          id?: string
+          jantar?: Json
+          lanche?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          almoco?: Json
+          cafe_da_manha?: Json
+          ceia?: Json
+          created_at?: string
+          id?: string
+          jantar?: Json
+          lanche?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      teste_treino: {
+        Row: {
+          created_at: string
+          desafio: string
+          experiencia: string
+          foco_regiao: string
+          frequencia: string
+          id: string
+          intensidade: string
+          lesao_especifica: string | null
+          lesoes: string
+          objetivo: string
+          tempo_sessao: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          desafio: string
+          experiencia: string
+          foco_regiao: string
+          frequencia: string
+          id?: string
+          intensidade: string
+          lesao_especifica?: string | null
+          lesoes: string
+          objetivo: string
+          tempo_sessao: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          desafio?: string
+          experiencia?: string
+          foco_regiao?: string
+          frequencia?: string
+          id?: string
+          intensidade?: string
+          lesao_especifica?: string | null
+          lesoes?: string
+          objetivo?: string
+          tempo_sessao?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

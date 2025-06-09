@@ -1,20 +1,48 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import Header from '../components/Header';
+import { toast } from 'sonner';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { signIn, user, loading } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && !loading) {
+      navigate('/onboarding');
+    }
+  }, [user, loading, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login attempt:', formData);
-    // Simulação de login - em produção conectar com Supabase
-    navigate('/onboarding');
+    setIsSubmitting(true);
+
+    try {
+      const { error } = await signIn(formData.email, formData.password);
+      
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) {
+          toast.error('Email ou senha incorretos');
+        } else {
+          toast.error('Erro ao fazer login: ' + error.message);
+        }
+      } else {
+        toast.success('Login realizado com sucesso!');
+        navigate('/onboarding');
+      }
+    } catch (error) {
+      toast.error('Erro inesperado ao fazer login');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,6 +51,17 @@ const Login = () => {
       [e.target.name]: e.target.value
     });
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen juju-gradient-bg flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen juju-gradient-bg">
@@ -51,6 +90,7 @@ const Login = () => {
                 className="juju-input"
                 placeholder="seu@email.com"
                 required
+                disabled={isSubmitting}
               />
             </div>
 
@@ -66,11 +106,16 @@ const Login = () => {
                 className="juju-input"
                 placeholder="••••••••"
                 required
+                disabled={isSubmitting}
               />
             </div>
 
-            <button type="submit" className="w-full juju-button">
-              Entrar
+            <button 
+              type="submit" 
+              className="w-full juju-button"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Entrando...' : 'Entrar'}
             </button>
           </form>
 

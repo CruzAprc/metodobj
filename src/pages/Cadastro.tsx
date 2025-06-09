@@ -1,10 +1,13 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import Header from '../components/Header';
+import { toast } from 'sonner';
 
 const Cadastro = () => {
   const navigate = useNavigate();
+  const { signUp, user, loading } = useAuth();
   const [formData, setFormData] = useState({
     nome: '',
     whatsapp: '',
@@ -12,18 +15,53 @@ const Cadastro = () => {
     password: '',
     confirmPassword: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && !loading) {
+      navigate('/onboarding');
+    }
+  }, [user, loading, navigate]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (formData.password !== formData.confirmPassword) {
-      alert('As senhas não coincidem!');
+      toast.error('As senhas não coincidem!');
       return;
     }
 
-    console.log('Cadastro attempt:', formData);
-    // Simulação de cadastro - em produção conectar com Supabase
-    navigate('/onboarding');
+    if (formData.password.length < 6) {
+      toast.error('A senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const { error } = await signUp(
+        formData.email, 
+        formData.password, 
+        formData.nome, 
+        formData.whatsapp
+      );
+      
+      if (error) {
+        if (error.message.includes('User already registered')) {
+          toast.error('Este email já está cadastrado');
+        } else {
+          toast.error('Erro ao criar conta: ' + error.message);
+        }
+      } else {
+        toast.success('Conta criada com sucesso!');
+        navigate('/onboarding');
+      }
+    } catch (error) {
+      toast.error('Erro inesperado ao criar conta');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,10 +72,7 @@ const Cadastro = () => {
   };
 
   const formatWhatsApp = (value: string) => {
-    // Remove tudo que não é número
     const numbers = value.replace(/\D/g, '');
-    
-    // Aplica a máscara (XX) 9XXXX-XXXX
     if (numbers.length <= 11) {
       return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
     }
@@ -51,6 +86,17 @@ const Cadastro = () => {
       whatsapp: formatted
     });
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen juju-gradient-bg flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen juju-gradient-bg">
@@ -79,6 +125,7 @@ const Cadastro = () => {
                 className="juju-input"
                 placeholder="Seu nome completo"
                 required
+                disabled={isSubmitting}
               />
             </div>
 
@@ -94,6 +141,7 @@ const Cadastro = () => {
                 className="juju-input"
                 placeholder="(11) 99999-9999"
                 required
+                disabled={isSubmitting}
               />
             </div>
 
@@ -109,6 +157,7 @@ const Cadastro = () => {
                 className="juju-input"
                 placeholder="seu@email.com"
                 required
+                disabled={isSubmitting}
               />
             </div>
 
@@ -125,6 +174,7 @@ const Cadastro = () => {
                 placeholder="••••••••"
                 required
                 minLength={6}
+                disabled={isSubmitting}
               />
             </div>
 
@@ -141,11 +191,16 @@ const Cadastro = () => {
                 placeholder="••••••••"
                 required
                 minLength={6}
+                disabled={isSubmitting}
               />
             </div>
 
-            <button type="submit" className="w-full juju-button">
-              Criar Conta
+            <button 
+              type="submit" 
+              className="w-full juju-button"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Criando conta...' : 'Criar Conta'}
             </button>
           </form>
 

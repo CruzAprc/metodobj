@@ -99,17 +99,6 @@ const Cadastro = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center fitness-gradient-bg relative overflow-hidden py-8">
-      {/* Elementos decorativos de fundo */}
-      <div className="decoration-sparkle top-16 right-16">
-        <span className="text-3xl">🚀</span>
-      </div>
-      <div className="decoration-sparkle bottom-20 left-12">
-        <span className="text-4xl">✨</span>
-      </div>
-      <div className="decoration-sparkle top-1/4 left-8">
-        <span className="text-2xl">💕</span>
-      </div>
-      
       {/* Botão voltar */}
       <div className="max-w-sm w-full mx-4 mb-4">
         <button 
@@ -123,9 +112,13 @@ const Cadastro = () => {
       <div className="max-w-sm w-full mx-4">
         <div className="fitness-card animate-slide-in-up">
           <div className="text-center mb-8">
-            {/* Logo circular */}
-            <div className="fitness-logo mx-auto mb-6">
-              <span className="text-2xl">🌟</span>
+            {/* Logo com imagem */}
+            <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6">
+              <img 
+                src="/lovable-uploads/af8f94bb-3ae5-412a-8ba9-17df5ae3e849.png" 
+                alt="App da Juju Logo" 
+                className="w-full h-full object-contain"
+              />
             </div>
             
             <h2 className="text-3xl font-bold fitness-text mb-3">

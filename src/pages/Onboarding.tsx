@@ -7,22 +7,15 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-screen fitness-gradient-bg relative overflow-hidden">
-      {/* Elementos decorativos de fundo */}
-      <div className="decoration-sparkle top-20 right-20">
-        <span className="text-4xl">✨</span>
-      </div>
-      <div className="decoration-sparkle bottom-32 left-16">
-        <span className="text-3xl">💪</span>
-      </div>
-      <div className="decoration-sparkle top-1/3 left-10">
-        <span className="text-2xl">🌸</span>
-      </div>
-      
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="fitness-card animate-slide-in-up text-center">
           <div className="mb-8">
-            <div className="fitness-logo mx-auto mb-6">
-              <span className="text-4xl">🎯</span>
+            <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6">
+              <img 
+                src="/lovable-uploads/af8f94bb-3ae5-412a-8ba9-17df5ae3e849.png" 
+                alt="App da Juju Logo" 
+                className="w-full h-full object-contain"
+              />
             </div>
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
               Bem-vinda ao <span className="fitness-text">App da Juju</span>!
@@ -36,7 +29,7 @@ const Onboarding = () => {
           <div className="performance-card mb-8">
             <div className="aspect-video bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center mb-4">
               <div className="text-center">
-                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 animate-sparkle">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-2xl text-white">▶️</span>
                 </div>
                 <p className="text-white font-semibold text-lg">Metodologia App da Juju</p>

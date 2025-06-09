@@ -5,7 +5,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
-import Navigation from "./components/Navigation";
 import Login from "./pages/Login";
 import Cadastro from "./pages/Cadastro";
 import Onboarding from "./pages/Onboarding";
@@ -25,7 +24,6 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Navigation />
           <Routes>
             <Route path="/" element={<Login />} />
             <Route path="/login" element={<Login />} />
@@ -33,9 +31,7 @@ const App = () => (
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/dados-pessoais" element={<DadosPessoais />} />
             <Route path="/quiz-alimentar/:etapa" element={<QuizAlimentar />} />
-            <Route path="/quiz-alimentar" element={<QuizAlimentar />} />
             <Route path="/quiz-treino/:pergunta" element={<QuizTreino />} />
-            <Route path="/quiz-treino" element={<QuizTreino />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/avaliacao" element={<Avaliacao />} />
             <Route path="*" element={<NotFound />} />

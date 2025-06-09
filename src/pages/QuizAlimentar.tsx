@@ -1,8 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { X } from 'lucide-react';
-import Header from '../components/Header';
-import ProgressBar from '../components/ProgressBar';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, ArrowRight, Coffee, X, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -20,11 +20,13 @@ const QuizAlimentar = () => {
   
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [quizData, setQuizData] = useState<Record<string, string[]>>({});
+  const [animatingStep, setAnimatingStep] = useState(false);
 
   const quizSteps = [
     {
       id: 1,
-      title: "Café da Manhã ☕",
+      title: "Café da Manhã",
+      emoji: "☕",
       subtitle: "Selecione os alimentos que você NÃO GOSTA ou NÃO CONSOME",
       foods: [
         { id: 'ovos', name: 'Ovos', emoji: '🥚' },
@@ -54,7 +56,8 @@ const QuizAlimentar = () => {
     },
     {
       id: 2,
-      title: "Almoço 🍽️",
+      title: "Almoço",
+      emoji: "🍽️",
       subtitle: "Selecione os alimentos que você NÃO GOSTA ou NÃO CONSOME",
       foods: [
         { id: 'frango', name: 'Frango', emoji: '🍗' },
@@ -79,7 +82,8 @@ const QuizAlimentar = () => {
     },
     {
       id: 3,
-      title: "Lanche da Tarde 🥪",
+      title: "Lanche da Tarde",
+      emoji: "🥪",
       subtitle: "Selecione os alimentos que você NÃO GOSTA ou NÃO CONSOME",
       foods: [
         { id: 'whey', name: 'Whey', emoji: '🥛' },
@@ -98,7 +102,8 @@ const QuizAlimentar = () => {
     },
     {
       id: 4,
-      title: "Jantar 🍽️",
+      title: "Jantar",
+      emoji: "🍽️",
       subtitle: "Selecione os alimentos que você NÃO GOSTA ou NÃO CONSOME",
       foods: [
         { id: 'frango', name: 'Frango', emoji: '🍗' },
@@ -123,7 +128,8 @@ const QuizAlimentar = () => {
     },
     {
       id: 5,
-      title: "Ceia 🌙",
+      title: "Ceia",
+      emoji: "🌙",
       subtitle: "Selecione os alimentos que você NÃO GOSTA ou NÃO CONSOME (Opcional)",
       foods: [
         { id: 'iogurte_natural', name: 'Iogurte Natural', emoji: '🥛' },
@@ -212,6 +218,8 @@ const QuizAlimentar = () => {
 
   const handleNext = async () => {
     console.log('Saving selection:', selectedItems);
+    setAnimatingStep(true);
+    
     // Salvar seleção atual
     const newQuizData = {
       ...quizData,
@@ -220,17 +228,22 @@ const QuizAlimentar = () => {
     setQuizData(newQuizData);
     localStorage.setItem('quizAlimentar', JSON.stringify(newQuizData));
 
-    if (currentStep < 5) {
-      navigate(`/quiz-alimentar/${currentStep + 1}`);
-    } else {
-      // Quiz concluído - salvar no banco
-      await saveToDatabase(newQuizData);
-      localStorage.setItem('quizAlimentarConcluido', 'true');
-      navigate('/loading-treino');
-    }
+    setTimeout(async () => {
+      if (currentStep < 5) {
+        navigate(`/quiz-alimentar/${currentStep + 1}`);
+      } else {
+        // Quiz concluído - salvar no banco
+        await saveToDatabase(newQuizData);
+        localStorage.setItem('quizAlimentarConcluido', 'true');
+        navigate('/loading-treino');
+      }
+      setAnimatingStep(false);
+    }, 300);
   };
 
   const handleSkip = async () => {
+    setAnimatingStep(true);
+    
     // Pular etapa (útil para ceia ou quando não tem restrições)
     const newQuizData = {
       ...quizData,
@@ -239,14 +252,17 @@ const QuizAlimentar = () => {
     setQuizData(newQuizData);
     localStorage.setItem('quizAlimentar', JSON.stringify(newQuizData));
 
-    if (currentStep < 5) {
-      navigate(`/quiz-alimentar/${currentStep + 1}`);
-    } else {
-      // Quiz concluído - salvar no banco
-      await saveToDatabase(newQuizData);
-      localStorage.setItem('quizAlimentarConcluido', 'true');
-      navigate('/loading-treino');
-    }
+    setTimeout(async () => {
+      if (currentStep < 5) {
+        navigate(`/quiz-alimentar/${currentStep + 1}`);
+      } else {
+        // Quiz concluído - salvar no banco
+        await saveToDatabase(newQuizData);
+        localStorage.setItem('quizAlimentarConcluido', 'true');
+        navigate('/loading-treino');
+      }
+      setAnimatingStep(false);
+    }, 300);
   };
 
   const handleBack = () => {
@@ -262,85 +278,185 @@ const QuizAlimentar = () => {
   }
 
   return (
-    <div className="min-h-screen juju-gradient-bg">
-      <Header showBack onBack={handleBack} title="Anamnese Alimentar" />
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
       
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        <ProgressBar current={currentStep} total={5} label="Anamnese Alimentar" />
-        
-        <div className="juju-card animate-fade-in-up">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">
-              {currentQuiz.title}
-            </h2>
-            <p className="text-gray-600 font-medium">
-              Selecione os alimentos que você <span className="text-red-600 font-bold">NÃO GOSTA ou NÃO CONSOME</span>
-            </p>
-            {currentStep === 5 && (
-              <p className="text-sm text-pink-600 mt-2">
-                ✨ Esta etapa é opcional - você pode pular se não faz ceia
-              </p>
-            )}
+      {/* Header igual ao treino */}
+      <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-pink-100 z-10">
+        <div className="flex items-center justify-between p-4 max-w-md mx-auto">
+          <button 
+            onClick={handleBack}
+            className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+          >
+            <ArrowLeft size={20} className="text-gray-600" />
+          </button>
+          
+          <div className="text-center">
+            <h1 className="text-sm font-medium text-gray-700">Anamnese Alimentar</h1>
+            <div className="flex items-center space-x-2 mt-1">
+              <span className="text-xs text-gray-500">Etapa</span>
+              <span className="text-sm font-bold text-pink-600">{currentStep}/5</span>
+            </div>
           </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-8">
-            {currentQuiz.foods.map((food) => (
+          
+          <div className="w-8" />
+        </div>
+        
+        {/* Barra de progresso igual ao treino */}
+        <div className="px-4 pb-3">
+          <div className="flex space-x-1">
+            {[1, 2, 3, 4, 5].map((step) => (
               <div
-                key={food.id}
-                onClick={() => toggleSelection(food.id)}
-                className={`
-                  relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-200 text-center
-                  ${selectedItems.includes(food.id) 
-                    ? 'border-red-500 bg-red-50 shadow-md transform scale-105' 
-                    : 'border-gray-200 bg-white hover:border-pink-300 hover:bg-pink-25 hover:shadow-sm'
-                  }
-                `}
-              >
-                <div className="text-2xl mb-2">{food.emoji}</div>
-                <div className="text-sm font-medium text-gray-700">
-                  {food.name}
-                </div>
-                {selectedItems.includes(food.id) && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-red-500/20 rounded-xl">
-                    <div className="bg-red-500 rounded-full p-2 animate-pulse">
-                      <X className="w-6 h-6 text-white font-bold" />
-                    </div>
-                  </div>
-                )}
-              </div>
+                key={step}
+                className={`h-1.5 rounded-full flex-1 transition-all duration-500 ${
+                  step <= currentStep 
+                    ? 'bg-gradient-to-r from-pink-400 to-pink-600' 
+                    : 'bg-gray-200'
+                }`}
+              />
             ))}
           </div>
+        </div>
+      </div>
 
-          <div className="space-y-3">
-            <button 
-              onClick={handleNext}
-              className="w-full relative overflow-hidden bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white font-bold py-5 px-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 group"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="absolute inset-0 bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
-              <span className="relative z-10 flex items-center justify-center gap-2">
-                <span className="animate-pulse">✨</span>
-                {currentStep === 5 ? 'Finalizar Anamnese Alimentar' : 'Continuar'}
-                <span className="animate-pulse">✨</span>
-              </span>
-            </button>
-            
-            {currentStep === 5 && (
-              <button 
-                onClick={handleSkip}
-                className="w-full juju-button-outline"
-              >
-                Pular Ceia (Não faço esta refeição)
-              </button>
-            )}
+      <div className="px-4 pb-6 max-w-md mx-auto">
+        
+        {/* Título igual ao treino */}
+        <motion.div 
+          key={currentStep}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center py-6 space-y-4"
+        >
+          <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center mx-auto border border-orange-200 shadow-sm">
+            <Coffee className="text-orange-500" size={24} />
           </div>
-
-          <div className="mt-4 text-center">
-            <p className="text-xs text-gray-500">
-              {selectedItems.length} item{selectedItems.length !== 1 ? 's' : ''} selecionado{selectedItems.length !== 1 ? 's' : ''}
+          
+          <div className="space-y-2">
+            <div className="flex items-center justify-center space-x-2">
+              <span className="text-2xl">{currentQuiz.emoji}</span>
+              <h2 className="text-xl font-bold text-gray-800">
+                {currentQuiz.title}
+              </h2>
+            </div>
+            
+            <p className="text-gray-600 text-base leading-relaxed px-2">
+              {currentQuiz.subtitle}
             </p>
           </div>
+          
+          {/* Contador de selecionados */}
+          <div className="flex items-center justify-center space-x-2 pt-2">
+            <div className="flex items-center space-x-1">
+              <X size={14} className="text-red-500" />
+              <span className="text-sm text-gray-600">
+                {selectedItems.length} {selectedItems.length === 1 ? 'item selecionado' : 'itens selecionados'}
+              </span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Grid de alimentos otimizado */}
+        <motion.div 
+          className="grid grid-cols-2 gap-3 mb-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          {currentQuiz.foods.map((item, index) => (
+            <motion.button
+              key={item.id}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.05 }}
+              onClick={() => toggleSelection(item.id)}
+              className={`relative p-4 rounded-2xl border-2 transition-all duration-300 group ${
+                selectedItems.includes(item.id)
+                  ? 'border-red-300 bg-red-50 shadow-lg scale-95'
+                  : 'border-gray-200 bg-white hover:border-pink-200 hover:shadow-md hover:scale-105'
+              }`}
+            >
+              {/* Indicador de seleção */}
+              <AnimatePresence>
+                {selectedItems.includes(item.id) && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shadow-lg"
+                  >
+                    <X size={12} className="text-white" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              
+              <div className="text-center space-y-2">
+                <div className="text-2xl">{item.emoji}</div>
+                <p className={`text-sm font-medium transition-colors ${
+                  selectedItems.includes(item.id) 
+                    ? 'text-red-700' 
+                    : 'text-gray-700 group-hover:text-gray-900'
+                }`}>
+                  {item.name}
+                </p>
+              </div>
+            </motion.button>
+          ))}
+        </motion.div>
+
+        {/* Opção de pular */}
+        <div className="text-center mb-6">
+          <button
+            onClick={handleSkip}
+            className="text-sm text-gray-500 hover:text-gray-700 underline transition-colors"
+          >
+            {currentStep === 5 ? 'Não faço esta refeição' : 'Não tenho restrições nesta refeição'}
+          </button>
         </div>
+
+        {/* Botão igual ao treino */}
+        <motion.button
+          onClick={handleNext}
+          disabled={animatingStep}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg transition-all duration-300 flex items-center justify-center space-x-2 ${
+            animatingStep
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 hover:shadow-xl'
+          }`}
+        >
+          {animatingStep ? (
+            <div className="flex space-x-1">
+              {[0, 1, 2].map((i) => (
+                <motion.div
+                  key={i}
+                  className="w-2 h-2 bg-white rounded-full"
+                  animate={{
+                    scale: [1, 1.5, 1],
+                    opacity: [0.5, 1, 0.5]
+                  }}
+                  transition={{
+                    duration: 1,
+                    repeat: Infinity,
+                    delay: i * 0.2
+                  }}
+                />
+              ))}
+            </div>
+          ) : (
+            <>
+              <Sparkles size={18} />
+              <span>{currentStep === 5 ? 'Finalizar Anamnese Alimentar' : 'Continuar'}</span>
+              <ArrowRight size={18} />
+            </>
+          )}
+        </motion.button>
+        
+        {/* Informação igual ao treino */}
+        <p className="text-center text-xs text-gray-500 mt-4">
+          🍽️ Etapa {currentStep} de 5 - Você está indo muito bem!
+        </p>
+
       </div>
     </div>
   );

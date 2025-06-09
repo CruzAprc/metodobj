@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import Header from '../components/Header';
 import { toast } from 'sonner';
 
 const Login = () => {
@@ -54,9 +53,9 @@ const Login = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen gym-gradient-bg flex items-center justify-center">
+      <div className="min-h-screen fitness-gradient-bg flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Carregando...</p>
         </div>
       </div>
@@ -64,47 +63,57 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen gym-gradient-bg">
-      <Header />
+    <div className="min-h-screen flex flex-col items-center justify-center fitness-gradient-bg relative overflow-hidden">
+      {/* Elementos decorativos de fundo */}
+      <div className="decoration-sparkle top-20 right-20">
+        <span className="text-4xl">✨</span>
+      </div>
+      <div className="decoration-sparkle bottom-32 left-16">
+        <span className="text-3xl">💪</span>
+      </div>
+      <div className="decoration-sparkle top-1/3 left-10">
+        <span className="text-2xl">🌸</span>
+      </div>
       
-      <div className="max-w-md mx-auto px-4 py-8">
-        <div className="gym-card animate-slide-in-bottom">
+      <div className="max-w-sm w-full mx-4">
+        <div className="fitness-card animate-slide-in-up">
           <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-black rounded-2xl mx-auto mb-6 flex items-center justify-center animate-power-pulse">
-              <span className="text-3xl">🏋️</span>
+            {/* Logo circular */}
+            <div className="fitness-logo mx-auto mb-6">
+              <span className="text-2xl">👩‍💪</span>
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Bem-vinda de volta!</h2>
-            <p className="text-gray-600 font-medium">Entre na sua conta para continuar evoluindo</p>
+            
+            <h2 className="text-3xl font-bold fitness-text mb-3">
+              App da Juju
+            </h2>
+            <p className="text-gray-600 font-medium mb-2">Bem-vinda de volta!</p>
+            <p className="text-gray-500 text-sm">
+              Sua jornada fitness continua aqui! 💪✨
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-3">
-                Email
-              </label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="gym-input"
-                placeholder="seu@email.com"
+                className="fitness-input"
+                placeholder="Seu email"
                 required
                 disabled={isSubmitting}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-3">
-                Senha
-              </label>
               <input
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="gym-input"
-                placeholder="••••••••"
+                className="fitness-input"
+                placeholder="Sua senha"
                 required
                 disabled={isSubmitting}
               />
@@ -112,7 +121,7 @@ const Login = () => {
 
             <button 
               type="submit" 
-              className="w-full gym-button text-lg py-4"
+              className="w-full fitness-button text-lg"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Entrando...' : 'Entrar'}
@@ -122,20 +131,20 @@ const Login = () => {
           <div className="mt-8 text-center">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
+                <div className="w-full border-t border-pink-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-4 bg-white text-gray-500 font-medium">ou</span>
               </div>
             </div>
             
-            <p className="text-gray-600 mt-6">
-              Ainda não tem conta?{' '}
+            <p className="text-gray-600 mt-6 text-sm">
+              Não tem conta?{' '}
               <button 
                 onClick={() => navigate('/cadastro')}
-                className="text-black font-semibold hover:text-gray-700 underline"
+                className="font-medium text-pink-600 hover:text-pink-700 underline"
               >
-                Cadastre-se aqui
+                Cadastre-se grátis! 💕
               </button>
             </p>
           </div>

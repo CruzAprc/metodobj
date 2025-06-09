@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import Header from '../components/Header';
 import { toast } from 'sonner';
 
 const Cadastro = () => {
@@ -89,9 +88,9 @@ const Cadastro = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen gym-gradient-bg flex items-center justify-center">
+      <div className="min-h-screen fitness-gradient-bg flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Carregando...</p>
         </div>
       </div>
@@ -99,79 +98,93 @@ const Cadastro = () => {
   }
 
   return (
-    <div className="min-h-screen gym-gradient-bg">
-      <Header showBack onBack={() => navigate('/login')} />
+    <div className="min-h-screen flex flex-col items-center justify-center fitness-gradient-bg relative overflow-hidden py-8">
+      {/* Elementos decorativos de fundo */}
+      <div className="decoration-sparkle top-16 right-16">
+        <span className="text-3xl">🚀</span>
+      </div>
+      <div className="decoration-sparkle bottom-20 left-12">
+        <span className="text-4xl">✨</span>
+      </div>
+      <div className="decoration-sparkle top-1/4 left-8">
+        <span className="text-2xl">💕</span>
+      </div>
       
-      <div className="max-w-md mx-auto px-4 py-6">
-        <div className="gym-card animate-slide-in-bottom">
+      {/* Botão voltar */}
+      <div className="max-w-sm w-full mx-4 mb-4">
+        <button 
+          onClick={() => navigate('/login')}
+          className="text-pink-600 hover:text-pink-700 transition-colors font-medium flex items-center gap-2"
+        >
+          ← Voltar
+        </button>
+      </div>
+      
+      <div className="max-w-sm w-full mx-4">
+        <div className="fitness-card animate-slide-in-up">
           <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-black rounded-2xl mx-auto mb-6 flex items-center justify-center animate-power-pulse">
-              <span className="text-3xl">🚀</span>
+            {/* Logo circular */}
+            <div className="fitness-logo mx-auto mb-6">
+              <span className="text-2xl">🌟</span>
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">Comece agora</h2>
-            <p className="text-gray-600 font-medium">Sua transformação começa aqui!</p>
+            
+            <h2 className="text-3xl font-bold fitness-text mb-3">
+              App da Juju
+            </h2>
+            <p className="text-gray-600 font-medium mb-2">Comece agora!</p>
+            <p className="text-gray-500 text-sm">
+              Sua transformação começa aqui! 💪✨
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Nome Completo *
-              </label>
               <input
                 type="text"
                 name="nome"
                 value={formData.nome}
                 onChange={handleChange}
-                className="gym-input"
-                placeholder="Seu nome completo"
+                className="fitness-input"
+                placeholder="Nome Completo"
                 required
                 disabled={isSubmitting}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                WhatsApp *
-              </label>
               <input
                 type="tel"
                 name="whatsapp"
                 value={formData.whatsapp}
                 onChange={handleWhatsAppChange}
-                className="gym-input"
-                placeholder="(11) 99999-9999"
+                className="fitness-input"
+                placeholder="WhatsApp"
                 required
                 disabled={isSubmitting}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Email *
-              </label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="gym-input"
-                placeholder="seu@email.com"
+                className="fitness-input"
+                placeholder="Email"
                 required
                 disabled={isSubmitting}
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Senha *
-              </label>
               <input
                 type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="gym-input"
-                placeholder="••••••••"
+                className="fitness-input"
+                placeholder="Senha"
                 required
                 minLength={6}
                 disabled={isSubmitting}
@@ -179,16 +192,13 @@ const Cadastro = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-800 mb-2">
-                Confirmar Senha *
-              </label>
               <input
                 type="password"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="gym-input"
-                placeholder="••••••••"
+                className="fitness-input"
+                placeholder="Confirmar Senha"
                 required
                 minLength={6}
                 disabled={isSubmitting}
@@ -197,7 +207,7 @@ const Cadastro = () => {
 
             <button 
               type="submit" 
-              className="w-full gym-button text-lg py-4 mt-6"
+              className="w-full fitness-button text-lg mt-6"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Criando conta...' : 'Criar Conta'}
@@ -207,20 +217,20 @@ const Cadastro = () => {
           <div className="mt-8 text-center">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
+                <div className="w-full border-t border-pink-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-4 bg-white text-gray-500 font-medium">ou</span>
               </div>
             </div>
             
-            <p className="text-gray-600 mt-6">
+            <p className="text-gray-600 mt-6 text-sm">
               Já tem uma conta?{' '}
               <button 
                 onClick={() => navigate('/login')}
-                className="text-black font-semibold hover:text-gray-700 underline"
+                className="font-medium text-pink-600 hover:text-pink-700 underline"
               >
-                Faça login
+                Faça login! 💕
               </button>
             </p>
           </div>

@@ -3,7 +3,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Design system focado em academia e performance */
+/* Design system focado em feminino e fitness */
 
 @layer base {
   :root {
@@ -16,7 +16,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 0 0% 9%; /* Preto principal */
+    --primary: 340 75% 60%; /* Rosa principal */
     --primary-foreground: 0 0% 98%;
 
     --secondary: 210 40% 98%; /* Cinza muito claro */
@@ -25,7 +25,7 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 47 96% 53%; /* Amarelo/dourado vibrante para destaques */
+    --accent: 340 75% 60%; /* Rosa para destaques */
     --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
@@ -33,15 +33,14 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 0 0% 9%;
+    --ring: 340 75% 60%;
 
-    --radius: 0.75rem; /* Bordas mais sutis */
+    --radius: 1rem; /* Bordas mais arredondadas */
 
-    /* Cores personalizadas do tema academia */
-    --gym-black: 0 0% 9%;
-    --gym-gold: 47 96% 53%;
-    --gym-gray: 220 13% 91%;
-    --gym-dark-gray: 220 9% 46%;
+    /* Cores personalizadas do tema feminino */
+    --pink-primary: 340 75% 60%;
+    --pink-light: 340 75% 95%;
+    --pink-medium: 340 75% 85%;
   }
 }
 
@@ -51,71 +50,62 @@
   }
 
   body {
-    @apply bg-gradient-to-br from-gray-50 to-white text-foreground font-inter;
+    @apply bg-gradient-to-br from-pink-100 to-white text-foreground font-inter;
   }
 }
 
 /* Importar fonte Inter do Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-/* Classes personalizadas do tema academia */
+/* Classes personalizadas do tema feminino */
 @layer components {
-  .gym-card {
-    @apply bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all duration-300;
+  .fitness-card {
+    @apply bg-gradient-to-r from-white/90 to-pink-50/80 backdrop-blur-sm rounded-3xl shadow-xl border border-pink-200/30 p-8 hover:shadow-2xl transition-all duration-300;
   }
   
-  .gym-button {
-    @apply bg-black text-white font-semibold py-3 px-8 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:bg-gray-900 relative overflow-hidden;
+  .fitness-button {
+    @apply bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white font-medium py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] relative overflow-hidden;
   }
   
-  .gym-button::before {
-    content: '';
-    @apply absolute inset-0 bg-gradient-to-r from-yellow-400 to-yellow-500 opacity-0 transition-opacity duration-300;
+  .fitness-button-outline {
+    @apply border-2 border-pink-500 text-pink-600 font-medium py-3 px-8 rounded-2xl hover:bg-pink-500 hover:text-white transition-all duration-300;
   }
   
-  .gym-button:hover::before {
-    @apply opacity-10;
+  .fitness-input {
+    @apply w-full px-5 py-4 rounded-2xl bg-pink-50/60 text-gray-800 placeholder-gray-500 border border-pink-200/50 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-pink-300 transition-all duration-300 font-medium;
   }
   
-  .gym-button-outline {
-    @apply border-2 border-black text-black font-semibold py-3 px-8 rounded-lg hover:bg-black hover:text-white transition-all duration-300;
+  .fitness-gradient-bg {
+    background: linear-gradient(135deg, #fce7f3 0%, #ffffff 50%, #fdf2f8 100%);
   }
   
-  .gym-input {
-    @apply w-full p-4 border-2 border-gray-300 rounded-lg focus:border-black focus:ring-2 focus:ring-gray-200 transition-all duration-300 font-medium;
-  }
-  
-  .gym-gradient-bg {
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #ffffff 100%);
-  }
-  
-  .gym-accent-gradient {
-    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  .pink-accent-gradient {
+    background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
   }
   
   .performance-card {
-    @apply bg-gradient-to-br from-black to-gray-900 text-white rounded-xl p-6 shadow-2xl;
+    @apply bg-gradient-to-br from-pink-500 to-pink-600 text-white rounded-3xl p-6 shadow-2xl;
   }
   
   .progress-indicator {
-    @apply bg-gray-200 rounded-full h-2 overflow-hidden;
+    @apply bg-pink-100 rounded-full h-2 overflow-hidden;
   }
   
   .progress-fill {
-    @apply bg-gradient-to-r from-yellow-400 to-yellow-500 h-full transition-all duration-500 ease-out;
+    @apply bg-gradient-to-r from-pink-400 to-pink-500 h-full transition-all duration-500 ease-out;
   }
 }
 
 /* Animações melhoradas */
-@keyframes power-bounce {
+@keyframes float {
   0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-8px) scale(1.05); }
+  50% { transform: translateY(-10px) scale(1.05); }
 }
 
-@keyframes slide-in-bottom {
+@keyframes slide-in-up {
   0% {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(50px);
   }
   100% {
     opacity: 1;
@@ -123,48 +113,48 @@
   }
 }
 
-@keyframes power-pulse {
+@keyframes sparkle {
   0%, 100% { 
-    transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.2);
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
   }
   50% { 
-    transform: scale(1.02);
-    box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+    transform: scale(1.1) rotate(180deg);
+    opacity: 0.8;
   }
 }
 
-.animate-power-bounce {
-  animation: power-bounce 2s infinite;
+.animate-float {
+  animation: float 3s ease-in-out infinite;
 }
 
-.animate-slide-in-bottom {
-  animation: slide-in-bottom 0.6s ease-out;
+.animate-slide-in-up {
+  animation: slide-in-up 0.8s ease-out;
 }
 
-.animate-power-pulse {
-  animation: power-pulse 2s infinite;
+.animate-sparkle {
+  animation: sparkle 2s infinite;
 }
 
 /* Efeito de hover especial para cards */
-.gym-card-hover {
+.fitness-card-hover {
   @apply transition-all duration-300 hover:scale-105 hover:shadow-2xl;
 }
 
-/* Gradiente sutil para textos de destaque */
-.performance-text {
-  background: linear-gradient(135deg, #000000 0%, #374151 100%);
+/* Gradiente para textos de destaque */
+.fitness-text {
+  background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Indicador de força/performance */
-.strength-indicator {
-  @apply relative h-1 bg-gray-200 rounded-full overflow-hidden;
+/* Logo circular */
+.fitness-logo {
+  @apply flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-pink-400 to-pink-500 shadow-lg animate-float;
 }
 
-.strength-indicator::after {
-  content: '';
-  @apply absolute left-0 top-0 h-full bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-full transition-all duration-1000;
+/* Elementos decorativos */
+.decoration-sparkle {
+  @apply absolute opacity-20 animate-sparkle;
 }

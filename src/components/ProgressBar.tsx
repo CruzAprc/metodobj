@@ -15,7 +15,7 @@ const ProgressBar = ({ current, total, label }: ProgressBarProps) => {
       {label && (
         <div className="flex justify-between items-center mb-3">
           <span className="text-sm font-semibold text-gray-700">{label}</span>
-          <span className="text-sm font-bold text-black bg-gray-100 px-3 py-1 rounded-full">
+          <span className="text-sm font-bold text-pink-600 bg-pink-50 px-3 py-1 rounded-full">
             {current}/{total}
           </span>
         </div>

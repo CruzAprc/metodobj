@@ -115,7 +115,7 @@ const DadosPessoais = () => {
         if (saved) {
           // Salvar no localStorage para usar em outras partes da aplicação
           localStorage.setItem('dadosPessoais', JSON.stringify(formData));
-          navigate('/quiz-alimentar/1');
+          navigate('/loading'); // Redirecionar para a página de loading
         }
       }
     }

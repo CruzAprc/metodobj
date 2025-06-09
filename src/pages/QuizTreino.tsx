@@ -72,7 +72,7 @@ const QuizTreino = () => {
     },
     {
       id: 6,
-      title: "🔹 Foco em Regiões",
+      title: "🎯 Foco em Regiões",
       question: "Tem alguma área do corpo que você deseja dar mais atenção?",
       options: [
         { value: 'bracos_ombros', label: 'Braços e ombros' },
@@ -84,7 +84,7 @@ const QuizTreino = () => {
     },
     {
       id: 7,
-      title: "🔹 Intensidade Preferida",
+      title: "🔥 Intensidade Preferida",
       question: "Qual nível de intensidade você prefere?",
       options: [
         { value: 'leve', label: 'Leve – quero começar devagar' },
@@ -94,7 +94,7 @@ const QuizTreino = () => {
     },
     {
       id: 8,
-      title: "🔹 Maior Desafio",
+      title: "🚧 Maior Desafio",
       question: "Qual seu maior desafio hoje?",
       options: [
         { value: 'tempo', label: 'Falta de tempo' },

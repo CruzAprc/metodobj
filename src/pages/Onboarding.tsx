@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,19 +9,34 @@ const OnboardingOtimizado = () => {
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const testimonials = [{
     name: "Maria Silva",
-    resultado: "Perdeu 8kg em 2 meses",
-    texto: "O App da Juju transformou minha vida! Método simples e eficaz.",
+    resultado: "Perdeu 14kg em 2 meses",
+    texto: "Resultado incrível! O App da Juju mudou minha vida completamente.",
     avatar: "👩‍💼"
   }, {
     name: "Ana Costa",
-    resultado: "Ganhou massa muscular",
-    texto: "Treinos personalizados que se encaixam na minha rotina!",
+    resultado: "Ganhou 5kg de massa muscular",
+    texto: "Treinos personalizados que se encaixam perfeitamente na minha rotina!",
     avatar: "👩‍🔬"
   }, {
     name: "Carla Mendes",
-    resultado: "Melhorou condicionamento",
-    texto: "Em 3 meses me sinto mais forte e confiante!",
+    resultado: "Perdeu 18kg em 4 meses",
+    texto: "Método revolucionário! Me sinto mais forte e confiante do que nunca!",
     avatar: "👩‍🎨"
+  }, {
+    name: "Juliana Santos",
+    resultado: "Definiu o corpo em 3 meses",
+    texto: "Finalmente encontrei algo que funciona de verdade para mim!",
+    avatar: "👩‍⚕️"
+  }, {
+    name: "Patrícia Lima",
+    resultado: "Eliminou 22kg em 6 meses",
+    texto: "Transformação total! Recuperei minha autoestima e saúde.",
+    avatar: "👩‍🏫"
+  }, {
+    name: "Fernanda Oliveira",
+    resultado: "Conquistou o corpo dos sonhos",
+    texto: "Método simples, eficaz e que realmente se adapta à vida real!",
+    avatar: "👩‍💻"
   }];
   React.useEffect(() => {
     const interval = setInterval(() => {

@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { 
   Coffee, 
   Utensils, 
@@ -12,12 +12,15 @@ import {
   RefreshCw,
   CheckCircle,
   AlertCircle,
+  Home,
   User
 } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import Header from "@/components/Header";
 
 const DashboardDieta = () => {
+  const navigate = useNavigate();
   const [userData, setUserData] = useState<any>(null);
   const [dietData, setDietData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -220,39 +223,31 @@ const DashboardDieta = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
       
-      {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-pink-100 sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-pink-400 to-pink-600 rounded-full flex items-center justify-center">
-                <ChefHat className="text-white" size={24} />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-800">Sua Dieta 🍽️</h1>
-                <p className="text-sm text-gray-600">Plano alimentar personalizado</p>
-              </div>
-            </div>
-            
-            <div className="text-right">
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <Clock size={14} />
-                <span>Atualizado: {lastUpdate.toLocaleTimeString()}</span>
-              </div>
-              <button
-                onClick={simulateNewDietData}
-                className="mt-1 text-pink-600 hover:text-pink-700 transition-colors"
-                disabled={loading}
-              >
-                <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Header com navegação */}
+      <Header 
+        showBack={true} 
+        onBack={() => navigate('/dashboard')}
+        title="Dieta"
+      />
 
+      {/* Navegação rápida */}
       <div className="max-w-4xl mx-auto p-4">
-        
+        <div className="flex gap-3 mb-6">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition-all"
+          >
+            <Home size={16} />
+            <span className="text-sm">Dashboard</span>
+          </button>
+          <button
+            onClick={() => navigate('/dashboard/treino')}
+            className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition-all"
+          >
+            <span className="text-sm">💪 Ver Treinos</span>
+          </button>
+        </div>
+
         {userData?.quiz_alimentar_concluido ? (
           <>
             {/* Resumo diário */}

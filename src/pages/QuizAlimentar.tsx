@@ -260,9 +260,15 @@ const QuizAlimentar = () => {
           <div className="space-y-3">
             <button 
               onClick={handleNext}
-              className="w-full juju-button"
+              className="w-full relative overflow-hidden bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white font-bold py-5 px-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 group"
             >
-              {currentStep === 5 ? 'Finalizar Anamnese Alimentar' : 'Continuar'}
+              <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                <span className="animate-pulse">✨</span>
+                {currentStep === 5 ? 'Finalizar Anamnese Alimentar' : 'Continuar'}
+                <span className="animate-pulse">✨</span>
+              </span>
             </button>
             
             {currentStep === 5 && (

@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import EditProfileModal from '@/components/EditProfileModal';
+import ProgressCalendar from '@/components/ProgressCalendar';
 
 // Componente Dock Item
 const DockItem = ({ children, onClick, mouseX, spring, distance, magnification, baseItemSize, className = "" }: any) => {
@@ -356,6 +357,9 @@ const AppJujuDashboard = () => {
                     </p>
                   </motion.div>
                 </div>
+
+                {/* Novo componente de calendário de progresso */}
+                <ProgressCalendar userData={userData} />
 
                 {/* Botões de ação rápida */}
                 <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">

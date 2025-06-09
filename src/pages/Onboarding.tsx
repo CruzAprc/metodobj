@@ -49,10 +49,8 @@ const OnboardingOtimizado = () => {
             <img src="/lovable-uploads/02d55ca0-b017-487b-a9a2-275d8eef05b6.png" alt="JS Logo" className="w-full h-full object-contain" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-              App da Juju
-            </h1>
-            <p className="text-xs text-gray-500">Sua transformação começa aqui</p>
+            
+            
           </div>
         </div>
       </motion.header>

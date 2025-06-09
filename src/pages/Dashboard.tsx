@@ -280,10 +280,9 @@ const AppJujuDashboard = () => {
                     className="bg-gradient-to-br from-pink-100 to-pink-200 p-4 rounded-2xl border border-pink-200"
                   >
                     <Calendar className="text-pink-500 mx-auto mb-2" size={24} />
-                    <p className="text-sm text-gray-600">Quiz Completos</p>
+                    <p className="text-sm text-gray-600">Dias no App</p>
                     <p className="font-bold text-gray-800">
-                      {userData?.quiz_alimentar_concluido && userData?.quiz_treino_concluido ? '2/2' : 
-                       userData?.quiz_alimentar_concluido || userData?.quiz_treino_concluido ? '1/2' : '0/2'}
+                      {userData?.dias_no_app || 0} dias
                     </p>
                   </motion.div>
                   

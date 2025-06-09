@@ -762,6 +762,7 @@ export type Database = {
         Row: {
           created_at: string
           data_registro: string
+          dias_no_app: number
           email: string
           id: string
           nome: string
@@ -774,6 +775,7 @@ export type Database = {
         Insert: {
           created_at?: string
           data_registro?: string
+          dias_no_app?: number
           email: string
           id?: string
           nome: string
@@ -786,6 +788,7 @@ export type Database = {
         Update: {
           created_at?: string
           data_registro?: string
+          dias_no_app?: number
           email?: string
           id?: string
           nome?: string

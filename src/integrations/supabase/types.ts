@@ -347,6 +347,39 @@ export type Database = {
         }
         Relationships: []
       }
+      evaluation_photos: {
+        Row: {
+          ai_analysis: Json | null
+          created_at: string
+          evaluation_period: string
+          id: string
+          photo_type: string
+          photo_url: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          created_at?: string
+          evaluation_period: string
+          id?: string
+          photo_type: string
+          photo_url: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_analysis?: Json | null
+          created_at?: string
+          evaluation_period?: string
+          id?: string
+          photo_type?: string
+          photo_url?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       expert_voices: {
         Row: {
           etapa_audio: number | null
@@ -620,6 +653,42 @@ export type Database = {
           },
         ]
       }
+      monthly_evaluations: {
+        Row: {
+          body_measurements: Json | null
+          comparative_analysis: Json | null
+          created_at: string
+          evaluation_month: string
+          id: string
+          photos: Json
+          progress_score: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body_measurements?: Json | null
+          comparative_analysis?: Json | null
+          created_at?: string
+          evaluation_month: string
+          id?: string
+          photos: Json
+          progress_score?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body_measurements?: Json | null
+          comparative_analysis?: Json | null
+          created_at?: string
+          evaluation_month?: string
+          id?: string
+          photos?: Json
+          progress_score?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       physical_conditions: {
         Row: {
           descricao: string
@@ -879,6 +948,36 @@ export type Database = {
           lesoes?: string
           objetivo?: string
           tempo_sessao?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_evaluation_access: {
+        Row: {
+          created_at: string
+          days_required: number
+          id: string
+          is_unlocked: boolean
+          unlock_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          days_required?: number
+          id?: string
+          is_unlocked?: boolean
+          unlock_date: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          days_required?: number
+          id?: string
+          is_unlocked?: boolean
+          unlock_date?: string
           updated_at?: string
           user_id?: string
         }

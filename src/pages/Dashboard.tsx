@@ -10,7 +10,12 @@ import {
   User, 
   Settings,
   Calendar,
-  TrendingUp
+  TrendingUp,
+  Clock,
+  ChefHat,
+  RefreshCw,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
@@ -156,9 +161,60 @@ const AppJujuDashboard = () => {
   const [workoutData, setWorkoutData] = useState<any>(null);
   const [userPhotos, setUserPhotos] = useState<any[]>([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [dietLoading, setDietLoading] = useState(false);
+  const [dietError, setDietError] = useState(null);
+  const [lastUpdate, setLastUpdate] = useState(new Date());
   const { user } = useAuth();
 
   const iconSize = 22;
+
+  // Mock data para demonstração da nova dieta
+  const mockDietData = {
+    cafeDaManha: {
+      nome: "Café da Manhã Energético",
+      horario: "07:00",
+      calorias: 350,
+      macros: { proteina: 25, carboidrato: 35, gordura: 12 },
+      alimentos: [
+        { nome: "Ovos mexidos", quantidade: "2 unidades", calorias: 140 },
+        { nome: "Pão integral", quantidade: "2 fatias", calorias: 120 },
+        { nome: "Abacate", quantidade: "1/4 unidade", calorias: 90 }
+      ]
+    },
+    almoco: {
+      nome: "Almoço Balanceado", 
+      horario: "12:30",
+      calorias: 450,
+      macros: { proteina: 35, carboidrato: 45, gordura: 15 },
+      alimentos: [
+        { nome: "Peito de frango grelhado", quantidade: "150g", calorias: 250 },
+        { nome: "Arroz integral", quantidade: "3 colheres", calorias: 120 },
+        { nome: "Salada verde", quantidade: "1 prato", calorias: 50 },
+        { nome: "Feijão", quantidade: "1 concha", calorias: 80 }
+      ]
+    },
+    lanche: {
+      nome: "Lanche da Tarde",
+      horario: "15:30", 
+      calorias: 200,
+      macros: { proteina: 20, carboidrato: 15, gordura: 8 },
+      alimentos: [
+        { nome: "Whey protein", quantidade: "1 scoop", calorias: 120 },
+        { nome: "Banana", quantidade: "1 unidade", calorias: 80 }
+      ]
+    },
+    jantar: {
+      nome: "Jantar Leve",
+      horario: "19:00",
+      calorias: 350,
+      macros: { proteina: 30, carboidrato: 25, gordura: 12 },
+      alimentos: [
+        { nome: "Salmão grelhado", quantidade: "120g", calorias: 200 },
+        { nome: "Batata doce", quantidade: "100g", calorias: 90 },
+        { nome: "Brócolis refogado", quantidade: "1 xícara", calorias: 60 }
+      ]
+    }
+  };
 
   // Carregar dados do usuário
   useEffect(() => {
@@ -231,30 +287,59 @@ const AppJujuDashboard = () => {
     loadUserData(); // This will refresh userData and update userName
   };
 
-  // Calcular progresso baseado em múltiplos fatores
-  const calculateProgress = () => {
-    let progress = 0;
+  // Simular carregamento de dieta atualizada
+  const simulateNewDietData = async () => {
+    setDietLoading(true);
+    setDietError(null);
     
-    // Quiz alimentar (25%)
-    if (userData?.quiz_alimentar_concluido) {
-      progress += 25;
+    try {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      setLastUpdate(new Date());
+    } catch (err) {
+      setDietError("Erro ao carregar dados da dieta");
+    } finally {
+      setDietLoading(false);
     }
-    
-    // Quiz treino (25%)
-    if (userData?.quiz_treino_concluido) {
-      progress += 25;
+  };
+
+  // Configuração das refeições
+  const refeicoes = [
+    {
+      id: 'cafeDaManha',
+      nome: 'Café da Manhã',
+      emoji: '☀️',
+      icon: <Coffee className="text-orange-500" size={24} />,
+      cor: 'from-orange-100 to-orange-200 border-orange-200',
+      corTexto: 'text-orange-700'
+    },
+    {
+      id: 'almoco',
+      nome: 'Almoço',
+      emoji: '🍽️',
+      icon: <Utensils className="text-green-500" size={24} />,
+      cor: 'from-green-100 to-green-200 border-green-200',
+      corTexto: 'text-green-700'
+    },
+    {
+      id: 'lanche',
+      nome: 'Lanche',
+      emoji: '🥪',
+      icon: <Sandwich className="text-yellow-500" size={24} />,
+      cor: 'from-yellow-100 to-yellow-200 border-yellow-200',
+      corTexto: 'text-yellow-700'
+    },
+    {
+      id: 'jantar',
+      nome: 'Jantar',
+      emoji: '🌙',
+      icon: <Moon className="text-blue-500" size={24} />,
+      cor: 'from-blue-100 to-blue-200 border-blue-200',
+      corTexto: 'text-blue-700'
     }
-    
-    // Fotos enviadas (30% - máximo 3 tipos: frente, costas, lado)
-    const uniquePhotoTypes = [...new Set(userPhotos.map(photo => photo.photo_type))];
-    const photoProgress = Math.min(uniquePhotoTypes.length / 3, 1) * 30;
-    progress += photoProgress;
-    
-    // Dias no app (20% - máximo aos 30 dias)
-    const diasProgress = Math.min((userData?.dias_no_app || 0) / 30, 1) * 20;
-    progress += diasProgress;
-    
-    return Math.round(progress);
+  ];
+
+  const calcularCaloriasTotais = () => {
+    return Object.values(mockDietData).reduce((total, refeicao) => total + (refeicao?.calorias || 0), 0);
   };
 
   const dockItems = [
@@ -391,63 +476,172 @@ const AppJujuDashboard = () => {
             </TabsContent>
 
             <TabsContent value="dieta" className="mt-0">
-              <div className="text-center space-y-6">
-                <h2 className="text-3xl font-bold text-gray-800">Sua Dieta 🍽️</h2>
-                {dietData ? (
-                  <div className="space-y-4 max-w-2xl mx-auto">
-                    <div className="text-left bg-white p-6 rounded-2xl shadow-lg">
-                      <h3 className="text-xl font-bold mb-4 text-pink-600">Restrições Alimentares</h3>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <h4 className="font-semibold text-gray-700 flex items-center gap-2">
-                            <Coffee size={16} /> Café da Manhã
-                          </h4>
-                          <p className="text-sm text-gray-600">
-                            {dietData.cafe_da_manha?.naoGosta?.length > 0 
-                              ? `Não gosta de: ${dietData.cafe_da_manha.naoGosta.join(', ')}`
-                              : 'Nenhuma restrição'}
-                          </p>
-                        </div>
-
-                        <div className="space-y-2">
-                          <h4 className="font-semibold text-gray-700 flex items-center gap-2">
-                            <Utensils size={16} /> Almoço
-                          </h4>
-                          <p className="text-sm text-gray-600">
-                            {dietData.almoco?.naoGosta?.length > 0 
-                              ? `Não gosta de: ${dietData.almoco.naoGosta.join(', ')}`
-                              : 'Nenhuma restrição'}
-                          </p>
-                        </div>
-
-                        <div className="space-y-2">
-                          <h4 className="font-semibold text-gray-700 flex items-center gap-2">
-                            <Sandwich size={16} /> Lanche
-                          </h4>
-                          <p className="text-sm text-gray-600">
-                            {dietData.lanche?.naoGosta?.length > 0 
-                              ? `Não gosta de: ${dietData.lanche.naoGosta.join(', ')}`
-                              : 'Nenhuma restrição'}
-                          </p>
-                        </div>
-
-                        <div className="space-y-2">
-                          <h4 className="font-semibold text-gray-700 flex items-center gap-2">
-                            <Moon size={16} /> Jantar
-                          </h4>
-                          <p className="text-sm text-gray-600">
-                            {dietData.jantar?.naoGosta?.length > 0 
-                              ? `Não gosta de: ${dietData.jantar.naoGosta.join(', ')}`
-                              : 'Nenhuma restrição'}
-                          </p>
-                        </div>
+              <div className="space-y-6">
+                {/* Header da dieta */}
+                <div className="bg-white/80 backdrop-blur-sm border border-pink-100 rounded-2xl p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-12 h-12 bg-gradient-to-br from-pink-400 to-pink-600 rounded-full flex items-center justify-center">
+                        <ChefHat className="text-white" size={24} />
+                      </div>
+                      <div>
+                        <h2 className="text-xl font-bold text-gray-800">Sua Dieta 🍽️</h2>
+                        <p className="text-sm text-gray-600">Plano alimentar personalizado</p>
                       </div>
                     </div>
+                    
+                    <div className="text-right">
+                      <div className="flex items-center space-x-2 text-sm text-gray-500">
+                        <Clock size={14} />
+                        <span>Atualizado: {lastUpdate.toLocaleTimeString()}</span>
+                      </div>
+                      <button
+                        onClick={simulateNewDietData}
+                        className="mt-1 text-pink-600 hover:text-pink-700 transition-colors"
+                        disabled={dietLoading}
+                      >
+                        <RefreshCw size={16} className={dietLoading ? 'animate-spin' : ''} />
+                      </button>
+                    </div>
                   </div>
+                </div>
+
+                {userData?.quiz_alimentar_concluido ? (
+                  <>
+                    {/* Resumo diário */}
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="bg-white rounded-2xl p-6 shadow-lg border border-pink-100"
+                    >
+                      <div className="flex items-center space-x-3 mb-4">
+                        <Calendar className="text-pink-500" size={24} />
+                        <h3 className="text-xl font-bold text-gray-800">Resumo do Dia</h3>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="text-center p-4 bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl">
+                          <p className="text-2xl font-bold text-pink-600">{calcularCaloriasTotais()}</p>
+                          <p className="text-sm text-gray-600">Calorias Totais</p>
+                        </div>
+                        <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
+                          <p className="text-2xl font-bold text-blue-600">4</p>
+                          <p className="text-sm text-gray-600">Refeições</p>
+                        </div>
+                        <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl">
+                          <p className="text-2xl font-bold text-green-600">Saudável</p>
+                          <p className="text-sm text-gray-600">Objetivo</p>
+                        </div>
+                        <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl">
+                          <CheckCircle className="text-purple-600 mx-auto mb-1" size={24} />
+                          <p className="text-sm text-gray-600">Plano Ativo</p>
+                        </div>
+                      </div>
+                    </motion.div>
+
+                    {/* Grid de refeições */}
+                    <div className="grid gap-6 md:grid-cols-2">
+                      {refeicoes.map((tipoRefeicao, index) => {
+                        const refeicaoData = mockDietData[tipoRefeicao.id];
+                        
+                        return (
+                          <motion.div
+                            key={tipoRefeicao.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                            className={`bg-gradient-to-br ${tipoRefeicao.cor} rounded-2xl p-6 border shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-105`}
+                          >
+                            {/* Header da refeição */}
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="flex items-center space-x-3">
+                                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
+                                  {tipoRefeicao.icon}
+                                </div>
+                                <div>
+                                  <h4 className={`font-bold ${tipoRefeicao.corTexto}`}>
+                                    {tipoRefeicao.nome}
+                                  </h4>
+                                  <p className="text-sm text-gray-600">
+                                    {refeicaoData?.horario || '--:--'}
+                                  </p>
+                                </div>
+                              </div>
+                              <span className="text-2xl">{tipoRefeicao.emoji}</span>
+                            </div>
+
+                            {/* Informações nutricionais */}
+                            {refeicaoData && (
+                              <div className="space-y-3">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm text-gray-600">Calorias:</span>
+                                  <span className={`font-bold ${tipoRefeicao.corTexto}`}>
+                                    {refeicaoData.calorias} kcal
+                                  </span>
+                                </div>
+                                
+                                {/* Macros */}
+                                <div className="grid grid-cols-3 gap-2 text-xs">
+                                  <div className="text-center p-2 bg-white/50 rounded-lg">
+                                    <p className="font-medium">Proteína</p>
+                                    <p className={tipoRefeicao.corTexto}>{refeicaoData.macros.proteina}g</p>
+                                  </div>
+                                  <div className="text-center p-2 bg-white/50 rounded-lg">
+                                    <p className="font-medium">Carbo</p>
+                                    <p className={tipoRefeicao.corTexto}>{refeicaoData.macros.carboidrato}g</p>
+                                  </div>
+                                  <div className="text-center p-2 bg-white/50 rounded-lg">
+                                    <p className="font-medium">Gordura</p>
+                                    <p className={tipoRefeicao.corTexto}>{refeicaoData.macros.gordura}g</p>
+                                  </div>
+                                </div>
+
+                                {/* Lista de alimentos */}
+                                <div className="space-y-2">
+                                  <p className="text-sm font-medium text-gray-700">Alimentos:</p>
+                                  <div className="space-y-1 max-h-32 overflow-y-auto">
+                                    {refeicaoData.alimentos.map((alimento, idx) => (
+                                      <div key={idx} className="text-xs bg-white/30 p-2 rounded-lg">
+                                        <div className="flex justify-between">
+                                          <span className="font-medium">{alimento.nome}</span>
+                                          <span className={tipoRefeicao.corTexto}>{alimento.calorias} kcal</span>
+                                        </div>
+                                        <p className="text-gray-600">{alimento.quantidade}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Footer com informações */}
+                    <motion.div 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.5 }}
+                      className="text-center"
+                    >
+                      <p className="text-sm text-gray-500">
+                        💡 Sua dieta é atualizada automaticamente baseada nas suas preferências
+                      </p>
+                    </div>
+                  </>
                 ) : (
                   <div className="text-center py-12">
-                    <p className="text-gray-500 text-lg">Complete o quiz alimentar para ver suas preferências aqui!</p>
+                    <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md mx-auto">
+                      <AlertCircle className="text-gray-400 mx-auto mb-4" size={48} />
+                      <h3 className="text-xl font-bold text-gray-800 mb-2">Dieta em Preparação</h3>
+                      <p className="text-gray-500 text-lg mb-4">Complete o quiz alimentar para ver suas refeições personalizadas aqui!</p>
+                      <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-4 rounded-xl">
+                        <p className="text-sm text-gray-600">
+                          ✨ A Juju está esperando suas preferências para criar o plano perfeito!
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

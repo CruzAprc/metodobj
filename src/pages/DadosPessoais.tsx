@@ -6,19 +6,33 @@ import { ArrowRight, ArrowLeft, User, Calendar, Weight, Ruler } from 'lucide-rea
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
+interface FormData {
+  nomeCompleto: string;
+  idade: string;
+  peso: string;
+  altura: string;
+}
+
+interface Errors {
+  nomeCompleto?: string;
+  idade?: string;
+  peso?: string;
+  altura?: string;
+}
+
 const DadosPessoais = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     nomeCompleto: '',
     idade: '',
     peso: '',
     altura: ''
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState<Errors>({});
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Limpa o erro quando o usuário digita
     if (errors[field]) {
@@ -26,8 +40,8 @@ const DadosPessoais = () => {
     }
   };
 
-  const validateStep = (step) => {
-    const newErrors = {};
+  const validateStep = (step: number): boolean => {
+    const newErrors: Errors = {};
     
     switch (step) {
       case 1:
@@ -40,21 +54,21 @@ const DadosPessoais = () => {
       case 2:
         if (!formData.idade) {
           newErrors.idade = 'Precisamos da sua idade para criar o plano perfeito! 🎂';
-        } else if (formData.idade < 16 || formData.idade > 80) {
+        } else if (Number(formData.idade) < 16 || Number(formData.idade) > 80) {
           newErrors.idade = 'Idade deve estar entre 16 e 80 anos! 💪';
         }
         break;
       case 3:
         if (!formData.peso) {
           newErrors.peso = 'Seu peso atual nos ajuda a personalizar sua dieta! ⚖️';
-        } else if (formData.peso < 30 || formData.peso > 200) {
+        } else if (Number(formData.peso) < 30 || Number(formData.peso) > 200) {
           newErrors.peso = 'Digite um peso válido entre 30kg e 200kg! 💕';
         }
         break;
       case 4:
         if (!formData.altura) {
           newErrors.altura = 'Sua altura é essencial para calcular suas necessidades! 📏';
-        } else if (formData.altura < 120 || formData.altura > 220) {
+        } else if (Number(formData.altura) < 120 || Number(formData.altura) > 220) {
           newErrors.altura = 'Digite uma altura válida entre 120cm e 220cm! ✨';
         }
         break;
@@ -64,8 +78,8 @@ const DadosPessoais = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const saveToDatabase = async () => {
-    if (!user) return;
+  const saveToDatabase = async (): Promise<boolean> => {
+    if (!user) return false;
 
     try {
       // Atualizar dados pessoais na tabela teste_app
@@ -121,7 +135,7 @@ const DadosPessoais = () => {
       icon: <User size={32} className="text-pink-500" />,
       title: "Qual é o seu nome?",
       subtitle: "Queremos te conhecer melhor! 💕",
-      field: "nomeCompleto",
+      field: "nomeCompleto" as keyof FormData,
       placeholder: "Digite seu nome completo",
       type: "text"
     },
@@ -130,7 +144,7 @@ const DadosPessoais = () => {
       icon: <Calendar size={32} className="text-purple-500" />,
       title: "Quantos anos você tem?",
       subtitle: "Isso nos ajuda a personalizar seu plano! 🎂",
-      field: "idade",
+      field: "idade" as keyof FormData,
       placeholder: "Ex: 25",
       type: "number"
     },
@@ -139,7 +153,7 @@ const DadosPessoais = () => {
       icon: <Weight size={32} className="text-blue-500" />,
       title: "Qual é o seu peso atual?",
       subtitle: "Sem julgamentos, apenas para criar sua dieta! ⚖️",
-      field: "peso",
+      field: "peso" as keyof FormData,
       placeholder: "Ex: 65",
       type: "number",
       unit: "kg"
@@ -149,7 +163,7 @@ const DadosPessoais = () => {
       icon: <Ruler size={32} className="text-green-500" />,
       title: "Qual é a sua altura?",
       subtitle: "Última informação para começarmos! 📏",
-      field: "altura",
+      field: "altura" as keyof FormData,
       placeholder: "Ex: 165",
       type: "number",
       unit: "cm"

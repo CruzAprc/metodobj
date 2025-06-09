@@ -14,6 +14,8 @@ import LoadingTreino from "./pages/LoadingTreino";
 import QuizAlimentar from "./pages/QuizAlimentar";
 import QuizTreino from "./pages/QuizTreino";
 import Dashboard from "./pages/Dashboard";
+import DashboardDieta from "./pages/DashboardDieta";
+import DashboardTreino from "./pages/DashboardTreino";
 import Avaliacao from "./pages/Avaliacao";
 import NotFound from "./pages/NotFound";
 
@@ -37,6 +39,8 @@ const App = () => (
             <Route path="/quiz-alimentar/:etapa" element={<QuizAlimentar />} />
             <Route path="/quiz-treino/:pergunta" element={<QuizTreino />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/dieta" element={<DashboardDieta />} />
+            <Route path="/dashboard/treino" element={<DashboardTreino />} />
             <Route path="/avaliacao" element={<Avaliacao />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/Header';
@@ -16,7 +15,7 @@ const QuizTreino = () => {
   const questions = [
     {
       id: 1,
-      title: "🔹 Histórico de Lesões",
+      title: "🩹 Histórico de Lesões",
       question: "Você já teve alguma lesão ou limitação física?",
       options: [
         { value: 'nao', label: 'Não' },
@@ -165,7 +164,7 @@ const QuizTreino = () => {
       <Header showBack onBack={handleBack} title="Anamnese de Treino" />
       
       <div className="max-w-2xl mx-auto px-4 py-6">
-        <ProgressBar current={currentQuestion} total={8} label="Progresso do Quiz de Treino" />
+        <ProgressBar current={currentQuestion} total={8} label="Anamnese de Treino" />
         
         <div className="juju-card animate-fade-in-up">
           <div className="text-center mb-8">
@@ -180,28 +179,28 @@ const QuizTreino = () => {
           <div className="space-y-4 mb-8">
             {currentQ.options.map((option) => (
               <div key={option.value}>
-                <label className="flex items-start space-x-3 p-4 border-2 border-pink-200 rounded-2xl cursor-pointer hover:border-pink-400 hover:bg-pink-50 transition-all duration-300">
+                <label className="flex items-start space-x-4 p-5 border-2 border-pink-200 rounded-2xl cursor-pointer hover:border-pink-400 hover:bg-pink-50 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg">
                   <input
                     type="radio"
                     name={`question${currentQuestion}`}
                     value={option.value}
                     checked={selectedAnswer === option.value}
                     onChange={(e) => setSelectedAnswer(e.target.value)}
-                    className="mt-1 text-pink-500 focus:ring-pink-400"
+                    className="mt-1.5 w-5 h-5 text-pink-500 focus:ring-pink-400 focus:ring-2"
                   />
-                  <span className="text-gray-700 font-medium flex-1">
+                  <span className="text-gray-700 font-medium flex-1 leading-relaxed">
                     {option.label}
                   </span>
                 </label>
                 
                 {option.hasCustom && selectedAnswer === option.value && (
-                  <div className="mt-3 ml-6">
+                  <div className="mt-4 ml-9 animate-fade-in">
                     <input
                       type="text"
                       value={customAnswer}
                       onChange={(e) => setCustomAnswer(e.target.value)}
                       placeholder="Especifique sua lesão..."
-                      className="w-full p-3 border border-pink-300 rounded-xl focus:border-pink-500 focus:ring-2 focus:ring-pink-200"
+                      className="w-full p-4 border-2 border-pink-300 rounded-xl focus:border-pink-500 focus:ring-2 focus:ring-pink-200 transition-all duration-300 font-medium"
                     />
                   </div>
                 )}
@@ -211,10 +210,16 @@ const QuizTreino = () => {
 
           <button 
             onClick={handleNext}
-            className="w-full juju-button"
+            className="w-full relative overflow-hidden bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white font-bold py-5 px-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 group"
             disabled={!selectedAnswer}
           >
-            {currentQuestion === 8 ? 'Finalizar Quiz' : 'Próxima Pergunta'}
+            <div className="absolute inset-0 bg-gradient-to-r from-pink-400 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="absolute inset-0 bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+            <span className="relative z-10 flex items-center justify-center gap-2">
+              <span className="animate-pulse">✨</span>
+              {currentQuestion === 8 ? 'Finalizar Quiz' : 'Próxima Pergunta'}
+              <span className="animate-pulse">✨</span>
+            </span>
           </button>
         </div>
       </div>

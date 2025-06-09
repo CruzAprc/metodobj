@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -73,7 +74,7 @@ const Onboarding = () => {
           </div>
 
           <button 
-            onClick={() => navigate('/quiz-alimentar/1')}
+            onClick={() => navigate('/dados-pessoais')}
             className="w-full fitness-button text-xl py-5"
           >
             🚀 Iniciar Avaliação

@@ -112,10 +112,10 @@ const Cadastro = () => {
       <div className="max-w-sm w-full mx-4">
         <div className="fitness-card animate-slide-in-up">
           <div className="text-center mb-8">
-            {/* Logo com imagem */}
-            <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6">
+            {/* Logo atualizada */}
+            <div className="flex items-center justify-center w-24 h-24 mx-auto mb-6">
               <img 
-                src="/lovable-uploads/af8f94bb-3ae5-412a-8ba9-17df5ae3e849.png" 
+                src="/lovable-uploads/573712ac-9063-4efa-ab2c-2291286e6046.png" 
                 alt="App da Juju Logo" 
                 className="w-full h-full object-contain"
               />
@@ -126,7 +126,7 @@ const Cadastro = () => {
             </h2>
             <p className="text-gray-600 font-medium mb-2">Comece agora!</p>
             <p className="text-gray-500 text-sm">
-              Sua transformação começa aqui! 💪✨
+              Sua transformação começa aqui!
             </p>
           </div>
 

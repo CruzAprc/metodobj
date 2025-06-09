@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,9 +9,9 @@ const Onboarding = () => {
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="fitness-card animate-slide-in-up text-center">
           <div className="mb-8">
-            <div className="flex items-center justify-center w-20 h-20 mx-auto mb-6">
+            <div className="flex items-center justify-center w-24 h-24 mx-auto mb-6">
               <img 
-                src="/lovable-uploads/af8f94bb-3ae5-412a-8ba9-17df5ae3e849.png" 
+                src="/lovable-uploads/573712ac-9063-4efa-ab2c-2291286e6046.png" 
                 alt="App da Juju Logo" 
                 className="w-full h-full object-contain"
               />
@@ -21,7 +20,7 @@ const Onboarding = () => {
               Bem-vinda ao <span className="fitness-text">App da Juju</span>!
             </h1>
             <p className="text-xl text-gray-600 mb-8 font-medium">
-              Sua jornada de transformação e performance começa aqui! 💪✨
+              Sua jornada de transformação e performance começa aqui!
             </p>
           </div>
 

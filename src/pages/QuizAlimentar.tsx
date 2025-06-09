@@ -226,7 +226,7 @@ const QuizAlimentar = () => {
       // Quiz concluído - salvar no banco
       await saveToDatabase(newQuizData);
       localStorage.setItem('quizAlimentarConcluido', 'true');
-      navigate('/quiz-treino/1');
+      navigate('/loading-treino');
     }
   };
 
@@ -245,7 +245,7 @@ const QuizAlimentar = () => {
       // Quiz concluído - salvar no banco
       await saveToDatabase(newQuizData);
       localStorage.setItem('quizAlimentarConcluido', 'true');
-      navigate('/quiz-treino/1');
+      navigate('/loading-treino');
     }
   };
 

@@ -10,6 +10,7 @@ import Cadastro from "./pages/Cadastro";
 import Onboarding from "./pages/Onboarding";
 import DadosPessoais from "./pages/DadosPessoais";
 import Loading from "./pages/Loading";
+import LoadingTreino from "./pages/LoadingTreino";
 import QuizAlimentar from "./pages/QuizAlimentar";
 import QuizTreino from "./pages/QuizTreino";
 import Dashboard from "./pages/Dashboard";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/dados-pessoais" element={<DadosPessoais />} />
             <Route path="/loading" element={<Loading />} />
+            <Route path="/loading-treino" element={<LoadingTreino />} />
             <Route path="/quiz-alimentar/:etapa" element={<QuizAlimentar />} />
             <Route path="/quiz-treino/:pergunta" element={<QuizTreino />} />
             <Route path="/dashboard" element={<Dashboard />} />

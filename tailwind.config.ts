@@ -20,7 +20,8 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				'nunito': ['Nunito', 'sans-serif'],
+				'inter': ['Inter', 'sans-serif'],
+				'sans': ['Inter', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
@@ -56,17 +57,17 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				juju: {
-					pink: '#FF69B4',
-					'pink-light': '#FFB6C1',
+				gym: {
+					black: '#171717',
+					gold: '#fbbf24',
+					gray: '#f1f5f9',
+					'dark-gray': '#64748b',
 				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
 				sm: 'calc(var(--radius) - 4px)',
-				'3xl': '1.5rem',
-				'4xl': '2rem',
 			},
 			keyframes: {
 				'accordion-down': {

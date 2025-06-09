@@ -89,32 +89,32 @@ const Cadastro = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen juju-gradient-bg flex items-center justify-center">
+      <div className="min-h-screen gym-gradient-bg flex items-center justify-center">
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
+          <div className="w-12 h-12 border-4 border-black border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Carregando...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen juju-gradient-bg">
+    <div className="min-h-screen gym-gradient-bg">
       <Header showBack onBack={() => navigate('/login')} />
       
-      <div className="max-w-md mx-auto px-4 py-8">
-        <div className="juju-card animate-fade-in-up">
+      <div className="max-w-md mx-auto px-4 py-6">
+        <div className="gym-card animate-slide-in-bottom">
           <div className="text-center mb-8">
-            <div className="w-20 h-20 bg-gradient-to-r from-pink-500 to-pink-400 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <span className="text-3xl">🌸</span>
+            <div className="w-20 h-20 bg-black rounded-2xl mx-auto mb-6 flex items-center justify-center animate-power-pulse">
+              <span className="text-3xl">🚀</span>
             </div>
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">Crie sua conta</h2>
-            <p className="text-gray-600">Comece sua transformação hoje mesmo!</p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Comece agora</h2>
+            <p className="text-gray-600 font-medium">Sua transformação começa aqui!</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Nome Completo *
               </label>
               <input
@@ -122,7 +122,7 @@ const Cadastro = () => {
                 name="nome"
                 value={formData.nome}
                 onChange={handleChange}
-                className="juju-input"
+                className="gym-input"
                 placeholder="Seu nome completo"
                 required
                 disabled={isSubmitting}
@@ -130,7 +130,7 @@ const Cadastro = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
                 WhatsApp *
               </label>
               <input
@@ -138,7 +138,7 @@ const Cadastro = () => {
                 name="whatsapp"
                 value={formData.whatsapp}
                 onChange={handleWhatsAppChange}
-                className="juju-input"
+                className="gym-input"
                 placeholder="(11) 99999-9999"
                 required
                 disabled={isSubmitting}
@@ -146,7 +146,7 @@ const Cadastro = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Email *
               </label>
               <input
@@ -154,7 +154,7 @@ const Cadastro = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="juju-input"
+                className="gym-input"
                 placeholder="seu@email.com"
                 required
                 disabled={isSubmitting}
@@ -162,7 +162,7 @@ const Cadastro = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Senha *
               </label>
               <input
@@ -170,7 +170,7 @@ const Cadastro = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                className="juju-input"
+                className="gym-input"
                 placeholder="••••••••"
                 required
                 minLength={6}
@@ -179,7 +179,7 @@ const Cadastro = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-800 mb-2">
                 Confirmar Senha *
               </label>
               <input
@@ -187,7 +187,7 @@ const Cadastro = () => {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="juju-input"
+                className="gym-input"
                 placeholder="••••••••"
                 required
                 minLength={6}
@@ -197,19 +197,28 @@ const Cadastro = () => {
 
             <button 
               type="submit" 
-              className="w-full juju-button"
+              className="w-full gym-button text-lg py-4 mt-6"
               disabled={isSubmitting}
             >
               {isSubmitting ? 'Criando conta...' : 'Criar Conta'}
             </button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
+          <div className="mt-8 text-center">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white text-gray-500 font-medium">ou</span>
+              </div>
+            </div>
+            
+            <p className="text-gray-600 mt-6">
               Já tem uma conta?{' '}
               <button 
                 onClick={() => navigate('/login')}
-                className="text-pink-600 font-semibold hover:text-pink-700"
+                className="text-black font-semibold hover:text-gray-700 underline"
               >
                 Faça login
               </button>

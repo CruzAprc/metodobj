@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
 import { 
@@ -225,6 +224,36 @@ const AppJujuDashboard = () => {
         { nome: "Chia", quantidade: "1 colher", calorias: 50 }
       ]
     }
+  };
+
+  // Function to calculate user progress
+  const calculateProgress = () => {
+    if (!userData) return 0;
+    
+    let progress = 0;
+    
+    // Quiz alimentar (25%)
+    if (userData.quiz_alimentar_concluido) {
+      progress += 25;
+    }
+    
+    // Quiz treino (25%)
+    if (userData.quiz_treino_concluido) {
+      progress += 25;
+    }
+    
+    // Fotos de avaliação (30%)
+    if (userPhotos.length > 0) {
+      const uniquePhotoTypes = [...new Set(userPhotos.map(photo => photo.photo_type))];
+      progress += Math.round(Math.min(uniquePhotoTypes.length / 3, 1) * 30);
+    }
+    
+    // Dias de uso (20%)
+    if (userData.dias_no_app) {
+      progress += Math.round(Math.min(userData.dias_no_app / 30, 1) * 20);
+    }
+    
+    return Math.min(progress, 100);
   };
 
   // Carregar dados do usuário

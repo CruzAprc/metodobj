@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Header from '../components/Header';
@@ -40,7 +41,7 @@ const QuizTreino = () => {
     },
     {
       id: 3,
-      title: "🔹 Tempo Disponível",
+      title: "⏰ Tempo Disponível",
       question: "Quanto tempo você tem disponível por sessão de treino?",
       options: [
         { value: 'menos_30', label: 'Menos de 30 minutos' },
@@ -229,3 +230,4 @@ const QuizTreino = () => {
 };
 
 export default QuizTreino;
+

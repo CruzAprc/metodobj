@@ -86,7 +86,7 @@ const Login = () => {
   }
 
   return <div className="min-h-screen flex flex-col items-center justify-center fitness-gradient-bg relative overflow-hidden">
-      <div className="max-w-sm w-full mx-4">
+      <div className="max-w-sm w-full mx-auto">
         <div className="fitness-card animate-slide-in-up">
           <div className="text-center mb-8">
             {/* Logo otimizada e maior */}
@@ -111,7 +111,7 @@ const Login = () => {
               )}
             </div>
             
-            <p className="text-gray-600 font-medium mb-2">Bem-vinda de volta!</p>
+            <p className="text-gray-600 font-bold mb-2">Bem-vinda de volta!</p>
             <p className="text-gray-500 text-sm">
               Sua jornada fitness continua aqui!
             </p>

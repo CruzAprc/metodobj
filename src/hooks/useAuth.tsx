@@ -9,10 +9,32 @@ interface AuthContextType {
   signUp: (email: string, password: string, nome: string, whatsapp: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  forceSignOut: () => Promise<void>;
   loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Função para limpar completamente o estado de autenticação
+const cleanupAuthState = () => {
+  // Remove todos os dados de autenticação do localStorage
+  Object.keys(localStorage).forEach((key) => {
+    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+      localStorage.removeItem(key);
+    }
+  });
+  
+  // Remove do sessionStorage também se existir
+  try {
+    Object.keys(sessionStorage || {}).forEach((key) => {
+      if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+        sessionStorage.removeItem(key);
+      }
+    });
+  } catch (error) {
+    // Ignora erros se sessionStorage não estiver disponível
+  }
+};
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -97,6 +119,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const forceSignOut = async () => {
+    try {
+      // Limpa o estado local primeiro
+      cleanupAuthState();
+      
+      // Tenta fazer logout no Supabase
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        // Ignora erros do logout
+        console.log('Logout forçado - ignorando erros do Supabase');
+      }
+      
+      // Força refresh completo da página
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Erro no logout forçado:', error);
+      // Mesmo com erro, força o refresh
+      window.location.href = '/login';
+    }
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -104,6 +148,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       signUp,
       signIn,
       signOut,
+      forceSignOut,
       loading
     }}>
       {children}

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 const Onboarding = () => {
   const navigate = useNavigate();
+  const { forceSignOut } = useAuth();
   const [currentDot, setCurrentDot] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
 
@@ -69,10 +71,24 @@ const Onboarding = () => {
     navigate('/dados-pessoais');
   };
 
+  const handleBackToLogin = async () => {
+    await forceSignOut();
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 p-3 sm:p-5">
       <div className="max-w-sm sm:max-w-md mx-auto bg-white rounded-3xl p-4 sm:p-8 shadow-2xl">
         
+        {/* Botão de voltar ao login */}
+        <div className="mb-4 text-right">
+          <button 
+            onClick={handleBackToLogin}
+            className="text-sm text-slate-500 hover:text-slate-700 underline"
+          >
+            ← Voltar ao Login
+          </button>
+        </div>
+
         {/* Logo/Image com otimização de carregamento */}
         <div className="w-full mb-6 sm:mb-8 flex items-center justify-center">
           <img 

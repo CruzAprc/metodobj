@@ -173,7 +173,7 @@ const DadosPessoais = () => {
   const currentStepData = steps[currentStep - 1];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-xl">
         
         {/* Progress bar */}
@@ -185,7 +185,7 @@ const DadosPessoais = () => {
                 className={`h-2 rounded-full transition-all duration-300 ${
                   step <= currentStep 
                     ? 'bg-blue-600 w-6' 
-                    : 'bg-gray-300 w-2'
+                    : 'bg-slate-300 w-2'
                 }`}
                 animate={{
                   scale: step === currentStep ? 1.2 : 1
@@ -195,7 +195,7 @@ const DadosPessoais = () => {
           </div>
         </div>
 
-        {/* Avatar */}
+        {/* Ícone animado */}
         <motion.div 
           key={currentStep}
           initial={{ scale: 0.8, opacity: 0 }}
@@ -203,12 +203,8 @@ const DadosPessoais = () => {
           transition={{ duration: 0.3 }}
           className="flex justify-center mb-6"
         >
-          <div className="w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden">
-            <img 
-              src="/lovable-uploads/f7148899-7e8d-4bd1-8f43-59e7ab424c77.png" 
-              alt="Método BJ Avatar"
-              className="w-full h-full object-cover"
-            />
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl flex items-center justify-center border-2 border-blue-200">
+            {currentStepData.icon}
           </div>
         </motion.div>
 
@@ -224,10 +220,10 @@ const DadosPessoais = () => {
           >
             {/* Título */}
             <div className="space-y-2">
-              <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-800">
                 {currentStepData.title}
               </h2>
-              <p className="text-gray-600 text-sm">
+              <p className="text-slate-600 text-sm">
                 {currentStepData.subtitle}
               </p>
             </div>
@@ -250,7 +246,7 @@ const DadosPessoais = () => {
                   min={currentStepData.type === 'number' ? '1' : undefined}
                 />
                 {currentStepData.unit && (
-                  <span className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-500 text-lg">
+                  <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-500 text-lg">
                     {currentStepData.unit}
                   </span>
                 )}
@@ -278,7 +274,7 @@ const DadosPessoais = () => {
           <button
             onClick={handlePrevious}
             className="flex items-center space-x-2 px-6 py-3 rounded-2xl font-medium transition-all
-                     text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+                     text-slate-600 hover:text-slate-800 hover:bg-slate-100"
           >
             <ArrowLeft size={18} />
             <span>Voltar</span>
@@ -299,7 +295,7 @@ const DadosPessoais = () => {
 
         {/* Indicador de etapa */}
         <div className="text-center mt-6">
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-slate-400">
             Etapa {currentStep} de 4
           </p>
         </div>
@@ -309,7 +305,7 @@ const DadosPessoais = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="text-center text-gray-500 text-sm mt-6"
+          className="text-center text-slate-500 text-sm mt-6"
         >
           Estamos quase lá! Essas informações nos ajudam a criar o plano perfeito para você! 💕
         </motion.p>

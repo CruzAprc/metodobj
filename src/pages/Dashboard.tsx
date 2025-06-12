@@ -241,7 +241,7 @@ const AppJujuDashboard = () => {
     }
   };
 
-  // Toggle daily task
+  // Toggle daily task - SEM NOTIFICAÇÕES
   const toggleDailyTask = async (taskType: 'workout' | 'diet' | 'motivation') => {
     if (!user) return;
     
@@ -282,24 +282,8 @@ const AppJujuDashboard = () => {
         [taskType]: newTaskState
       }));
 
-      const taskNames = {
-        workout: 'Treino',
-        diet: 'Dieta',
-        motivation: 'Motivação'
-      };
-
-      toast({
-        title: newTaskState ? "Parabéns! 🎉" : "Desmarcado",
-        description: `${taskNames[taskType]} ${newTaskState ? 'concluído' : 'desmarcado'} para hoje!`,
-      });
-
     } catch (error) {
       console.error('Erro ao atualizar tarefa:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível atualizar a tarefa",
-        variant: "destructive"
-      });
     }
   };
 

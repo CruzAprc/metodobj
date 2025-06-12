@@ -75,19 +75,19 @@ const Onboarding = () => {
         </div>
 
         {/* Main Video Card */}
-        <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl p-8 text-white text-center mb-6 relative overflow-hidden">
+        <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl p-10 text-white text-center mb-6 relative overflow-hidden min-h-[280px] flex flex-col justify-center">
           <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full transform translate-x-8 -translate-y-8"></div>
           
-          <h2 className="text-xl font-bold mb-3">Sistema Método BJ</h2>
-          <p className="text-blue-100 mb-6 leading-relaxed">
+          <h2 className="text-xl font-bold mb-4">Sistema Método BJ</h2>
+          <p className="text-blue-100 mb-8 leading-relaxed">
             Descubra o sistema completo para atingir seus objetivos de forma consistente
           </p>
           
           <button
             onClick={handleVideoPlay}
-            className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-5 border-0 cursor-pointer transition-all duration-300 animate-pulse hover:scale-105"
+            className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-6 border-0 cursor-pointer transition-all duration-300 animate-pulse hover:scale-105"
           >
-            <svg viewBox="0 0 24 24" className="w-6 h-6 fill-white ml-1">
+            <svg viewBox="0 0 24 24" className="w-8 h-8 fill-white ml-1">
               <path d="M8 5v14l11-7z"/>
             </svg>
           </button>

@@ -959,6 +959,7 @@ export type Database = {
           date: string
           dieta_seguida: boolean
           id: string
+          motivacao_lida: boolean
           treino_realizado: boolean
           updated_at: string
           user_id: string
@@ -968,6 +969,7 @@ export type Database = {
           date: string
           dieta_seguida?: boolean
           id?: string
+          motivacao_lida?: boolean
           treino_realizado?: boolean
           updated_at?: string
           user_id: string
@@ -977,6 +979,7 @@ export type Database = {
           date?: string
           dieta_seguida?: boolean
           id?: string
+          motivacao_lida?: boolean
           treino_realizado?: boolean
           updated_at?: string
           user_id?: string

@@ -234,7 +234,7 @@ const AppJujuDashboard = () => {
       setDailyTasks({
         workout: data.treino_realizado,
         diet: data.dieta_seguida,
-        motivation: data.motivacao_lida || false
+        motivation: (data as any).motivacao_lida || false
       });
     }
   };
@@ -467,7 +467,7 @@ const AppJujuDashboard = () => {
                   </motion.div>
                 </div>
 
-                {/* Seção de Séries/Atividades - Nova estrutura inspirada na imagem */}
+                {/* Seção de Séries/Atividades */}
                 <div className="w-full max-w-6xl mx-auto space-y-4 px-4">
                   <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6 text-center">Suas Atividades Hoje</h2>
                   
@@ -566,106 +566,116 @@ const AppJujuDashboard = () => {
                   </div>
                 </div>
 
-                {/* Motivação interativa do dia */}
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className="bg-gradient-to-r from-pink-100 to-purple-100 p-6 rounded-3xl border border-pink-200 max-w-lg mx-auto"
-                >
-                  <div className="text-center mb-4">
-                    <h3 className="font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
-                      <Target size={20} className="text-pink-500" />
-                      Metas do Dia
-                    </h3>
-                    <p className="text-gray-600 text-sm italic mb-4">
-                      "Cada pequena ação te aproxima do seu objetivo!"
-                    </p>
-                  </div>
-
-                  {/* Tarefas diárias interativas */}
-                  <div className="space-y-3 mb-4">
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => toggleDailyTask('workout')}
-                      className={`w-full p-3 rounded-xl border-2 transition-all duration-300 flex items-center justify-between ${
-                        dailyTasks.workout 
-                          ? 'bg-blue-100 border-blue-300 text-blue-700' 
-                          : 'bg-white border-gray-200 hover:border-blue-200 text-gray-600'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Dumbbell size={18} className={dailyTasks.workout ? 'text-blue-600' : 'text-gray-400'} />
-                        <span className="text-sm font-medium">Completei meu treino</span>
-                      </div>
-                      {dailyTasks.workout ? (
-                        <CheckCircle size={18} className="text-blue-600" />
-                      ) : (
-                        <div className="w-5 h-5 border-2 border-gray-300 rounded-full" />
-                      )}
-                    </motion.button>
-
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => toggleDailyTask('diet')}
-                      className={`w-full p-3 rounded-xl border-2 transition-all duration-300 flex items-center justify-between ${
-                        dailyTasks.diet 
-                          ? 'bg-green-100 border-green-300 text-green-700' 
-                          : 'bg-white border-gray-200 hover:border-green-200 text-gray-600'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Coffee size={18} className={dailyTasks.diet ? 'text-green-600' : 'text-gray-400'} />
-                        <span className="text-sm font-medium">Segui minha dieta</span>
-                      </div>
-                      {dailyTasks.diet ? (
-                        <CheckCircle size={18} className="text-green-600" />
-                      ) : (
-                        <div className="w-5 h-5 border-2 border-gray-300 rounded-full" />
-                      )}
-                    </motion.button>
-
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => toggleDailyTask('motivation')}
-                      className={`w-full p-3 rounded-xl border-2 transition-all duration-300 flex items-center justify-between ${
-                        dailyTasks.motivation 
-                          ? 'bg-pink-100 border-pink-300 text-pink-700' 
-                          : 'bg-white border-gray-200 hover:border-pink-200 text-gray-600'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <Flame size={18} className={dailyTasks.motivation ? 'text-pink-600' : 'text-gray-400'} />
-                        <span className="text-sm font-medium">Li minha motivação</span>
-                      </div>
-                      {dailyTasks.motivation ? (
-                        <CheckCircle size={18} className="text-pink-600" />
-                      ) : (
-                        <div className="w-5 h-5 border-2 border-gray-300 rounded-full" />
-                      )}
-                    </motion.button>
-                  </div>
-
-                  {/* Progresso do dia */}
-                  <div className="text-center">
-                    <div className="flex justify-center gap-2 mb-2">
-                      {Object.values(dailyTasks).map((completed, index) => (
-                        <div
-                          key={index}
-                          className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                            completed ? 'bg-gradient-to-r from-pink-400 to-purple-400' : 'bg-gray-200'
-                          }`}
-                        />
-                      ))}
+                {/* Nova Seção: Metas do Dia - Separada das atividades */}
+                <div className="w-full max-w-4xl mx-auto mt-12">
+                  <motion.div 
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.3 }}
+                    className="bg-gradient-to-r from-pink-100 to-purple-100 p-8 rounded-3xl border border-pink-200 shadow-lg"
+                  >
+                    <div className="text-center mb-6">
+                      <h3 className="font-bold text-gray-800 text-2xl mb-3 flex items-center justify-center gap-3">
+                        <Target size={28} className="text-pink-500" />
+                        Metas do Dia
+                      </h3>
+                      <p className="text-gray-600 text-base italic mb-6">
+                        "Cada pequena ação te aproxima do seu objetivo!"
+                      </p>
                     </div>
-                    <p className="text-pink-600 text-xs font-semibold">
-                      {Object.values(dailyTasks).filter(Boolean).length}/3 metas concluídas hoje
-                    </p>
-                  </div>
-                </motion.div>
+
+                    {/* Tarefas diárias interativas */}
+                    <div className="space-y-4 mb-6">
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => toggleDailyTask('workout')}
+                        className={`w-full p-4 rounded-xl border-2 transition-all duration-300 flex items-center justify-between ${
+                          dailyTasks.workout 
+                            ? 'bg-blue-100 border-blue-300 text-blue-700 shadow-md' 
+                            : 'bg-white border-gray-200 hover:border-blue-200 text-gray-600 hover:shadow-md'
+                        }`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <Dumbbell size={24} className={dailyTasks.workout ? 'text-blue-600' : 'text-gray-400'} />
+                          <span className="text-base font-medium">Completei meu treino</span>
+                        </div>
+                        {dailyTasks.workout ? (
+                          <CheckCircle size={24} className="text-blue-600" />
+                        ) : (
+                          <div className="w-6 h-6 border-2 border-gray-300 rounded-full" />
+                        )}
+                      </motion.button>
+
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => toggleDailyTask('diet')}
+                        className={`w-full p-4 rounded-xl border-2 transition-all duration-300 flex items-center justify-between ${
+                          dailyTasks.diet 
+                            ? 'bg-green-100 border-green-300 text-green-700 shadow-md' 
+                            : 'bg-white border-gray-200 hover:border-green-200 text-gray-600 hover:shadow-md'
+                        }`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <Coffee size={24} className={dailyTasks.diet ? 'text-green-600' : 'text-gray-400'} />
+                          <span className="text-base font-medium">Segui minha dieta</span>
+                        </div>
+                        {dailyTasks.diet ? (
+                          <CheckCircle size={24} className="text-green-600" />
+                        ) : (
+                          <div className="w-6 h-6 border-2 border-gray-300 rounded-full" />
+                        )}
+                      </motion.button>
+
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => toggleDailyTask('motivation')}
+                        className={`w-full p-4 rounded-xl border-2 transition-all duration-300 flex items-center justify-between ${
+                          dailyTasks.motivation 
+                            ? 'bg-pink-100 border-pink-300 text-pink-700 shadow-md' 
+                            : 'bg-white border-gray-200 hover:border-pink-200 text-gray-600 hover:shadow-md'
+                        }`}
+                      >
+                        <div className="flex items-center gap-4">
+                          <Flame size={24} className={dailyTasks.motivation ? 'text-pink-600' : 'text-gray-400'} />
+                          <span className="text-base font-medium">Li minha motivação</span>
+                        </div>
+                        {dailyTasks.motivation ? (
+                          <CheckCircle size={24} className="text-pink-600" />
+                        ) : (
+                          <div className="w-6 h-6 border-2 border-gray-300 rounded-full" />
+                        )}
+                      </motion.button>
+                    </div>
+
+                    {/* Progresso do dia */}
+                    <div className="text-center">
+                      <div className="flex justify-center gap-3 mb-4">
+                        {Object.values(dailyTasks).map((completed, index) => (
+                          <div
+                            key={index}
+                            className={`w-4 h-4 rounded-full transition-all duration-300 ${
+                              completed ? 'bg-gradient-to-r from-pink-400 to-purple-400 shadow-md' : 'bg-gray-200'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <p className="text-pink-600 text-base font-semibold">
+                        {Object.values(dailyTasks).filter(Boolean).length}/3 metas concluídas hoje
+                      </p>
+                      
+                      {/* Barra de progresso visual */}
+                      <div className="w-full bg-gray-200 rounded-full h-3 mt-4">
+                        <div 
+                          className="bg-gradient-to-r from-pink-400 to-purple-400 h-3 rounded-full transition-all duration-500 ease-out"
+                          style={{ width: `${(Object.values(dailyTasks).filter(Boolean).length / 3) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  </motion.div>
+                </div>
               </div>
             </TabsContent>
 

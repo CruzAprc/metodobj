@@ -19,9 +19,9 @@ const Loading = () => {
     }
   }, []);
 
-  // Preload da imagem da logo para garantir carregamento rápido
+  // Preload da imagem da Juju para garantir carregamento rápido
   useEffect(() => {
-    const imageUrl = "/lovable-uploads/a34eec64-90e0-443e-adcb-970b1fdb0de5.png";
+    const imageUrl = "/lovable-uploads/4f268362-785c-45b9-aeba-4c33c58fa0e1.png";
     const img = new Image();
     img.onload = () => setImageLoaded(true);
     img.src = imageUrl;
@@ -78,17 +78,17 @@ const Loading = () => {
         <div className="w-12 h-12 bg-gradient-to-br from-pink-300 to-pink-400 rounded-full" />
       </div>
 
-      {/* Logo da Juju com otimização de carregamento */}
+      {/* Imagem da Juju com otimização de carregamento */}
       <motion.div 
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5 }}
         className="mb-8 relative"
       >
-        <div className="w-20 h-20 bg-gradient-to-br from-pink-400 to-pink-600 rounded-3xl flex items-center justify-center shadow-2xl p-2">
+        <div className="w-32 h-32 sm:w-40 sm:h-40 bg-gradient-to-br from-pink-400 to-pink-600 rounded-3xl flex items-center justify-center shadow-2xl p-3">
           <img 
-            src="/lovable-uploads/a34eec64-90e0-443e-adcb-970b1fdb0de5.png" 
-            alt="Método BJ Logo" 
+            src="/lovable-uploads/4f268362-785c-45b9-aeba-4c33c58fa0e1.png" 
+            alt="Juju - Método BJ" 
             className={`w-full h-full object-contain transition-opacity duration-300 ${
               imageLoaded ? 'opacity-100' : 'opacity-0'
             }`}
@@ -98,7 +98,7 @@ const Loading = () => {
             onLoad={() => setImageLoaded(true)}
             style={{
               contentVisibility: 'auto',
-              containIntrinsicSize: '80px 80px'
+              containIntrinsicSize: '160px 160px'
             }}
           />
           {!imageLoaded && (

@@ -61,7 +61,7 @@ const Onboarding = () => {
         {/* Logo/Image */}
         <div className="w-full mb-8 flex items-center justify-center">
           <img 
-            src="/lovable-uploads/a23e08fd-0211-4def-8682-4af9586d245f.png" 
+            src="/lovable-uploads/5e3b41d1-5f67-4a50-927e-5a32e4c74a2c.png" 
             alt="Método BJ" 
             className="w-48 h-48 object-contain rounded-2xl"
           />

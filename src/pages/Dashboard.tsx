@@ -157,7 +157,7 @@ const Dock = ({ items, className = "", spring = { mass: 0.1, stiffness: 150, dam
 // Dashboard Principal
 const AppJujuDashboard = () => {
   const [currentTab, setCurrentTab] = useState('dashboard');
-  const [userName, setUserName] = useState('Juju');
+  const [userName, setUserName] = useState('');
   const [userData, setUserData] = useState<any>(null);
   const [dietData, setDietData] = useState<any>(null);
   const [workoutData, setWorkoutData] = useState<any>(null);
@@ -217,9 +217,12 @@ const AppJujuDashboard = () => {
       .eq('user_id', user.id)
       .single();
       
-    if (data) {
+    if (data && !error) {
       setUserData(data);
-      setUserName(data.nome);
+      setUserName(data.nome || 'Usuário');
+    } else {
+      console.log('Erro ao carregar dados do usuário:', error);
+      setUserName('Usuário');
     }
   };
 

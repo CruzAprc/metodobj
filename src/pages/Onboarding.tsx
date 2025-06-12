@@ -1,274 +1,228 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Play, Pause, Volume2, Maximize, Apple, Dumbbell, TrendingUp, Sparkles, ChevronRight, Clock, Target, Heart } from 'lucide-react';
-const OnboardingOtimizado = () => {
+import { motion } from 'framer-motion';
+import { Play, Clock, Target, Zap, TrendingUp } from 'lucide-react';
+
+const Onboarding = () => {
   const navigate = useNavigate();
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  const [currentTestimonial, setCurrentTestimonial] = useState(0);
-  const testimonials = [{
-    name: "Maria Silva",
-    resultado: "Perdeu 14kg em 2 meses",
-    texto: "Resultado incrível! O App da Juju mudou minha vida completamente.",
-    avatar: "👩‍💼"
-  }, {
-    name: "Ana Costa",
-    resultado: "Ganhou 5kg de massa muscular",
-    texto: "Treinos personalizados que se encaixam perfeitamente na minha rotina!",
-    avatar: "👩‍🔬"
-  }, {
-    name: "Carla Mendes",
-    resultado: "Perdeu 18kg em 4 meses",
-    texto: "Método revolucionário! Me sinto mais forte e confiante do que nunca!",
-    avatar: "👩‍🎨"
-  }, {
-    name: "Juliana Santos",
-    resultado: "Definiu o corpo em 3 meses",
-    texto: "Finalmente encontrei algo que funciona de verdade para mim!",
-    avatar: "👩‍⚕️"
-  }, {
-    name: "Patrícia Lima",
-    resultado: "Eliminou 22kg em 6 meses",
-    texto: "Transformação total! Recuperei minha autoestima e saúde.",
-    avatar: "👩‍🏫"
-  }, {
-    name: "Fernanda Oliveira",
-    resultado: "Conquistou o corpo dos sonhos",
-    texto: "Método simples, eficaz e que realmente se adapta à vida real!",
-    avatar: "👩‍💻"
-  }];
-  React.useEffect(() => {
+  const [currentDot, setCurrentDot] = useState(0);
+
+  const testimonials = [
+    {
+      name: "Rafael Santos",
+      initials: "RS",
+      content: "Sistema completo! O Método BJ me ajudou a conquistar resultados que eu não conseguia há anos.",
+      result: "+12kg massa magra"
+    },
+    {
+      name: "Ana Costa",
+      initials: "AC", 
+      content: "Metodologia incrível! Finalmente encontrei algo que funciona de verdade.",
+      result: "-15kg em 3 meses"
+    },
+    {
+      name: "Carlos Lima",
+      initials: "CL",
+      content: "Transformação total! Me sinto mais forte e confiante do que nunca.",
+      result: "+8kg muscle"
+    },
+    {
+      name: "Maria Silva",
+      initials: "MS",
+      content: "Resultado além das expectativas! Recomendo para todos.",
+      result: "-20kg"
+    },
+    {
+      name: "Pedro Oliveira", 
+      initials: "PO",
+      content: "Sistema eficiente que se adapta perfeitamente à minha rotina.",
+      result: "Corpo definido"
+    }
+  ];
+
+  useEffect(() => {
     const interval = setInterval(() => {
-      setCurrentTestimonial(prev => (prev + 1) % testimonials.length);
+      setCurrentDot(prev => (prev + 1) % 5);
     }, 3000);
     return () => clearInterval(interval);
   }, []);
+
   const handleVideoPlay = () => {
     setIsVideoPlaying(!isVideoPlaying);
+    // Simular reprodução de vídeo
+    if (!isVideoPlaying) {
+      setTimeout(() => setIsVideoPlaying(false), 3000);
+    }
   };
+
   const handleStartTransformation = () => {
     navigate('/dados-pessoais');
   };
-  return <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 overflow-hidden">
-      
-      {/* Header com logo melhorado */}
-      <motion.header initial={{
-      y: -50,
-      opacity: 0
-    }} animate={{
-      y: 0,
-      opacity: 1
-    }} className="flex justify-center pt-6 pb-3">
-        <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-pink-400 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg p-1">
-            <img src="/lovable-uploads/02d55ca0-b017-487b-a9a2-275d8eef05b6.png" alt="JS Logo" className="w-full h-full object-contain" />
-          </div>
-          <div>
-            
-            
-          </div>
-        </div>
-      </motion.header>
 
-      <div className="px-4 pb-6 max-w-lg mx-auto">
+  return (
+    <div className="min-h-screen bg-slate-50 p-5">
+      <div className="max-w-sm mx-auto bg-white rounded-3xl p-8 shadow-2xl">
         
-        {/* Título principal otimizado */}
-        <motion.div initial={{
-        y: 30,
-        opacity: 0
-      }} animate={{
-        y: 0,
-        opacity: 1
-      }} transition={{
-        delay: 0.2
-      }} className="text-center mb-6 px-2">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 mb-3 leading-tight">
-            Bem-vinda ao <span className="bg-gradient-to-r from-pink-500 to-pink-600 bg-clip-text text-transparent">App da Juju!</span>
-          </h2>
-          <p className="text-gray-600 text-base sm:text-lg leading-relaxed max-w-sm mx-auto">
-            Sua jornada de <span className="font-semibold text-pink-600">transformação</span> e <span className="font-semibold text-purple-600">performance</span> começa aqui!
-          </p>
+        {/* Logo */}
+        <motion.div 
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="w-16 h-16 bg-gradient-to-br from-blue-600 to-sky-300 rounded-2xl flex items-center justify-center mx-auto mb-6 text-white font-bold text-lg"
+        >
+          BJ
         </motion.div>
 
-        {/* Player de vídeo aumentado */}
-        <motion.div initial={{
-        scale: 0.9,
-        opacity: 0
-      }} animate={{
-        scale: 1,
-        opacity: 1
-      }} transition={{
-        delay: 0.4
-      }} className="relative mb-8 mx-1">
-          <div className="relative bg-gradient-to-br from-pink-400 to-pink-600 rounded-3xl p-0.5 shadow-2xl">
-            <div className="bg-gradient-to-br from-pink-500 to-pink-600 rounded-3xl p-8 sm:p-12 text-white relative overflow-hidden min-h-[280px] sm:min-h-[320px]">
-              
-              {/* Elementos decorativos no vídeo */}
-              <div className="absolute top-4 right-4 sm:top-5 sm:right-5 opacity-20">
-                <Sparkles size={24} className="sm:w-7 sm:h-7" />
-              </div>
-              <div className="absolute bottom-4 left-4 sm:bottom-5 sm:left-5 opacity-20">
-                <Heart size={20} className="sm:w-6 sm:h-6" />
-              </div>
-              
-              <div className="text-center space-y-5 sm:space-y-6 flex flex-col justify-center h-full">
-                <div>
-                  <h3 className="text-xl sm:text-2xl font-bold leading-tight mb-3">Metodologia App da Juju</h3>
-                  <p className="text-pink-100 text-base sm:text-lg leading-relaxed max-w-sm mx-auto">
-                    Descubra como alcançar seus objetivos com nosso método exclusivo
-                  </p>
+        {/* Title */}
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-center mb-2"
+        >
+          <h1 className="text-3xl font-bold text-slate-800">
+            Bem-vindo ao <span className="text-blue-600">Método</span><br/>
+            <span className="text-sky-300">BJ!</span>
+          </h1>
+        </motion.div>
+
+        {/* Subtitle */}
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="text-center mb-8 text-slate-600"
+        >
+          Sua jornada de <span className="text-blue-600 font-semibold">evolução</span> e <span className="text-sky-300 font-semibold">alta performance</span><br/>
+          começa aqui!
+        </motion.div>
+
+        {/* Main Video Card */}
+        <motion.div 
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl p-8 text-white text-center mb-6 relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full transform translate-x-8 -translate-y-8"></div>
+          
+          <h2 className="text-xl font-bold mb-3">Sistema Método BJ</h2>
+          <p className="text-blue-100 mb-6 leading-relaxed">
+            Descubra o sistema completo para atingir seus objetivos de forma consistente
+          </p>
+          
+          <motion.button
+            onClick={handleVideoPlay}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className={`w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-5 border-0 cursor-pointer transition-all duration-300 ${isVideoPlaying ? '' : 'animate-pulse'}`}
+          >
+            <Play size={24} className="text-white ml-1" fill="white" />
+          </motion.button>
+          
+          <div className="flex items-center justify-center gap-4 text-sm text-blue-100">
+            <span className="flex items-center gap-1">
+              <Clock size={14} />
+              3:45 min
+            </span>
+            <span>•</span>
+            <span>🎯 Vídeo explicativo</span>
+          </div>
+        </motion.div>
+
+        {/* Feature Cards */}
+        <motion.div 
+          initial={{ y: 30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="space-y-4 mb-8"
+        >
+          <div className="bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-200 rounded-2xl p-5 hover:transform hover:-translate-y-1 hover:shadow-lg transition-all duration-300 cursor-pointer">
+            <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center mb-3">
+              <Zap size={18} className="text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-800 mb-1">Nutrição Inteligente</h3>
+            <p className="text-sm text-slate-600 leading-relaxed">Sistema alimentar baseado em dados e objetivos específicos</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border-2 border-purple-200 rounded-2xl p-5 hover:transform hover:-translate-y-1 hover:shadow-lg transition-all duration-300 cursor-pointer">
+            <div className="w-10 h-10 bg-purple-500 rounded-xl flex items-center justify-center mb-3">
+              <Target size={18} className="text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-800 mb-1">Treino Eficiente</h3>
+            <p className="text-sm text-slate-600 leading-relaxed">Protocolos otimizados para máximo resultado em menor tempo</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-blue-50 to-sky-50 border-2 border-blue-200 rounded-2xl p-5 hover:transform hover:-translate-y-1 hover:shadow-lg transition-all duration-300 cursor-pointer">
+            <div className="w-10 h-10 bg-sky-300 rounded-xl flex items-center justify-center mb-3">
+              <TrendingUp size={18} className="text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-800 mb-1">Análise de Dados</h3>
+            <p className="text-sm text-slate-600 leading-relaxed">Métricas precisas para acompanhar sua evolução</p>
+          </div>
+        </motion.div>
+
+        {/* Results Section */}
+        <motion.div 
+          initial={{ y: 30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="text-center mb-8"
+        >
+          <h2 className="text-xl font-bold text-slate-800 mb-6">Resultados Reais ✨</h2>
+          
+          <div className="bg-blue-50 rounded-2xl p-5 border-l-4 border-sky-300 mb-5">
+            <div className="text-slate-600 italic mb-3 leading-relaxed">
+              "{testimonials[currentDot].content}"
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-sky-300 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                  {testimonials[currentDot].initials}
                 </div>
-                
-                {/* Play button aumentado */}
-                <motion.button onClick={handleVideoPlay} whileHover={{
-                scale: 1.1
-              }} whileTap={{
-                scale: 0.95
-              }} className="w-20 h-20 sm:w-24 sm:h-24 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto shadow-lg border border-white/30">
-                  {isVideoPlaying ? <Pause size={28} className="text-white sm:w-8 sm:h-8" /> : <Play size={28} className="text-white ml-1 sm:w-8 sm:h-8" />}
-                </motion.button>
-                
-                <div className="flex items-center justify-center space-x-4 sm:space-x-5 text-sm text-pink-100">
-                  <span className="flex items-center space-x-1.5">
-                    <Clock size={14} className="sm:w-4 sm:h-4" />
-                    <span>3:45 min</span>
-                  </span>
-                  <span>•</span>
-                  <span>🎯 Vídeo explicativo</span>
-                </div>
+                <span className="font-semibold text-slate-800">{testimonials[currentDot].name}</span>
+              </div>
+              <div className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
+                {testimonials[currentDot].result}
               </div>
             </div>
           </div>
         </motion.div>
 
-        {/* Benefícios em cards menores e mais visuais */}
-        <motion.div initial={{
-        y: 50,
-        opacity: 0
-      }} animate={{
-        y: 0,
-        opacity: 1
-      }} transition={{
-        delay: 0.6
-      }} className="space-y-3 sm:space-y-4 mb-6 sm:mb-8 mx-2">
-          {[{
-          icon: <Apple className="text-orange-500" size={20} />,
-          title: "Nutrição Estratégica",
-          description: "Plano alimentar baseado nos seus objetivos",
-          color: "from-orange-100 to-orange-50 border-orange-200"
-        }, {
-          icon: <Dumbbell className="text-purple-500" size={20} />,
-          title: "Treino de Alta Performance",
-          description: "Adaptado ao seu nível e metas específicas",
-          color: "from-purple-100 to-purple-50 border-purple-200"
-        }, {
-          icon: <TrendingUp className="text-blue-500" size={20} />,
-          title: "Monitoramento Contínuo",
-          description: "Acompanhe sua evolução em tempo real",
-          color: "from-blue-100 to-blue-50 border-blue-200"
-        }].map((benefit, index) => <motion.div key={index} initial={{
-          x: -30,
-          opacity: 0
-        }} animate={{
-          x: 0,
-          opacity: 1
-        }} transition={{
-          delay: 0.8 + index * 0.1
-        }} className={`flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-r ${benefit.color} border shadow-sm`}>
-              <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-white/50 rounded-xl flex items-center justify-center">
-                {benefit.icon}
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-gray-800 text-sm sm:text-base leading-tight">{benefit.title}</h4>
-                <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mt-0.5">{benefit.description}</p>
-              </div>
-            </motion.div>)}
-        </motion.div>
+        {/* Dots Indicator */}
+        <div className="flex justify-center gap-2 mb-5">
+          {[0, 1, 2, 3, 4].map((index) => (
+            <div 
+              key={index}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                index === currentDot 
+                  ? 'bg-blue-600 w-6' 
+                  : 'bg-slate-300 w-2'
+              }`}
+            />
+          ))}
+        </div>
 
-        {/* Seção de depoimentos */}
-        <motion.div initial={{
-        y: 30,
-        opacity: 0
-      }} animate={{
-        y: 0,
-        opacity: 1
-      }} transition={{
-        delay: 1.0
-      }} className="mb-6 sm:mb-8 mx-2">
-          <h3 className="text-center text-base sm:text-lg font-bold text-gray-800 mb-3 sm:mb-4">
-            Resultados Reais ✨
-          </h3>
-          
-          <div className="relative h-20 sm:h-24 overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-r from-pink-50 to-purple-50 border border-pink-200 shadow-sm">
-            <AnimatePresence mode="wait">
-              <motion.div key={currentTestimonial} initial={{
-              opacity: 0,
-              y: 20
-            }} animate={{
-              opacity: 1,
-              y: 0
-            }} exit={{
-              opacity: 0,
-              y: -20
-            }} transition={{
-              duration: 0.5
-            }} className="absolute inset-0 p-3 sm:p-4 flex items-center space-x-3">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-pink-400 to-pink-500 rounded-full flex items-center justify-center text-sm sm:text-lg flex-shrink-0">
-                  {testimonials[currentTestimonial].avatar}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs sm:text-sm text-gray-600 italic mb-1 leading-tight">
-                    "{testimonials[currentTestimonial].texto}"
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-gray-800 truncate">
-                      {testimonials[currentTestimonial].name}
-                    </span>
-                    <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full whitespace-nowrap ml-2">
-                      {testimonials[currentTestimonial].resultado}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
+        {/* CTA Button */}
+        <motion.button
+          onClick={handleStartTransformation}
+          whileHover={{ y: -2, boxShadow: "0 8px 24px rgba(37, 99, 235, 0.3)" }}
+          whileTap={{ scale: 0.98 }}
+          className="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-semibold py-4 px-6 rounded-2xl transition-all duration-300 mb-4"
+        >
+          🚀 Acessar o Sistema
+        </motion.button>
 
-          {/* Indicadores dos depoimentos */}
-          <div className="flex justify-center mt-2 sm:mt-3 space-x-1">
-            {testimonials.map((_, index) => <div key={index} className={`h-1.5 rounded-full transition-all duration-300 ${index === currentTestimonial ? 'bg-pink-400 w-4 sm:w-6' : 'bg-gray-300 w-1.5'}`} />)}
-          </div>
-        </motion.div>
-
-        {/* CTA otimizado */}
-        <motion.div initial={{
-        y: 30,
-        opacity: 0
-      }} animate={{
-        y: 0,
-        opacity: 1
-      }} transition={{
-        delay: 1.2
-      }} className="space-y-3 sm:space-y-4 mx-2">
-          <motion.button onClick={handleStartTransformation} whileHover={{
-          scale: 1.02
-        }} whileTap={{
-          scale: 0.98
-        }} className="w-full bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white font-bold py-4 sm:py-5 rounded-xl sm:rounded-2xl shadow-lg flex items-center justify-center space-x-2 transition-all duration-300 text-sm sm:text-base">
-            <Sparkles size={18} className="sm:w-5 sm:h-5" />
-            <span>Iniciar Minha Transformação</span>
-            <ChevronRight size={18} className="sm:w-5 sm:h-5" />
-          </motion.button>
-          
-          <div className="text-center px-4">
-            <p className="text-sm sm:text-base text-gray-500">
-              ⏱️ Apenas <span className="font-semibold text-pink-600">5 minutos</span> para personalizar tudo para você!
-            </p>
-            
-          </div>
-        </motion.div>
+        {/* Time Info */}
+        <div className="text-center flex items-center justify-center gap-2 text-slate-600 text-sm">
+          <span>⏰</span>
+          <span>Apenas <strong className="text-blue-600">5 minutos</strong> para personalizar tudo para você!</span>
+        </div>
 
       </div>
-    </div>;
+    </div>
+  );
 };
-export default OnboardingOtimizado;
+
+export default Onboarding;

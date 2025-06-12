@@ -20,7 +20,9 @@ import {
   Target,
   Activity,
   Timer,
-  Flame
+  Flame,
+  Check,
+  Plus
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +30,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import EditProfileModal from '@/components/EditProfileModal';
 import ProgressCalendar from '@/components/ProgressCalendar';
+import { toast } from "@/hooks/use-toast";
 
 // Componente Dock Item
 const DockItem = ({ children, onClick, mouseX, spring, distance, magnification, baseItemSize, className = "" }: any) => {
@@ -168,6 +171,12 @@ const AppJujuDashboard = () => {
   const [workoutData, setWorkoutData] = useState<any>(null);
   const [userPhotos, setUserPhotos] = useState<any[]>([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [dailyTasks, setDailyTasks] = useState({
+    workout: false,
+    diet: false,
+    motivation: false
+  });
+  const [todayProgress, setTodayProgress] = useState<any>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -179,28 +188,117 @@ const AppJujuDashboard = () => {
     
     let progress = 0;
     
-    // Quiz alimentar (25%)
+    // Quiz alimentar (20%)
     if (userData.quiz_alimentar_concluido) {
-      progress += 25;
+      progress += 20;
     }
     
-    // Quiz treino (25%)
+    // Quiz treino (20%)
     if (userData.quiz_treino_concluido) {
-      progress += 25;
+      progress += 20;
     }
     
-    // Fotos de avaliação (30%)
+    // Fotos de avaliação (25%)
     if (userPhotos.length > 0) {
       const uniquePhotoTypes = [...new Set(userPhotos.map(photo => photo.photo_type))];
-      progress += Math.round(Math.min(uniquePhotoTypes.length / 3, 1) * 30);
+      progress += Math.round(Math.min(uniquePhotoTypes.length / 3, 1) * 25);
     }
     
-    // Dias de uso (20%)
+    // Dias de uso (15%)
     if (userData.dias_no_app) {
-      progress += Math.round(Math.min(userData.dias_no_app / 30, 1) * 20);
+      progress += Math.round(Math.min(userData.dias_no_app / 30, 1) * 15);
     }
+
+    // Tarefas diárias (20%)
+    const completedTasks = Object.values(dailyTasks).filter(Boolean).length;
+    progress += Math.round((completedTasks / 3) * 20);
     
     return Math.min(progress, 100);
+  };
+
+  // Load today's progress
+  const loadTodayProgress = async () => {
+    if (!user) return;
+    
+    const today = new Date().toISOString().split('T')[0];
+    
+    const { data, error } = await supabase
+      .from('user_daily_progress')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('date', today)
+      .single();
+      
+    if (data) {
+      setTodayProgress(data);
+      setDailyTasks({
+        workout: data.treino_realizado,
+        diet: data.dieta_seguida,
+        motivation: data.motivacao_lida || false
+      });
+    }
+  };
+
+  // Toggle daily task
+  const toggleDailyTask = async (taskType: 'workout' | 'diet' | 'motivation') => {
+    if (!user) return;
+    
+    const today = new Date().toISOString().split('T')[0];
+    const newTaskState = !dailyTasks[taskType];
+    
+    try {
+      const updateData = {
+        user_id: user.id,
+        date: today,
+        treino_realizado: taskType === 'workout' ? newTaskState : dailyTasks.workout,
+        dieta_seguida: taskType === 'diet' ? newTaskState : dailyTasks.diet,
+        motivacao_lida: taskType === 'motivation' ? newTaskState : dailyTasks.motivation
+      };
+
+      if (todayProgress) {
+        // Update existing record
+        const { error } = await supabase
+          .from('user_daily_progress')
+          .update(updateData)
+          .eq('id', todayProgress.id);
+          
+        if (error) throw error;
+      } else {
+        // Create new record
+        const { data, error } = await supabase
+          .from('user_daily_progress')
+          .insert(updateData)
+          .select()
+          .single();
+          
+        if (error) throw error;
+        setTodayProgress(data);
+      }
+
+      setDailyTasks(prev => ({
+        ...prev,
+        [taskType]: newTaskState
+      }));
+
+      const taskNames = {
+        workout: 'Treino',
+        diet: 'Dieta',
+        motivation: 'Motivação'
+      };
+
+      toast({
+        title: newTaskState ? "Parabéns! 🎉" : "Desmarcado",
+        description: `${taskNames[taskType]} ${newTaskState ? 'concluído' : 'desmarcado'} para hoje!`,
+      });
+
+    } catch (error) {
+      console.error('Erro ao atualizar tarefa:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar a tarefa",
+        variant: "destructive"
+      });
+    }
   };
 
   // Carregar dados do usuário
@@ -210,6 +308,7 @@ const AppJujuDashboard = () => {
       loadDietData();
       loadWorkoutData();
       loadUserPhotos();
+      loadTodayProgress();
     }
   }, [user]);
 
@@ -467,18 +566,105 @@ const AppJujuDashboard = () => {
                   </div>
                 </div>
 
-                {/* Motivação do dia */}
+                {/* Motivação interativa do dia */}
                 <motion.div 
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.3 }}
                   className="bg-gradient-to-r from-pink-100 to-purple-100 p-6 rounded-3xl border border-pink-200 max-w-lg mx-auto"
                 >
-                  <h3 className="font-bold text-gray-800 mb-2">💪 Motivação do Dia</h3>
-                  <p className="text-gray-600 text-sm italic">
-                    "Cada dia é uma nova oportunidade de se tornar a melhor versão de si mesma!"
-                  </p>
-                  <p className="text-pink-600 text-xs mt-2 font-semibold">- Juju & Basa</p>
+                  <div className="text-center mb-4">
+                    <h3 className="font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
+                      <Target size={20} className="text-pink-500" />
+                      Metas do Dia
+                    </h3>
+                    <p className="text-gray-600 text-sm italic mb-4">
+                      "Cada pequena ação te aproxima do seu objetivo!"
+                    </p>
+                  </div>
+
+                  {/* Tarefas diárias interativas */}
+                  <div className="space-y-3 mb-4">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => toggleDailyTask('workout')}
+                      className={`w-full p-3 rounded-xl border-2 transition-all duration-300 flex items-center justify-between ${
+                        dailyTasks.workout 
+                          ? 'bg-blue-100 border-blue-300 text-blue-700' 
+                          : 'bg-white border-gray-200 hover:border-blue-200 text-gray-600'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Dumbbell size={18} className={dailyTasks.workout ? 'text-blue-600' : 'text-gray-400'} />
+                        <span className="text-sm font-medium">Completei meu treino</span>
+                      </div>
+                      {dailyTasks.workout ? (
+                        <CheckCircle size={18} className="text-blue-600" />
+                      ) : (
+                        <div className="w-5 h-5 border-2 border-gray-300 rounded-full" />
+                      )}
+                    </motion.button>
+
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => toggleDailyTask('diet')}
+                      className={`w-full p-3 rounded-xl border-2 transition-all duration-300 flex items-center justify-between ${
+                        dailyTasks.diet 
+                          ? 'bg-green-100 border-green-300 text-green-700' 
+                          : 'bg-white border-gray-200 hover:border-green-200 text-gray-600'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Coffee size={18} className={dailyTasks.diet ? 'text-green-600' : 'text-gray-400'} />
+                        <span className="text-sm font-medium">Segui minha dieta</span>
+                      </div>
+                      {dailyTasks.diet ? (
+                        <CheckCircle size={18} className="text-green-600" />
+                      ) : (
+                        <div className="w-5 h-5 border-2 border-gray-300 rounded-full" />
+                      )}
+                    </motion.button>
+
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => toggleDailyTask('motivation')}
+                      className={`w-full p-3 rounded-xl border-2 transition-all duration-300 flex items-center justify-between ${
+                        dailyTasks.motivation 
+                          ? 'bg-pink-100 border-pink-300 text-pink-700' 
+                          : 'bg-white border-gray-200 hover:border-pink-200 text-gray-600'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Flame size={18} className={dailyTasks.motivation ? 'text-pink-600' : 'text-gray-400'} />
+                        <span className="text-sm font-medium">Li minha motivação</span>
+                      </div>
+                      {dailyTasks.motivation ? (
+                        <CheckCircle size={18} className="text-pink-600" />
+                      ) : (
+                        <div className="w-5 h-5 border-2 border-gray-300 rounded-full" />
+                      )}
+                    </motion.button>
+                  </div>
+
+                  {/* Progresso do dia */}
+                  <div className="text-center">
+                    <div className="flex justify-center gap-2 mb-2">
+                      {Object.values(dailyTasks).map((completed, index) => (
+                        <div
+                          key={index}
+                          className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                            completed ? 'bg-gradient-to-r from-pink-400 to-purple-400' : 'bg-gray-200'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-pink-600 text-xs font-semibold">
+                      {Object.values(dailyTasks).filter(Boolean).length}/3 metas concluídas hoje
+                    </p>
+                  </div>
                 </motion.div>
               </div>
             </TabsContent>

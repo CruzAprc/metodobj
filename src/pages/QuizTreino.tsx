@@ -34,15 +34,15 @@ const QuizTreino = () => {
       id: 2,
       title: "Objetivo Principal",
       emoji: "🎯",
-      icon: <Target className="text-purple-500" size={24} />,
+      icon: <Target className="text-blue-500" size={24} />,
       question: "Qual é seu objetivo principal com o treino?",
       type: "single",
       options: [
         { id: 'massa_muscular', label: 'Ganho de massa muscular', color: 'blue' },
-        { id: 'emagrecimento', label: 'Emagrecimento / definição corporal', color: 'pink' },
+        { id: 'emagrecimento', label: 'Emagrecimento / definição corporal', color: 'cyan' },
         { id: 'condicionamento', label: 'Aumento do condicionamento físico', color: 'green' },
         { id: 'postura', label: 'Correção postural / alívio de dores', color: 'orange' },
-        { id: 'bem_estar', label: 'Saúde e bem-estar geral', color: 'purple' }
+        { id: 'bem_estar', label: 'Saúde e bem-estar geral', color: 'indigo' }
       ]
     },
     {
@@ -63,7 +63,7 @@ const QuizTreino = () => {
       id: 4,
       title: "Frequência Semanal",
       emoji: "📅",
-      icon: <Users className="text-green-500" size={24} />,
+      icon: <Users className="text-blue-500" size={24} />,
       question: "Quantos dias por semana você pode treinar?",
       type: "single",
       options: [
@@ -77,7 +77,7 @@ const QuizTreino = () => {
       id: 5,
       title: "Nível de Experiência",
       emoji: "📈",
-      icon: <Focus className="text-indigo-500" size={24} />,
+      icon: <Focus className="text-blue-500" size={24} />,
       question: "Qual é seu nível atual de experiência com treinos?",
       type: "single",
       options: [
@@ -91,12 +91,12 @@ const QuizTreino = () => {
       id: 6,
       title: "Foco Corporal",
       emoji: "💪",
-      icon: <Dumbbell className="text-pink-500" size={24} />,
+      icon: <Dumbbell className="text-blue-500" size={24} />,
       question: "Tem alguma área do corpo que você deseja dar mais atenção?",
       type: "single",
       options: [
-        { id: 'bracos_ombros', label: 'Braços e ombros', color: 'purple' },
-        { id: 'pernas_gluteos', label: 'Pernas e glúteos', color: 'pink' },
+        { id: 'bracos_ombros', label: 'Braços e ombros', color: 'indigo' },
+        { id: 'pernas_gluteos', label: 'Pernas e glúteos', color: 'cyan' },
         { id: 'abdomen', label: 'Abdômen', color: 'orange' },
         { id: 'costas_postura', label: 'Costas e postura', color: 'blue' },
         { id: 'nenhuma', label: 'Nenhuma preferência específica', color: 'gray' }
@@ -106,7 +106,7 @@ const QuizTreino = () => {
       id: 7,
       title: "Intensidade Preferida",
       emoji: "⚡",
-      icon: <Zap className="text-yellow-500" size={24} />,
+      icon: <Zap className="text-blue-500" size={24} />,
       question: "Qual nível de intensidade você prefere?",
       type: "single",
       options: [
@@ -119,14 +119,14 @@ const QuizTreino = () => {
       id: 8,
       title: "Maior Desafio",
       emoji: "🤔",
-      icon: <HelpCircle className="text-gray-500" size={24} />,
+      icon: <HelpCircle className="text-blue-500" size={24} />,
       question: "Qual seu maior desafio hoje?",
       type: "single",
       options: [
         { id: 'tempo', label: 'Falta de tempo', color: 'red' },
         { id: 'motivacao', label: 'Falta de motivação', color: 'orange' },
         { id: 'orientacao', label: 'Falta de orientação', color: 'blue' },
-        { id: 'manter_constancia', label: 'Já tentei antes e não consegui manter', color: 'purple' },
+        { id: 'manter_constancia', label: 'Já tentei antes e não consegui manter', color: 'indigo' },
         { id: 'nenhum', label: 'Nenhum – só quero um plano eficiente', color: 'green' }
       ]
     }
@@ -235,6 +235,8 @@ const QuizTreino = () => {
     const colors = {
       green: isSelected ? 'border-green-400 bg-green-50 text-green-800' : 'border-gray-200 hover:border-green-300',
       blue: isSelected ? 'border-blue-400 bg-blue-50 text-blue-800' : 'border-gray-200 hover:border-blue-300',
+      cyan: isSelected ? 'border-cyan-400 bg-cyan-50 text-cyan-800' : 'border-gray-200 hover:border-cyan-300',
+      indigo: isSelected ? 'border-indigo-400 bg-indigo-50 text-indigo-800' : 'border-gray-200 hover:border-indigo-300',
       red: isSelected ? 'border-red-400 bg-red-50 text-red-800' : 'border-gray-200 hover:border-red-300',
       orange: isSelected ? 'border-orange-400 bg-orange-50 text-orange-800' : 'border-gray-200 hover:border-orange-300',
       purple: isSelected ? 'border-purple-400 bg-purple-50 text-purple-800' : 'border-gray-200 hover:border-purple-300',
@@ -253,10 +255,10 @@ const QuizTreino = () => {
   const selectedAnswer = currentAnswer?.answer;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
       
       {/* Header */}
-      <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-pink-100 z-10">
+      <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-blue-100 z-10">
         <div className="flex items-center justify-between p-4 max-w-md mx-auto">
           <button 
             onClick={handleBack}
@@ -269,7 +271,7 @@ const QuizTreino = () => {
             <h1 className="text-sm font-medium text-gray-700">Anamnese de Treino</h1>
             <div className="flex items-center space-x-2 mt-1">
               <span className="text-xs text-gray-500">Pergunta</span>
-              <span className="text-sm font-bold text-pink-600">{currentStep}/8</span>
+              <span className="text-sm font-bold text-blue-600">{currentStep}/8</span>
             </div>
           </div>
           
@@ -284,7 +286,7 @@ const QuizTreino = () => {
                 key={index + 1}
                 className={`h-1.5 rounded-full flex-1 ${
                   index + 1 <= currentStep 
-                    ? 'bg-gradient-to-r from-pink-400 to-pink-600' 
+                    ? 'bg-gradient-to-r from-blue-400 to-blue-600' 
                     : 'bg-gray-200'
                 }`}
               />
@@ -297,7 +299,7 @@ const QuizTreino = () => {
         
         {/* Título da pergunta */}
         <div className="text-center py-6 space-y-4">
-          <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl flex items-center justify-center mx-auto border border-purple-200 shadow-sm">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl flex items-center justify-center mx-auto border border-blue-200 shadow-sm">
             {currentQuestion.icon}
           </div>
           
@@ -353,7 +355,7 @@ const QuizTreino = () => {
                     value={customAnswer}
                     onChange={(e) => setCustomAnswer(e.target.value)}
                     placeholder="Especifique a região..."
-                    className="w-full mt-3 p-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-pink-300"
+                    className="w-full mt-3 p-3 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
                   />
                 )}
               </button>
@@ -368,7 +370,7 @@ const QuizTreino = () => {
           className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg flex items-center justify-center space-x-2 ${
             !selectedAnswer
               ? 'bg-gray-300 cursor-not-allowed'
-              : 'bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 hover:shadow-xl'
+              : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 hover:shadow-xl'
           }`}
         >
           <Sparkles size={18} />

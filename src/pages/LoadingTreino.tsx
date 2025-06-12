@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -88,7 +87,7 @@ const LoadingTreino = () => {
   }, [imageLoaded]);
 
   const messages = [
-    "Juju está preparando sua anamnese de treino...",
+    "Basa está montando sua anamnese de treino...",
     "Criando o questionário perfeito para seus objetivos...",
     "Quase pronto! Montando sua avaliação personalizada...",
     `Vamos começar sua anamnese de treino ${userName}!`

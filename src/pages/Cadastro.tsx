@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -16,46 +17,64 @@ const Cadastro = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  // Preload agressivo da nova logo - MÁXIMA PRIORIDADE
+  // Preload ultra-agressivo da logo - MÁXIMA PRIORIDADE
   useEffect(() => {
     const imageUrl = "/lovable-uploads/5c7d156f-f9d2-453e-9c50-28c742329168.png";
     
-    // 1. Preload crítico no head com highest priority
+    // 1. Preload crítico no head com highest priority (primeira coisa)
     const link = document.createElement('link');
     link.rel = 'preload';
     link.as = 'image';
     link.href = imageUrl;
     link.fetchPriority = 'high';
+    link.crossOrigin = 'anonymous';
     document.head.insertBefore(link, document.head.firstChild);
     
-    // 2. Preload via Image object com cache
+    // 2. Preload via Image object com configurações otimizadas
     const img = new Image();
     img.fetchPriority = 'high';
     img.loading = 'eager';
     img.decoding = 'sync';
+    img.crossOrigin = 'anonymous';
+    
+    // 3. Cache no navegador
     img.onload = () => {
       setImageLoaded(true);
-      console.log('Nova logo carregada instantaneamente!');
+      console.log('Logo carregada instantaneamente com preload!');
+      
+      // Força o cache da imagem
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx?.drawImage(img, 0, 0);
     };
+    
     img.onerror = () => {
-      console.error('Erro ao carregar nova logo');
-      setImageLoaded(true); // Ainda mostra o container
+      console.error('Erro ao carregar logo');
+      setImageLoaded(true);
     };
+    
     img.src = imageUrl;
     
-    // 3. Prefetch adicional
+    // 4. Prefetch adicional para garantir
     const prefetchLink = document.createElement('link');
     prefetchLink.rel = 'prefetch';
     prefetchLink.href = imageUrl;
     document.head.appendChild(prefetchLink);
 
+    // 5. DNS prefetch para o domínio
+    const dnsLink = document.createElement('link');
+    dnsLink.rel = 'dns-prefetch';
+    dnsLink.href = window.location.origin;
+    document.head.appendChild(dnsLink);
+
     return () => {
-      if (document.head.contains(link)) {
-        document.head.removeChild(link);
-      }
-      if (document.head.contains(prefetchLink)) {
-        document.head.removeChild(prefetchLink);
-      }
+      [link, prefetchLink, dnsLink].forEach(element => {
+        if (document.head.contains(element)) {
+          document.head.removeChild(element);
+        }
+      });
     };
   }, []);
 
@@ -155,12 +174,12 @@ const Cadastro = () => {
       <div className="max-w-sm w-full mx-4">
         <div className="fitness-card animate-slide-in-up">
           <div className="text-center mb-8">
-            {/* Nova logo otimizada e maior */}
-            <div className="flex items-center justify-center w-32 h-32 mx-auto mb-6">
+            {/* Logo ultra-otimizada e maior */}
+            <div className="flex items-center justify-center w-40 h-40 mx-auto mb-6 relative">
               <img 
                 src="/lovable-uploads/5c7d156f-f9d2-453e-9c50-28c742329168.png" 
                 alt="Logo" 
-                className={`w-full h-full object-contain transition-opacity duration-300 ${
+                className={`w-full h-full object-contain transition-opacity duration-200 ${
                   imageLoaded ? 'opacity-100' : 'opacity-0'
                 }`}
                 loading="eager"
@@ -169,11 +188,14 @@ const Cadastro = () => {
                 onLoad={() => setImageLoaded(true)}
                 style={{
                   contentVisibility: 'auto',
-                  containIntrinsicSize: '128px 128px'
+                  containIntrinsicSize: '160px 160px',
+                  imageRendering: 'high-quality'
                 }}
               />
               {!imageLoaded && (
-                <div className="w-32 h-32 bg-gradient-to-br from-pink-100 to-pink-200 rounded-2xl animate-pulse absolute" />
+                <div className="w-40 h-40 bg-gradient-to-br from-pink-100 to-pink-200 rounded-2xl animate-pulse absolute inset-0 flex items-center justify-center">
+                  <div className="w-20 h-20 bg-gradient-to-br from-pink-200 to-pink-300 rounded-xl animate-pulse"></div>
+                </div>
               )}
             </div>
             

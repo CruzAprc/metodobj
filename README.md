@@ -1,73 +1,84 @@
-# Welcome to your Lovable project
 
-## Project info
+# App da Juju - Plataforma de Treinos e Dietas
 
-**URL**: https://lovable.dev/projects/db0b3a5d-d909-468e-9a4d-b33dbb775ad4
+## Sobre o Projeto
 
-## How can I edit this code?
+O **App da Juju** é uma plataforma completa de treinos e dietas personalizados desenvolvida especialmente para mulheres que buscam transformar seu estilo de vida de forma saudável e sustentável.
 
-There are several ways of editing your application.
+## Funcionalidades
 
-**Use Lovable**
+- 🍎 **Plano Alimentar Personalizado**: Cardápios desenvolvidos pela Juju baseados em suas necessidades e objetivos
+- 💪 **Treino do Basa**: Exercícios específicos e progressivos para alcançar seus resultados
+- 📊 **Acompanhamento de Progresso**: Monitore sua evolução diária com métricas detalhadas
+- 📱 **Interface Responsiva**: Acesse de qualquer dispositivo com experiência otimizada
+- 🎯 **Metas Diárias**: Sistema de gamificação para manter você motivada
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/db0b3a5d-d909-468e-9a4d-b33dbb775ad4) and start prompting.
+## Tecnologias Utilizadas
 
-Changes made via Lovable will be committed automatically to this repo.
+Este projeto foi construído com:
 
-**Use your preferred IDE**
+- **Frontend**: React 18 + TypeScript
+- **Styling**: Tailwind CSS + Shadcn UI
+- **Animações**: Framer Motion
+- **Backend**: Supabase (autenticação, banco de dados)
+- **Build Tool**: Vite
+- **Icons**: Lucide React
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Como Executar o Projeto
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Pré-requisitos
 
-Follow these steps:
+- Node.js (versão 16 ou superior)
+- npm ou yarn
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Instalação
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+```bash
+# 1. Clone o repositório
+git clone [URL_DO_REPOSITORIO]
 
-# Step 3: Install the necessary dependencies.
-npm i
+# 2. Navegue até o diretório do projeto
+cd app-da-juju
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 3. Instale as dependências
+npm install
+
+# 4. Inicie o servidor de desenvolvimento
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+O projeto estará disponível em `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Estrutura do Projeto
 
-**Use GitHub Codespaces**
+```
+src/
+├── components/          # Componentes reutilizáveis
+├── pages/              # Páginas da aplicação
+├── hooks/              # Hooks customizados
+├── integrations/       # Integrações (Supabase)
+└── lib/               # Utilitários e configurações
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Scripts Disponíveis
 
-## What technologies are used for this project?
+- `npm run dev` - Inicia o servidor de desenvolvimento
+- `npm run build` - Gera build de produção
+- `npm run preview` - Visualiza o build de produção
+- `npm run lint` - Executa verificação de código
 
-This project is built with:
+## Contribuindo
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
 
-## How can I deploy this project?
+## Suporte
 
-Simply open [Lovable](https://lovable.dev/projects/db0b3a5d-d909-468e-9a4d-b33dbb775ad4) and click on Share -> Publish.
+Para suporte ou dúvidas sobre o projeto, entre em contato através dos canais oficiais do App da Juju.
 
-## Can I connect a custom domain to my Lovable project?
+## Licença
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Este projeto é propriedade do App da Juju. Todos os direitos reservados.

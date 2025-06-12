@@ -59,9 +59,9 @@ const DockItem = ({ children, onClick, mouseX, spring, distance, magnification, 
       onHoverEnd={() => isHovered.set(0)}
       onClick={onClick}
       className={`relative inline-flex items-center justify-center rounded-full 
-                  bg-gradient-to-br from-pink-100 to-pink-200 
-                  border-2 border-pink-300/50 shadow-lg 
-                  hover:from-pink-200 hover:to-pink-300
+                  bg-gradient-to-br from-sky-100 to-sky-200 
+                  border-2 border-sky-300/50 shadow-lg 
+                  hover:from-sky-200 hover:to-sky-300
                   transition-all duration-300 cursor-pointer
                   ${className}`}
       tabIndex={0}
@@ -95,7 +95,7 @@ const DockLabel = ({ children, isHovered }: any) => {
           exit={{ opacity: 0, y: 5 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
           className="absolute -top-10 left-1/2 w-fit whitespace-nowrap 
-                     rounded-lg border border-pink-200 
+                     rounded-lg border border-sky-200 
                      bg-white/90 backdrop-blur-sm
                      px-3 py-1.5 text-xs text-gray-700 shadow-xl"
           style={{ x: "-50%" }}
@@ -110,7 +110,7 @@ const DockLabel = ({ children, isHovered }: any) => {
 // Componente Dock Icon
 const DockIcon = ({ children }: any) => {
   return (
-    <div className="flex items-center justify-center w-full h-full text-pink-600">
+    <div className="flex items-center justify-center w-full h-full text-sky-600">
       {children}
     </div>
   );
@@ -138,7 +138,7 @@ const Dock = ({ items, className = "", spring = { mass: 0.1, stiffness: 150, dam
         className={`${className} 
                     flex items-end w-fit gap-4 
                     rounded-2xl 
-                    border-2 border-pink-200/50
+                    border-2 border-sky-200/50
                     pb-3 px-4
                     bg-white/80 backdrop-blur-md 
                     shadow-2xl`}
@@ -391,17 +391,17 @@ const AppJujuDashboard = () => {
   ];
 
   return (
-    <div className="flex flex-col w-full min-h-screen justify-center items-center relative bg-gradient-to-br from-pink-50 via-white to-pink-100 transition-colors duration-300">
+    <div className="flex flex-col w-full min-h-screen justify-center items-center relative bg-gradient-to-br from-sky-50 via-white to-sky-100 transition-colors duration-300">
       
       {/* Ilustrações de fundo - apenas em desktop */}
       <div className="absolute top-10 right-10 opacity-5 hidden lg:block">
-        <div className="w-32 h-32 bg-gradient-to-br from-pink-300 to-pink-400 rounded-full flex items-center justify-center">
+        <div className="w-32 h-32 bg-gradient-to-br from-sky-300 to-sky-400 rounded-full flex items-center justify-center">
           <span className="text-4xl">🏃‍♀️</span>
         </div>
       </div>
       
       <div className="absolute bottom-32 left-10 opacity-5 hidden lg:block">
-        <div className="w-24 h-24 bg-gradient-to-br from-pink-200 to-pink-300 rounded-full flex items-center justify-center">
+        <div className="w-24 h-24 bg-gradient-to-br from-sky-200 to-sky-300 rounded-full flex items-center justify-center">
           <span className="text-3xl">💪</span>
         </div>
       </div>
@@ -420,7 +420,7 @@ const AppJujuDashboard = () => {
             <TabsContent value="dashboard" className="mt-0">
               <div className="text-center space-y-6 md:space-y-8">
                 <div className="space-y-2 px-4">
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-pink-500 to-pink-600 bg-clip-text text-transparent">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-sky-500 to-sky-600 bg-clip-text text-transparent">
                     Olá, {userName}! 👋
                   </h1>
                   <p className="text-gray-600 text-base sm:text-lg">Pronta para mais um dia incrível?</p>
@@ -430,26 +430,26 @@ const AppJujuDashboard = () => {
                 <div className="grid grid-cols-2 gap-3 sm:gap-4 max-w-xs sm:max-w-md mx-auto px-4">
                   <motion.div 
                     whileHover={{ scale: 1.05, y: -5 }}
-                    className="bg-gradient-to-br from-pink-100 to-pink-200 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-pink-200 shadow-lg"
+                    className="bg-gradient-to-br from-sky-100 to-sky-200 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-sky-200 shadow-lg"
                   >
-                    <Calendar className="text-pink-500 mx-auto mb-2 sm:mb-3" size={isMobile ? 24 : 28} />
+                    <Calendar className="text-sky-500 mx-auto mb-2 sm:mb-3" size={isMobile ? 24 : 28} />
                     <p className="text-xs sm:text-sm text-gray-600 mb-1">Dias no App</p>
                     <p className="font-bold text-gray-800 text-xl sm:text-2xl">
                       {userData?.dias_no_app || 0}
                     </p>
-                    <p className="text-xs text-pink-500 mt-1">dias consecutivos</p>
+                    <p className="text-xs text-sky-500 mt-1">dias consecutivos</p>
                   </motion.div>
                   
                   <motion.div 
                     whileHover={{ scale: 1.05, y: -5 }}
-                    className="bg-gradient-to-br from-purple-100 to-purple-200 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-purple-200 shadow-lg"
+                    className="bg-gradient-to-br from-blue-100 to-blue-200 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-blue-200 shadow-lg"
                   >
-                    <TrendingUp className="text-purple-500 mx-auto mb-2 sm:mb-3" size={isMobile ? 24 : 28} />
+                    <TrendingUp className="text-blue-500 mx-auto mb-2 sm:mb-3" size={isMobile ? 24 : 28} />
                     <p className="text-xs sm:text-sm text-gray-600 mb-1">Progresso</p>
                     <p className="font-bold text-gray-800 text-xl sm:text-2xl">
                       {calculateProgress()}%
                     </p>
-                    <p className="text-xs text-purple-500 mt-1">da jornada</p>
+                    <p className="text-xs text-blue-500 mt-1">da jornada</p>
                   </motion.div>
                 </div>
 
@@ -489,20 +489,20 @@ const AppJujuDashboard = () => {
                     {/* Card de Série - Treino do Basa */}
                     <motion.div
                       whileHover={{ scale: isMobile ? 1.01 : 1.02, y: isMobile ? -1 : -2 }}
-                      className="bg-white rounded-xl sm:rounded-2xl border-l-4 border-blue-400 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer col-span-1"
+                      className="bg-white rounded-xl sm:rounded-2xl border-l-4 border-sky-400 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer col-span-1"
                       onClick={() => navigate('/dashboard/treino')}
                     >
                       <div className="p-3 sm:p-4 md:p-6">
                         <div className="flex items-start space-x-3">
-                          <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-gradient-to-br from-blue-400 to-blue-500 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-gradient-to-br from-sky-400 to-sky-500 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
                             <Dumbbell className="text-white" size={isMobile ? 16 : 20} />
                           </div>
                           <div className="flex-1 min-w-0">
                             <h3 className="font-bold text-gray-800 text-sm sm:text-base md:text-lg leading-tight">TREINO DO BASA</h3>
                             <p className="text-gray-600 text-xs md:text-sm mt-1 leading-relaxed">Exercícios desenvolvidos especialmente para seus objetivos</p>
                             <div className="flex items-center gap-2 mt-2">
-                              <Target size={10} className="text-blue-500 flex-shrink-0" />
-                              <span className="text-xs text-blue-600 font-semibold">Foco & Resultado</span>
+                              <Target size={10} className="text-sky-500 flex-shrink-0" />
+                              <span className="text-xs text-sky-600 font-semibold">Foco & Resultado</span>
                             </div>
                           </div>
                         </div>
@@ -532,7 +532,7 @@ const AppJujuDashboard = () => {
                                   <span className="text-xs text-gray-600">Dieta</span>
                                 </div>
                                 <div className="flex items-center gap-1">
-                                  <div className="w-2 h-2 bg-blue-400 rounded-full flex-shrink-0"></div>
+                                  <div className="w-2 h-2 bg-sky-400 rounded-full flex-shrink-0"></div>
                                   <span className="text-xs text-gray-600">Treino</span>
                                 </div>
                                 <div className="flex items-center gap-1">
@@ -558,11 +558,11 @@ const AppJujuDashboard = () => {
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.3 }}
-                    className="bg-gradient-to-r from-pink-100 to-purple-100 p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-pink-200 shadow-lg"
+                    className="bg-gradient-to-r from-sky-100 to-blue-100 p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-sky-200 shadow-lg"
                   >
                     <div className="text-center mb-4 sm:mb-6">
                       <h3 className="font-bold text-gray-800 text-xl sm:text-2xl mb-2 sm:mb-3 flex items-center justify-center gap-2 sm:gap-3">
-                        <Target size={isMobile ? 24 : 28} className="text-pink-500" />
+                        <Target size={isMobile ? 24 : 28} className="text-sky-500" />
                         Metas do Dia
                       </h3>
                       <p className="text-gray-600 text-sm sm:text-base italic mb-4 sm:mb-6">
@@ -578,16 +578,16 @@ const AppJujuDashboard = () => {
                         onClick={() => toggleDailyTask('workout')}
                         className={`w-full p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-300 flex items-center justify-between ${
                           dailyTasks.workout 
-                            ? 'bg-blue-100 border-blue-300 text-blue-700 shadow-md' 
-                            : 'bg-white border-gray-200 hover:border-blue-200 text-gray-600 hover:shadow-md'
+                            ? 'bg-sky-100 border-sky-300 text-sky-700 shadow-md' 
+                            : 'bg-white border-gray-200 hover:border-sky-200 text-gray-600 hover:shadow-md'
                         }`}
                       >
                         <div className="flex items-center gap-3 sm:gap-4">
-                          <Dumbbell size={isMobile ? 20 : 24} className={dailyTasks.workout ? 'text-blue-600' : 'text-gray-400'} />
+                          <Dumbbell size={isMobile ? 20 : 24} className={dailyTasks.workout ? 'text-sky-600' : 'text-gray-400'} />
                           <span className="text-sm sm:text-base font-medium">Completei meu treino</span>
                         </div>
                         {dailyTasks.workout ? (
-                          <CheckCircle size={isMobile ? 20 : 24} className="text-blue-600" />
+                          <CheckCircle size={isMobile ? 20 : 24} className="text-sky-600" />
                         ) : (
                           <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-gray-300 rounded-full" />
                         )}
@@ -643,19 +643,19 @@ const AppJujuDashboard = () => {
                           <div
                             key={index}
                             className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full transition-all duration-300 ${
-                              completed ? 'bg-gradient-to-r from-pink-400 to-purple-400 shadow-md' : 'bg-gray-200'
+                              completed ? 'bg-gradient-to-r from-sky-400 to-blue-400 shadow-md' : 'bg-gray-200'
                             }`}
                           />
                         ))}
                       </div>
-                      <p className="text-pink-600 text-sm sm:text-base font-semibold">
+                      <p className="text-sky-600 text-sm sm:text-base font-semibold">
                         {Object.values(dailyTasks).filter(Boolean).length}/3 metas concluídas hoje
                       </p>
                       
                       {/* Barra de progresso visual - Responsivo */}
                       <div className="w-full bg-gray-200 rounded-full h-2 sm:h-3 mt-3 sm:mt-4">
                         <div 
-                          className="bg-gradient-to-r from-pink-400 to-purple-400 h-2 sm:h-3 rounded-full transition-all duration-500 ease-out"
+                          className="bg-gradient-to-r from-sky-400 to-blue-400 h-2 sm:h-3 rounded-full transition-all duration-500 ease-out"
                           style={{ width: `${(Object.values(dailyTasks).filter(Boolean).length / 3) * 100}%` }}
                         />
                       </div>
@@ -671,7 +671,7 @@ const AppJujuDashboard = () => {
                 <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-6 sm:p-8 rounded-2xl border border-gray-200 max-w-sm sm:max-w-md mx-auto">
                   <Camera className="text-gray-400 mx-auto mb-4" size={isMobile ? 40 : 48} />
                   <p className="text-gray-600 mb-2">Liberação em:</p>
-                  <p className="text-xl sm:text-2xl font-bold text-pink-600">7 dias</p>
+                  <p className="text-xl sm:text-2xl font-bold text-sky-600">7 dias</p>
                   <p className="text-sm text-gray-500 mt-2">Continue seguindo seu plano! 💪</p>
                 </div>
               </div>
@@ -680,8 +680,8 @@ const AppJujuDashboard = () => {
             <TabsContent value="perfil" className="mt-0">
               <div className="text-center space-y-6 px-4">
                 <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Perfil 👤</h2>
-                <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-4 sm:p-6 rounded-2xl border border-pink-200 max-w-sm sm:max-w-md mx-auto space-y-4">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-pink-400 to-pink-500 rounded-full flex items-center justify-center mx-auto">
+                <div className="bg-gradient-to-br from-sky-50 to-sky-100 p-4 sm:p-6 rounded-2xl border border-sky-200 max-w-sm sm:max-w-md mx-auto space-y-4">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-sky-400 to-sky-500 rounded-full flex items-center justify-center mx-auto">
                     <span className="text-xl sm:text-2xl">👩‍💪</span>
                   </div>
                   <div className="space-y-2">
@@ -719,7 +719,7 @@ const AppJujuDashboard = () => {
                   </div>
                   <button 
                     onClick={() => setIsEditModalOpen(true)}
-                    className="bg-gradient-to-r from-pink-500 to-pink-600 text-white px-4 sm:px-6 py-2 rounded-xl hover:from-pink-600 hover:to-pink-700 transition-all text-sm sm:text-base"
+                    className="bg-gradient-to-r from-sky-500 to-sky-600 text-white px-4 sm:px-6 py-2 rounded-xl hover:from-sky-600 hover:to-sky-700 transition-all text-sm sm:text-base"
                   >
                     Editar Perfil
                   </button>

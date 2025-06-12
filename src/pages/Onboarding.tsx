@@ -1,76 +1,58 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 const Onboarding = () => {
   const navigate = useNavigate();
   const [currentDot, setCurrentDot] = useState(0);
-
-  const testimonials = [
-    {
-      name: "Rafael Santos",
-      initials: "RS",
-      content: "Sistema completo! O Método BJ me ajudou a conquistar resultados que eu não conseguia há anos.",
-      result: "+12kg massa magra"
-    },
-    {
-      name: "Ana Costa",
-      initials: "AC", 
-      content: "Metodologia incrível! Finalmente encontrei algo que funciona de verdade.",
-      result: "-15kg em 3 meses"
-    },
-    {
-      name: "Carlos Lima",
-      initials: "CL",
-      content: "Transformação total! Me sinto mais forte e confiante do que nunca.",
-      result: "+8kg muscle"
-    },
-    {
-      name: "Maria Silva",
-      initials: "MS",
-      content: "Resultado além das expectativas! Recomendo para todos.",
-      result: "-20kg"
-    },
-    {
-      name: "Pedro Oliveira", 
-      initials: "PO",
-      content: "Sistema eficiente que se adapta perfeitamente à minha rotina.",
-      result: "Corpo definido"
-    }
-  ];
-
+  const testimonials = [{
+    name: "Rafael Santos",
+    initials: "RS",
+    content: "Sistema completo! O Método BJ me ajudou a conquistar resultados que eu não conseguia há anos.",
+    result: "+12kg massa magra"
+  }, {
+    name: "Ana Costa",
+    initials: "AC",
+    content: "Metodologia incrível! Finalmente encontrei algo que funciona de verdade.",
+    result: "-15kg em 3 meses"
+  }, {
+    name: "Carlos Lima",
+    initials: "CL",
+    content: "Transformação total! Me sinto mais forte e confiante do que nunca.",
+    result: "+8kg muscle"
+  }, {
+    name: "Maria Silva",
+    initials: "MS",
+    content: "Resultado além das expectativas! Recomendo para todos.",
+    result: "-20kg"
+  }, {
+    name: "Pedro Oliveira",
+    initials: "PO",
+    content: "Sistema eficiente que se adapta perfeitamente à minha rotina.",
+    result: "Corpo definido"
+  }];
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentDot(prev => (prev + 1) % 5);
     }, 2000);
     return () => clearInterval(interval);
   }, []);
-
   const handleVideoPlay = () => {
     alert('🎬 Reproduzindo vídeo da metodologia do Método BJ...');
   };
-
   const handleStartTransformation = () => {
     navigate('/dados-pessoais');
   };
-
-  return (
-    <div className="min-h-screen bg-slate-50 p-3 sm:p-5">
+  return <div className="min-h-screen bg-slate-50 p-3 sm:p-5">
       <div className="max-w-sm sm:max-w-md mx-auto bg-white rounded-3xl p-4 sm:p-8 shadow-2xl">
         
         {/* Logo/Image */}
         <div className="w-full mb-6 sm:mb-8 flex items-center justify-center">
-          <img 
-            src="/lovable-uploads/5e3b41d1-5f67-4a50-927e-5a32e4c74a2c.png" 
-            alt="Método BJ" 
-            className="w-36 h-36 sm:w-48 sm:h-48 object-contain rounded-2xl"
-          />
+          <img src="/lovable-uploads/5e3b41d1-5f67-4a50-927e-5a32e4c74a2c.png" alt="Método BJ" className="w-36 h-36 sm:w-48 sm:h-48 object-contain rounded-2xl" />
         </div>
 
         {/* Subtitle */}
         <div className="text-center mb-6 sm:mb-8 text-slate-600 px-2">
-          <span className="text-blue-600 font-semibold">Ele traz a força.</span> <span className="text-pink-500 font-semibold">Ela ativa a constância</span><br/>
-          <span className="text-slate-600">juntos criamos o método que vai</span><br/>
+          <span className="text-blue-600 font-semibold">Ele traz a força.</span> <span className="text-pink-500 font-semibold">Ela ativa a constância</span><br />
+          <span className="text-slate-600">juntos criamos o método que vai</span><br />
           <span className="text-blue-600 font-semibold">transformar seu corpo</span>
         </div>
 
@@ -83,12 +65,9 @@ const Onboarding = () => {
             Descubra o sistema completo para atingir seus objetivos de forma consistente
           </p>
           
-          <button
-            onClick={handleVideoPlay}
-            className="w-14 h-14 sm:w-16 sm:h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 border-0 cursor-pointer transition-all duration-300 animate-pulse hover:scale-105"
-          >
+          <button onClick={handleVideoPlay} className="w-14 h-14 sm:w-16 sm:h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mx-auto mb-4 border-0 cursor-pointer transition-all duration-300 animate-pulse hover:scale-105">
             <svg viewBox="0 0 24 24" className="w-5 h-5 sm:w-6 sm:h-6 fill-white ml-1">
-              <path d="M8 5v14l11-7z"/>
+              <path d="M8 5v14l11-7z" />
             </svg>
           </button>
           
@@ -150,25 +129,11 @@ const Onboarding = () => {
 
         {/* Dots Indicator */}
         <div className="flex justify-center gap-2 mb-5">
-          {[0, 1, 2, 3, 4].map((index) => (
-            <div 
-              key={index}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                index === currentDot 
-                  ? 'bg-blue-600 w-6' 
-                  : 'bg-slate-300 w-2'
-              }`}
-            />
-          ))}
+          {[0, 1, 2, 3, 4].map(index => <div key={index} className={`h-2 rounded-full transition-all duration-300 ${index === currentDot ? 'bg-blue-600 w-6' : 'bg-slate-300 w-2'}`} />)}
         </div>
 
         {/* CTA Button */}
-        <button
-          onClick={handleStartTransformation}
-          className="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-semibold py-3 sm:py-4 px-6 rounded-2xl transition-all duration-300 mb-4 hover:-translate-y-0.5 hover:shadow-lg text-sm sm:text-base"
-        >
-          🚀 Acessar o Sistema
-        </button>
+        <button onClick={handleStartTransformation} className="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-semibold py-3 sm:py-4 px-6 rounded-2xl transition-all duration-300 mb-4 hover:-translate-y-0.5 hover:shadow-lg text-sm sm:text-base">Começa com o Método</button>
 
         {/* Time Info */}
         <div className="text-center flex items-center justify-center gap-2 text-slate-600 text-xs sm:text-sm px-2">
@@ -177,8 +142,6 @@ const Onboarding = () => {
         </div>
 
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Onboarding;

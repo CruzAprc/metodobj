@@ -19,23 +19,47 @@ const Loading = () => {
     }
   }, []);
 
-  // Preload da imagem da Juju para garantir carregamento rápido
+  // Preload agressivo da imagem da Juju - MÁXIMA PRIORIDADE
   useEffect(() => {
     const imageUrl = "/lovable-uploads/4f268362-785c-45b9-aeba-4c33c58fa0e1.png";
-    const img = new Image();
-    img.onload = () => setImageLoaded(true);
-    img.src = imageUrl;
     
-    // Adicionar preload no head
+    // Múltiplas estratégias de preload para garantir carregamento instantâneo
+    
+    // 1. Preload via link no head com highest priority
     const link = document.createElement('link');
     link.rel = 'preload';
     link.as = 'image';
     link.href = imageUrl;
-    document.head.appendChild(link);
+    link.fetchPriority = 'high';
+    document.head.insertBefore(link, document.head.firstChild);
+    
+    // 2. Preload via Image object com cache
+    const img = new Image();
+    img.fetchPriority = 'high';
+    img.loading = 'eager';
+    img.decoding = 'sync';
+    img.onload = () => {
+      setImageLoaded(true);
+      console.log('Imagem carregada com sucesso!');
+    };
+    img.onerror = () => {
+      console.error('Erro ao carregar imagem');
+      setImageLoaded(true); // Ainda mostra o container
+    };
+    img.src = imageUrl;
+    
+    // 3. Prefetch adicional
+    const prefetchLink = document.createElement('link');
+    prefetchLink.rel = 'prefetch';
+    prefetchLink.href = imageUrl;
+    document.head.appendChild(prefetchLink);
 
     return () => {
       if (document.head.contains(link)) {
         document.head.removeChild(link);
+      }
+      if (document.head.contains(prefetchLink)) {
+        document.head.removeChild(prefetchLink);
       }
     };
   }, []);
@@ -78,31 +102,34 @@ const Loading = () => {
         <div className="w-12 h-12 bg-gradient-to-br from-pink-300 to-pink-400 rounded-full" />
       </div>
 
-      {/* Imagem da Juju com otimização de carregamento */}
+      {/* Imagem da Juju - RENDERIZAÇÃO PRIORITÁRIA */}
       <motion.div 
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
         className="mb-8 relative"
       >
         <div className="w-32 h-32 sm:w-40 sm:h-40 bg-gradient-to-br from-pink-400 to-pink-600 rounded-3xl flex items-center justify-center shadow-2xl p-3">
           <img 
             src="/lovable-uploads/4f268362-785c-45b9-aeba-4c33c58fa0e1.png" 
             alt="Juju - Método BJ" 
-            className={`w-full h-full object-contain transition-opacity duration-300 ${
-              imageLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
+            className="w-full h-full object-contain"
             loading="eager"
             fetchPriority="high"
             decoding="sync"
             onLoad={() => setImageLoaded(true)}
             style={{
-              contentVisibility: 'auto',
-              containIntrinsicSize: '160px 160px'
+              contentVisibility: 'visible',
+              containIntrinsicSize: '160px 160px',
+              imageRendering: 'crisp-edges',
+              willChange: 'transform'
             }}
           />
+          {/* Fallback mínimo - apenas para garantir que algo apareça */}
           {!imageLoaded && (
-            <div className="w-full h-full bg-gradient-to-br from-pink-100 to-pink-200 rounded-2xl animate-pulse absolute inset-0" />
+            <div className="w-full h-full bg-gradient-to-br from-pink-200 to-pink-300 rounded-2xl absolute inset-0 flex items-center justify-center">
+              <span className="text-white font-bold text-lg">J</span>
+            </div>
           )}
         </div>
       </motion.div>

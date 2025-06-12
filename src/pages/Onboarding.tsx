@@ -1,8 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 const Onboarding = () => {
   const navigate = useNavigate();
   const [currentDot, setCurrentDot] = useState(0);
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  // Preload da imagem para garantir carregamento rápido
+  useEffect(() => {
+    const imageUrl = "/lovable-uploads/5e3b41d1-5f67-4a50-927e-5a32e4c74a2c.png";
+    const img = new Image();
+    img.onload = () => setImageLoaded(true);
+    img.src = imageUrl;
+    
+    // Adicionar preload no head
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = imageUrl;
+    document.head.appendChild(link);
+
+    return () => {
+      if (document.head.contains(link)) {
+        document.head.removeChild(link);
+      }
+    };
+  }, []);
+
   const testimonials = [{
     name: "Rafael Santos",
     initials: "RS",
@@ -29,24 +53,46 @@ const Onboarding = () => {
     content: "Sistema eficiente que se adapta perfeitamente à minha rotina.",
     result: "Corpo definido"
   }];
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentDot(prev => (prev + 1) % 5);
     }, 2000);
     return () => clearInterval(interval);
   }, []);
+
   const handleVideoPlay = () => {
     alert('🎬 Reproduzindo vídeo da metodologia do Método BJ...');
   };
+
   const handleStartTransformation = () => {
     navigate('/dados-pessoais');
   };
-  return <div className="min-h-screen bg-slate-50 p-3 sm:p-5">
+
+  return (
+    <div className="min-h-screen bg-slate-50 p-3 sm:p-5">
       <div className="max-w-sm sm:max-w-md mx-auto bg-white rounded-3xl p-4 sm:p-8 shadow-2xl">
         
-        {/* Logo/Image */}
+        {/* Logo/Image com otimização de carregamento */}
         <div className="w-full mb-6 sm:mb-8 flex items-center justify-center">
-          <img src="/lovable-uploads/5e3b41d1-5f67-4a50-927e-5a32e4c74a2c.png" alt="Método BJ" className="w-36 h-36 sm:w-48 sm:h-48 object-contain rounded-2xl" />
+          <img 
+            src="/lovable-uploads/5e3b41d1-5f67-4a50-927e-5a32e4c74a2c.png" 
+            alt="Método BJ" 
+            className={`w-36 h-36 sm:w-48 sm:h-48 object-contain rounded-2xl transition-opacity duration-300 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            loading="eager"
+            fetchPriority="high"
+            decoding="sync"
+            onLoad={() => setImageLoaded(true)}
+            style={{
+              contentVisibility: 'auto',
+              containIntrinsicSize: '192px 192px'
+            }}
+          />
+          {!imageLoaded && (
+            <div className="w-36 h-36 sm:w-48 sm:h-48 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl animate-pulse absolute" />
+          )}
         </div>
 
         {/* Subtitle */}
@@ -129,11 +175,15 @@ const Onboarding = () => {
 
         {/* Dots Indicator */}
         <div className="flex justify-center gap-2 mb-5">
-          {[0, 1, 2, 3, 4].map(index => <div key={index} className={`h-2 rounded-full transition-all duration-300 ${index === currentDot ? 'bg-blue-600 w-6' : 'bg-slate-300 w-2'}`} />)}
+          {[0, 1, 2, 3, 4].map(index => (
+            <div key={index} className={`h-2 rounded-full transition-all duration-300 ${index === currentDot ? 'bg-blue-600 w-6' : 'bg-slate-300 w-2'}`} />
+          ))}
         </div>
 
         {/* CTA Button */}
-        <button onClick={handleStartTransformation} className="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-semibold py-3 sm:py-4 px-6 rounded-2xl transition-all duration-300 mb-4 hover:-translate-y-0.5 hover:shadow-lg text-sm sm:text-base">Começa com o Método</button>
+        <button onClick={handleStartTransformation} className="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-semibold py-3 sm:py-4 px-6 rounded-2xl transition-all duration-300 mb-4 hover:-translate-y-0.5 hover:shadow-lg text-sm sm:text-base">
+          Começa com o Método
+        </button>
 
         {/* Time Info */}
         <div className="text-center flex items-center justify-center gap-2 text-slate-600 text-xs sm:text-sm px-2">
@@ -142,6 +192,8 @@ const Onboarding = () => {
         </div>
 
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Onboarding;

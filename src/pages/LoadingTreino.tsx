@@ -8,6 +8,7 @@ const LoadingTreino = () => {
   const navigate = useNavigate();
   const [currentMessage, setCurrentMessage] = useState(0);
   const [userName, setUserName] = useState('');
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   // Recuperar o nome do usuário do localStorage
   useEffect(() => {
@@ -16,6 +17,51 @@ const LoadingTreino = () => {
       const dados = JSON.parse(dadosPessoais);
       setUserName(dados.nomeCompleto.split(' ')[0]); // Pega apenas o primeiro nome
     }
+  }, []);
+
+  // Preload agressivo da imagem do personal trainer - MÁXIMA PRIORIDADE
+  useEffect(() => {
+    const imageUrl = "/lovable-uploads/f85d4059-57d5-4753-a12e-639ca86ca889.png";
+    
+    // Múltiplas estratégias de preload para garantir carregamento instantâneo
+    
+    // 1. Preload via link no head com highest priority
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = imageUrl;
+    link.fetchPriority = 'high';
+    document.head.insertBefore(link, document.head.firstChild);
+    
+    // 2. Preload via Image object com cache
+    const img = new Image();
+    img.fetchPriority = 'high';
+    img.loading = 'eager';
+    img.decoding = 'sync';
+    img.onload = () => {
+      setImageLoaded(true);
+      console.log('Imagem do personal trainer carregada com sucesso!');
+    };
+    img.onerror = () => {
+      console.error('Erro ao carregar imagem do personal trainer');
+      setImageLoaded(true); // Ainda mostra o container
+    };
+    img.src = imageUrl;
+    
+    // 3. Prefetch adicional
+    const prefetchLink = document.createElement('link');
+    prefetchLink.rel = 'prefetch';
+    prefetchLink.href = imageUrl;
+    document.head.appendChild(prefetchLink);
+
+    return () => {
+      if (document.head.contains(link)) {
+        document.head.removeChild(link);
+      }
+      if (document.head.contains(prefetchLink)) {
+        document.head.removeChild(prefetchLink);
+      }
+    };
   }, []);
 
   const messages = [
@@ -43,32 +89,48 @@ const LoadingTreino = () => {
   }, [currentMessage, navigate, userName]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 flex flex-col justify-center items-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex flex-col justify-center items-center p-4 relative overflow-hidden">
       
       {/* Elementos decorativos de fundo */}
       <div className="absolute top-20 right-10 opacity-20 animate-pulse">
-        <Sparkles size={40} className="text-pink-400" />
+        <Sparkles size={40} className="text-blue-400" />
       </div>
       <div className="absolute bottom-20 left-10 opacity-20 animate-pulse delay-1000">
-        <Dumbbell size={35} className="text-purple-400" />
+        <Dumbbell size={35} className="text-indigo-400" />
       </div>
       <div className="absolute top-1/3 left-1/4 opacity-10 animate-pulse delay-500">
-        <div className="w-12 h-12 bg-gradient-to-br from-pink-300 to-pink-400 rounded-full" />
+        <div className="w-12 h-12 bg-gradient-to-br from-blue-300 to-blue-400 rounded-full" />
       </div>
 
-      {/* Logo da Juju */}
+      {/* Imagem do Personal Trainer - RENDERIZAÇÃO PRIORITÁRIA */}
       <motion.div 
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="mb-8"
+        transition={{ duration: 0.3, ease: "easeOut" }}
+        className="mb-8 relative"
       >
-        <div className="w-20 h-20 bg-gradient-to-br from-pink-400 to-pink-600 rounded-3xl flex items-center justify-center shadow-2xl p-2">
+        <div className="w-32 h-32 sm:w-40 sm:h-40 bg-gradient-to-br from-blue-400 to-blue-600 rounded-3xl flex items-center justify-center shadow-2xl p-3">
           <img 
-            src="/lovable-uploads/02d55ca0-b017-487b-a9a2-275d8eef05b6.png" 
-            alt="Juju Logo" 
+            src="/lovable-uploads/f85d4059-57d5-4753-a12e-639ca86ca889.png" 
+            alt="Personal Trainer - Método BJ" 
             className="w-full h-full object-contain"
+            loading="eager"
+            fetchPriority="high"
+            decoding="sync"
+            onLoad={() => setImageLoaded(true)}
+            style={{
+              contentVisibility: 'visible',
+              containIntrinsicSize: '160px 160px',
+              imageRendering: 'crisp-edges',
+              willChange: 'transform'
+            }}
           />
+          {/* Fallback mínimo - apenas para garantir que algo apareça */}
+          {!imageLoaded && (
+            <div className="w-full h-full bg-gradient-to-br from-blue-200 to-blue-300 rounded-2xl absolute inset-0 flex items-center justify-center">
+              <span className="text-white font-bold text-lg">BJ</span>
+            </div>
+          )}
         </div>
       </motion.div>
 
@@ -82,7 +144,7 @@ const LoadingTreino = () => {
           transition={{ delay: 0.3 }}
         >
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
-            Agora vamos para o treino, <span className="bg-gradient-to-r from-pink-500 to-pink-600 bg-clip-text text-transparent">
+            Agora vamos para o treino, <span className="bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent">
               {userName}!
             </span>
           </h1>
@@ -113,7 +175,7 @@ const LoadingTreino = () => {
               key={index}
               className={`h-2 rounded-full transition-all duration-300 ${
                 index <= currentMessage 
-                  ? 'bg-gradient-to-r from-pink-400 to-pink-500 w-8' 
+                  ? 'bg-gradient-to-r from-blue-400 to-blue-500 w-8' 
                   : 'bg-gray-200 w-2'
               }`}
               animate={{
@@ -131,8 +193,8 @@ const LoadingTreino = () => {
           className="flex justify-center mt-6"
         >
           <div className="relative">
-            <div className="w-12 h-12 border-4 border-pink-200 rounded-full animate-spin border-t-pink-500"></div>
-            <div className="absolute inset-0 w-12 h-12 border-4 border-transparent rounded-full animate-pulse border-t-pink-300"></div>
+            <div className="w-12 h-12 border-4 border-blue-200 rounded-full animate-spin border-t-blue-500"></div>
+            <div className="absolute inset-0 w-12 h-12 border-4 border-transparent rounded-full animate-pulse border-t-blue-300"></div>
           </div>
         </motion.div>
 

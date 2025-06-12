@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -20,7 +19,7 @@ const Login = () => {
 
   // Preload da imagem para garantir carregamento instantâneo
   useEffect(() => {
-    const imageUrl = "/assets/login-logo.png";
+    const imageUrl = "/lovable-uploads/1880add2-ad7a-4dcf-aba6-659b952d3681.png";
     const img = new Image();
     img.onload = () => setImageLoaded(true);
     img.src = imageUrl;
@@ -93,7 +92,7 @@ const Login = () => {
             {/* Logo otimizada e maior */}
             <div className="flex items-center justify-center w-40 h-40 mx-auto mb-6">
               <img 
-                src="/assets/login-logo.png" 
+                src="/lovable-uploads/1880add2-ad7a-4dcf-aba6-659b952d3681.png" 
                 alt="Logo" 
                 className={`w-full h-full object-contain transition-opacity duration-300 ${
                   imageLoaded ? 'opacity-100' : 'opacity-0'

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -19,7 +18,7 @@ const Cadastro = () => {
 
   // Preload ultra-agressivo da logo - MÁXIMA PRIORIDADE
   useEffect(() => {
-    const imageUrl = "/assets/cadastro-logo.png";
+    const imageUrl = "/lovable-uploads/5c7d156f-f9d2-453e-9c50-28c742329168.png";
     
     // 1. Preload crítico no head com highest priority (primeira coisa)
     const link = document.createElement('link');
@@ -177,7 +176,7 @@ const Cadastro = () => {
             {/* Logo ultra-otimizada e maior */}
             <div className="flex items-center justify-center w-40 h-40 mx-auto mb-6 relative">
               <img 
-                src="/assets/cadastro-logo.png" 
+                src="/lovable-uploads/5c7d156f-f9d2-453e-9c50-28c742329168.png" 
                 alt="Logo" 
                 className={`w-full h-full object-contain transition-opacity duration-200 ${
                   imageLoaded ? 'opacity-100' : 'opacity-0'

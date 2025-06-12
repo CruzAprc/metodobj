@@ -173,8 +173,8 @@ const DadosPessoais = () => {
   const currentStepData = steps[currentStep - 1];
 
   return (
-    <div className="min-h-screen bg-slate-50 p-3 sm:p-5">
-      <div className="max-w-sm sm:max-w-md mx-auto bg-white rounded-3xl p-4 sm:p-8 shadow-2xl">
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-xl">
         
         {/* Progress bar */}
         <div className="flex justify-center mb-6 sm:mb-8">
@@ -203,7 +203,7 @@ const DadosPessoais = () => {
           transition={{ duration: 0.3 }}
           className="flex justify-center mb-6"
         >
-          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl flex items-center justify-center border-2 border-blue-200">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl flex items-center justify-center border-2 border-blue-200">
             {currentStepData.icon}
           </div>
         </motion.div>
@@ -216,11 +216,11 @@ const DadosPessoais = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className="text-center space-y-4 sm:space-y-6"
+            className="text-center space-y-6"
           >
             {/* Título */}
             <div className="space-y-2">
-              <h2 className="text-lg sm:text-2xl font-bold text-slate-800">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-800">
                 {currentStepData.title}
               </h2>
               <p className="text-slate-600 text-sm">
@@ -236,7 +236,7 @@ const DadosPessoais = () => {
                   value={formData[currentStepData.field]}
                   onChange={(e) => handleInputChange(currentStepData.field, e.target.value)}
                   placeholder={currentStepData.placeholder}
-                  className={`w-full px-4 sm:px-6 py-3 sm:py-4 rounded-2xl text-center text-base sm:text-lg font-medium
+                  className={`w-full px-6 py-4 rounded-2xl text-center text-lg font-medium
                             bg-blue-50/60 border-2 transition-all duration-300
                             focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300
                             ${errors[currentStepData.field] 
@@ -246,7 +246,7 @@ const DadosPessoais = () => {
                   min={currentStepData.type === 'number' ? '1' : undefined}
                 />
                 {currentStepData.unit && (
-                  <span className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 text-slate-500 text-base sm:text-lg">
+                  <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-500 text-lg">
                     {currentStepData.unit}
                   </span>
                 )}
@@ -270,31 +270,31 @@ const DadosPessoais = () => {
         </AnimatePresence>
 
         {/* Botões de navegação */}
-        <div className="flex justify-between items-center mt-6 sm:mt-8 space-x-4">
+        <div className="flex justify-between items-center mt-8 space-x-4">
           <button
             onClick={handlePrevious}
-            className="flex items-center space-x-2 px-4 sm:px-6 py-2 sm:py-3 rounded-2xl font-medium transition-all
-                     text-slate-600 hover:text-slate-800 hover:bg-slate-100 text-sm sm:text-base"
+            className="flex items-center space-x-2 px-6 py-3 rounded-2xl font-medium transition-all
+                     text-slate-600 hover:text-slate-800 hover:bg-slate-100"
           >
-            <ArrowLeft size={16} className="sm:w-5 sm:h-5" />
+            <ArrowLeft size={18} />
             <span>Voltar</span>
           </button>
 
           <button
             onClick={handleNext}
-            className="flex items-center space-x-2 px-4 sm:px-6 py-2 sm:py-3 rounded-2xl font-medium
+            className="flex items-center space-x-2 px-6 py-3 rounded-2xl font-medium
                      bg-gradient-to-r from-blue-600 to-blue-800 text-white
                      hover:from-blue-700 hover:to-blue-900 
                      transform hover:scale-105 active:scale-95
-                     transition-all duration-300 shadow-lg text-sm sm:text-base"
+                     transition-all duration-300 shadow-lg"
           >
             <span>{currentStep === 4 ? 'Finalizar' : 'Continuar'}</span>
-            <ArrowRight size={16} className="sm:w-5 sm:h-5" />
+            <ArrowRight size={18} />
           </button>
         </div>
 
         {/* Indicador de etapa */}
-        <div className="text-center mt-4 sm:mt-6">
+        <div className="text-center mt-6">
           <p className="text-xs text-slate-400">
             Etapa {currentStep} de 4
           </p>
@@ -305,7 +305,7 @@ const DadosPessoais = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="text-center text-slate-500 text-sm mt-4 sm:mt-6 px-2"
+          className="text-center text-slate-500 text-sm mt-6"
         >
           Estamos quase lá! Essas informações nos ajudam a criar o plano perfeito para você! 💕
         </motion.p>

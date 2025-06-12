@@ -31,6 +31,7 @@ import { useNavigate } from "react-router-dom";
 import EditProfileModal from '@/components/EditProfileModal';
 import ProgressCalendar from '@/components/ProgressCalendar';
 import { toast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Componente Dock Item
 const DockItem = ({ children, onClick, mouseX, spring, distance, magnification, baseItemSize, className = "" }: any) => {
@@ -179,8 +180,9 @@ const AppJujuDashboard = () => {
   const [todayProgress, setTodayProgress] = useState<any>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
-  const iconSize = 22;
+  const iconSize = isMobile ? 18 : 22;
 
   // Function to calculate user progress
   const calculateProgress = () => {
@@ -405,50 +407,50 @@ const AppJujuDashboard = () => {
   ];
 
   return (
-    <div className="flex flex-col w-full h-screen justify-center items-center relative bg-gradient-to-br from-pink-50 via-white to-pink-100 transition-colors duration-300">
+    <div className="flex flex-col w-full min-h-screen justify-center items-center relative bg-gradient-to-br from-pink-50 via-white to-pink-100 transition-colors duration-300">
       
-      {/* Ilustrações de fundo */}
-      <div className="absolute top-10 right-10 opacity-5 hidden md:block">
+      {/* Ilustrações de fundo - apenas em desktop */}
+      <div className="absolute top-10 right-10 opacity-5 hidden lg:block">
         <div className="w-32 h-32 bg-gradient-to-br from-pink-300 to-pink-400 rounded-full flex items-center justify-center">
           <span className="text-4xl">🏃‍♀️</span>
         </div>
       </div>
       
-      <div className="absolute bottom-32 left-10 opacity-5 hidden md:block">
+      <div className="absolute bottom-32 left-10 opacity-5 hidden lg:block">
         <div className="w-24 h-24 bg-gradient-to-br from-pink-200 to-pink-300 rounded-full flex items-center justify-center">
           <span className="text-3xl">💪</span>
         </div>
       </div>
 
-      {/* Conteúdo principal com abas */}
-      <div className="flex-1 flex items-center justify-center w-full px-4">
+      {/* Conteúdo principal com abas - Responsivo */}
+      <div className="flex-1 flex items-center justify-center w-full px-2 sm:px-4 pb-24 md:pb-20">
         <motion.div 
           key={currentTab}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="w-full max-w-4xl"
+          className="w-full max-w-7xl"
         >
           <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
 
             <TabsContent value="dashboard" className="mt-0">
-              <div className="text-center space-y-8">
-                <div className="space-y-2">
-                  <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-500 to-pink-600 bg-clip-text text-transparent">
+              <div className="text-center space-y-6 md:space-y-8">
+                <div className="space-y-2 px-4">
+                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-pink-500 to-pink-600 bg-clip-text text-transparent">
                     Olá, {userName}! 👋
                   </h1>
-                  <p className="text-gray-600 text-lg">Pronta para mais um dia incrível?</p>
+                  <p className="text-gray-600 text-base sm:text-lg">Pronta para mais um dia incrível?</p>
                 </div>
                 
-                {/* Cards de resumo melhorados */}
-                <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
+                {/* Cards de resumo melhorados - Responsivos */}
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 max-w-xs sm:max-w-md mx-auto px-4">
                   <motion.div 
                     whileHover={{ scale: 1.05, y: -5 }}
-                    className="bg-gradient-to-br from-pink-100 to-pink-200 p-6 rounded-3xl border border-pink-200 shadow-lg"
+                    className="bg-gradient-to-br from-pink-100 to-pink-200 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-pink-200 shadow-lg"
                   >
-                    <Calendar className="text-pink-500 mx-auto mb-3" size={28} />
-                    <p className="text-sm text-gray-600 mb-1">Dias no App</p>
-                    <p className="font-bold text-gray-800 text-2xl">
+                    <Calendar className="text-pink-500 mx-auto mb-2 sm:mb-3" size={isMobile ? 24 : 28} />
+                    <p className="text-xs sm:text-sm text-gray-600 mb-1">Dias no App</p>
+                    <p className="font-bold text-gray-800 text-xl sm:text-2xl">
                       {userData?.dias_no_app || 0}
                     </p>
                     <p className="text-xs text-pink-500 mt-1">dias consecutivos</p>
@@ -456,91 +458,91 @@ const AppJujuDashboard = () => {
                   
                   <motion.div 
                     whileHover={{ scale: 1.05, y: -5 }}
-                    className="bg-gradient-to-br from-purple-100 to-purple-200 p-6 rounded-3xl border border-purple-200 shadow-lg"
+                    className="bg-gradient-to-br from-purple-100 to-purple-200 p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-purple-200 shadow-lg"
                   >
-                    <TrendingUp className="text-purple-500 mx-auto mb-3" size={28} />
-                    <p className="text-sm text-gray-600 mb-1">Progresso</p>
-                    <p className="font-bold text-gray-800 text-2xl">
+                    <TrendingUp className="text-purple-500 mx-auto mb-2 sm:mb-3" size={isMobile ? 24 : 28} />
+                    <p className="text-xs sm:text-sm text-gray-600 mb-1">Progresso</p>
+                    <p className="font-bold text-gray-800 text-xl sm:text-2xl">
                       {calculateProgress()}%
                     </p>
                     <p className="text-xs text-purple-500 mt-1">da jornada</p>
                   </motion.div>
                 </div>
 
-                {/* Seção de Séries/Atividades */}
+                {/* Seção de Séries/Atividades - Responsiva */}
                 <div className="w-full max-w-6xl mx-auto space-y-4 px-4">
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6 text-center">Suas Atividades Hoje</h2>
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6 text-center">Suas Atividades Hoje</h2>
                   
                   {/* Grid responsivo para cards */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
                     
                     {/* Card de Série - Dieta da Juju */}
                     <motion.div
-                      whileHover={{ scale: 1.02, y: -2 }}
-                      className="bg-white rounded-2xl border-l-4 border-pink-400 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer col-span-1"
+                      whileHover={{ scale: isMobile ? 1.01 : 1.02, y: isMobile ? -1 : -2 }}
+                      className="bg-white rounded-xl sm:rounded-2xl border-l-4 border-pink-400 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer col-span-1"
                       onClick={() => navigate('/dashboard/dieta')}
                     >
-                      <div className="p-4 md:p-6">
-                        <div className="flex items-start space-x-3 md:space-x-4">
-                          <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-pink-400 to-pink-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <Coffee className="text-white" size={20} />
+                      <div className="p-3 sm:p-4 md:p-6">
+                        <div className="flex items-start space-x-3">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-gradient-to-br from-pink-400 to-pink-500 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                            <Coffee className="text-white" size={isMobile ? 16 : 20} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-gray-800 text-base md:text-lg leading-tight">PLANO ALIMENTAR</h3>
+                            <h3 className="font-bold text-gray-800 text-sm sm:text-base md:text-lg leading-tight">PLANO ALIMENTAR</h3>
                             <p className="text-gray-600 text-xs md:text-sm mt-1 leading-relaxed">Cardápio personalizado da Juju para você se sentir incrível</p>
                             <div className="flex items-center gap-2 mt-2">
-                              <Flame size={12} className="text-pink-500 flex-shrink-0" />
+                              <Flame size={10} className="text-pink-500 flex-shrink-0" />
                               <span className="text-xs text-pink-600 font-semibold">Nutrição Otimizada</span>
                             </div>
                           </div>
                         </div>
-                        <div className="flex justify-end mt-3">
-                          <ChevronRight className="text-gray-400" size={20} />
+                        <div className="flex justify-end mt-2 sm:mt-3">
+                          <ChevronRight className="text-gray-400" size={16} />
                         </div>
                       </div>
                     </motion.div>
 
                     {/* Card de Série - Treino do Basa */}
                     <motion.div
-                      whileHover={{ scale: 1.02, y: -2 }}
-                      className="bg-white rounded-2xl border-l-4 border-blue-400 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer col-span-1"
+                      whileHover={{ scale: isMobile ? 1.01 : 1.02, y: isMobile ? -1 : -2 }}
+                      className="bg-white rounded-xl sm:rounded-2xl border-l-4 border-blue-400 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer col-span-1"
                       onClick={() => navigate('/dashboard/treino')}
                     >
-                      <div className="p-4 md:p-6">
-                        <div className="flex items-start space-x-3 md:space-x-4">
-                          <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-blue-400 to-blue-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <Dumbbell className="text-white" size={20} />
+                      <div className="p-3 sm:p-4 md:p-6">
+                        <div className="flex items-start space-x-3">
+                          <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-gradient-to-br from-blue-400 to-blue-500 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                            <Dumbbell className="text-white" size={isMobile ? 16 : 20} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-gray-800 text-base md:text-lg leading-tight">TREINO DO BASA</h3>
+                            <h3 className="font-bold text-gray-800 text-sm sm:text-base md:text-lg leading-tight">TREINO DO BASA</h3>
                             <p className="text-gray-600 text-xs md:text-sm mt-1 leading-relaxed">Exercícios desenvolvidos especialmente para seus objetivos</p>
                             <div className="flex items-center gap-2 mt-2">
-                              <Target size={12} className="text-blue-500 flex-shrink-0" />
+                              <Target size={10} className="text-blue-500 flex-shrink-0" />
                               <span className="text-xs text-blue-600 font-semibold">Foco & Resultado</span>
                             </div>
                           </div>
                         </div>
-                        <div className="flex justify-end mt-3">
-                          <ChevronRight className="text-gray-400" size={20} />
+                        <div className="flex justify-end mt-2 sm:mt-3">
+                          <ChevronRight className="text-gray-400" size={16} />
                         </div>
                       </div>
                     </motion.div>
 
                     {/* Card de Progresso */}
                     <motion.div
-                      whileHover={{ scale: 1.02, y: -2 }}
-                      className="bg-white rounded-2xl border-l-4 border-green-400 shadow-lg hover:shadow-xl transition-all duration-300 col-span-1 lg:col-span-2 xl:col-span-1"
+                      whileHover={{ scale: isMobile ? 1.01 : 1.02, y: isMobile ? -1 : -2 }}
+                      className="bg-white rounded-xl sm:rounded-2xl border-l-4 border-green-400 shadow-lg hover:shadow-xl transition-all duration-300 col-span-1 sm:col-span-2 lg:col-span-1"
                     >
-                      <div className="p-4 md:p-6">
+                      <div className="p-3 sm:p-4 md:p-6">
                         <div className="flex items-start justify-between">
-                          <div className="flex items-start space-x-3 md:space-x-4 flex-1">
-                            <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-green-400 to-green-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                              <Activity className="text-white" size={20} />
+                          <div className="flex items-start space-x-3 flex-1">
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-gradient-to-br from-green-400 to-green-500 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+                              <Activity className="text-white" size={isMobile ? 16 : 20} />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-bold text-gray-800 text-base md:text-lg leading-tight">ACOMPANHAMENTO</h3>
+                              <h3 className="font-bold text-gray-800 text-sm sm:text-base md:text-lg leading-tight">ACOMPANHAMENTO</h3>
                               <p className="text-gray-600 text-xs md:text-sm mt-1 leading-relaxed">Monitore sua evolução diária e celebre suas conquistas</p>
-                              <div className="flex flex-wrap items-center gap-3 md:gap-4 mt-3">
+                              <div className="flex flex-wrap items-center gap-2 sm:gap-3 md:gap-4 mt-2 sm:mt-3">
                                 <div className="flex items-center gap-1">
                                   <div className="w-2 h-2 bg-pink-400 rounded-full flex-shrink-0"></div>
                                   <span className="text-xs text-gray-600">Dieta</span>
@@ -557,7 +559,7 @@ const AppJujuDashboard = () => {
                             </div>
                           </div>
                           <div className="text-right flex-shrink-0 ml-2">
-                            <div className="text-xl md:text-2xl font-bold text-green-600">{calculateProgress()}%</div>
+                            <div className="text-lg sm:text-xl md:text-2xl font-bold text-green-600">{calculateProgress()}%</div>
                             <div className="text-xs text-gray-500">completo</div>
                           </div>
                         </div>
@@ -566,110 +568,110 @@ const AppJujuDashboard = () => {
                   </div>
                 </div>
 
-                {/* Nova Seção: Metas do Dia - Separada das atividades */}
-                <div className="w-full max-w-4xl mx-auto mt-12">
+                {/* Nova Seção: Metas do Dia - Separada e Responsiva */}
+                <div className="w-full max-w-4xl mx-auto mt-8 sm:mt-12 px-4">
                   <motion.div 
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.3 }}
-                    className="bg-gradient-to-r from-pink-100 to-purple-100 p-8 rounded-3xl border border-pink-200 shadow-lg"
+                    className="bg-gradient-to-r from-pink-100 to-purple-100 p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl border border-pink-200 shadow-lg"
                   >
-                    <div className="text-center mb-6">
-                      <h3 className="font-bold text-gray-800 text-2xl mb-3 flex items-center justify-center gap-3">
-                        <Target size={28} className="text-pink-500" />
+                    <div className="text-center mb-4 sm:mb-6">
+                      <h3 className="font-bold text-gray-800 text-xl sm:text-2xl mb-2 sm:mb-3 flex items-center justify-center gap-2 sm:gap-3">
+                        <Target size={isMobile ? 24 : 28} className="text-pink-500" />
                         Metas do Dia
                       </h3>
-                      <p className="text-gray-600 text-base italic mb-6">
+                      <p className="text-gray-600 text-sm sm:text-base italic mb-4 sm:mb-6">
                         "Cada pequena ação te aproxima do seu objetivo!"
                       </p>
                     </div>
 
-                    {/* Tarefas diárias interativas */}
-                    <div className="space-y-4 mb-6">
+                    {/* Tarefas diárias interativas - Responsivas */}
+                    <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
                       <motion.button
-                        whileHover={{ scale: 1.02 }}
+                        whileHover={{ scale: isMobile ? 1.01 : 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => toggleDailyTask('workout')}
-                        className={`w-full p-4 rounded-xl border-2 transition-all duration-300 flex items-center justify-between ${
+                        className={`w-full p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-300 flex items-center justify-between ${
                           dailyTasks.workout 
                             ? 'bg-blue-100 border-blue-300 text-blue-700 shadow-md' 
                             : 'bg-white border-gray-200 hover:border-blue-200 text-gray-600 hover:shadow-md'
                         }`}
                       >
-                        <div className="flex items-center gap-4">
-                          <Dumbbell size={24} className={dailyTasks.workout ? 'text-blue-600' : 'text-gray-400'} />
-                          <span className="text-base font-medium">Completei meu treino</span>
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          <Dumbbell size={isMobile ? 20 : 24} className={dailyTasks.workout ? 'text-blue-600' : 'text-gray-400'} />
+                          <span className="text-sm sm:text-base font-medium">Completei meu treino</span>
                         </div>
                         {dailyTasks.workout ? (
-                          <CheckCircle size={24} className="text-blue-600" />
+                          <CheckCircle size={isMobile ? 20 : 24} className="text-blue-600" />
                         ) : (
-                          <div className="w-6 h-6 border-2 border-gray-300 rounded-full" />
+                          <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-gray-300 rounded-full" />
                         )}
                       </motion.button>
 
                       <motion.button
-                        whileHover={{ scale: 1.02 }}
+                        whileHover={{ scale: isMobile ? 1.01 : 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => toggleDailyTask('diet')}
-                        className={`w-full p-4 rounded-xl border-2 transition-all duration-300 flex items-center justify-between ${
+                        className={`w-full p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-300 flex items-center justify-between ${
                           dailyTasks.diet 
                             ? 'bg-green-100 border-green-300 text-green-700 shadow-md' 
                             : 'bg-white border-gray-200 hover:border-green-200 text-gray-600 hover:shadow-md'
                         }`}
                       >
-                        <div className="flex items-center gap-4">
-                          <Coffee size={24} className={dailyTasks.diet ? 'text-green-600' : 'text-gray-400'} />
-                          <span className="text-base font-medium">Segui minha dieta</span>
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          <Coffee size={isMobile ? 20 : 24} className={dailyTasks.diet ? 'text-green-600' : 'text-gray-400'} />
+                          <span className="text-sm sm:text-base font-medium">Segui minha dieta</span>
                         </div>
                         {dailyTasks.diet ? (
-                          <CheckCircle size={24} className="text-green-600" />
+                          <CheckCircle size={isMobile ? 20 : 24} className="text-green-600" />
                         ) : (
-                          <div className="w-6 h-6 border-2 border-gray-300 rounded-full" />
+                          <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-gray-300 rounded-full" />
                         )}
                       </motion.button>
 
                       <motion.button
-                        whileHover={{ scale: 1.02 }}
+                        whileHover={{ scale: isMobile ? 1.01 : 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => toggleDailyTask('motivation')}
-                        className={`w-full p-4 rounded-xl border-2 transition-all duration-300 flex items-center justify-between ${
+                        className={`w-full p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 transition-all duration-300 flex items-center justify-between ${
                           dailyTasks.motivation 
                             ? 'bg-pink-100 border-pink-300 text-pink-700 shadow-md' 
                             : 'bg-white border-gray-200 hover:border-pink-200 text-gray-600 hover:shadow-md'
                         }`}
                       >
-                        <div className="flex items-center gap-4">
-                          <Flame size={24} className={dailyTasks.motivation ? 'text-pink-600' : 'text-gray-400'} />
-                          <span className="text-base font-medium">Li minha motivação</span>
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          <Flame size={isMobile ? 20 : 24} className={dailyTasks.motivation ? 'text-pink-600' : 'text-gray-400'} />
+                          <span className="text-sm sm:text-base font-medium">Li minha motivação</span>
                         </div>
                         {dailyTasks.motivation ? (
-                          <CheckCircle size={24} className="text-pink-600" />
+                          <CheckCircle size={isMobile ? 20 : 24} className="text-pink-600" />
                         ) : (
-                          <div className="w-6 h-6 border-2 border-gray-300 rounded-full" />
+                          <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-gray-300 rounded-full" />
                         )}
                       </motion.button>
                     </div>
 
-                    {/* Progresso do dia */}
+                    {/* Progresso do dia - Responsivo */}
                     <div className="text-center">
-                      <div className="flex justify-center gap-3 mb-4">
+                      <div className="flex justify-center gap-2 sm:gap-3 mb-3 sm:mb-4">
                         {Object.values(dailyTasks).map((completed, index) => (
                           <div
                             key={index}
-                            className={`w-4 h-4 rounded-full transition-all duration-300 ${
+                            className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full transition-all duration-300 ${
                               completed ? 'bg-gradient-to-r from-pink-400 to-purple-400 shadow-md' : 'bg-gray-200'
                             }`}
                           />
                         ))}
                       </div>
-                      <p className="text-pink-600 text-base font-semibold">
+                      <p className="text-pink-600 text-sm sm:text-base font-semibold">
                         {Object.values(dailyTasks).filter(Boolean).length}/3 metas concluídas hoje
                       </p>
                       
-                      {/* Barra de progresso visual */}
-                      <div className="w-full bg-gray-200 rounded-full h-3 mt-4">
+                      {/* Barra de progresso visual - Responsivo */}
+                      <div className="w-full bg-gray-200 rounded-full h-2 sm:h-3 mt-3 sm:mt-4">
                         <div 
-                          className="bg-gradient-to-r from-pink-400 to-purple-400 h-3 rounded-full transition-all duration-500 ease-out"
+                          className="bg-gradient-to-r from-pink-400 to-purple-400 h-2 sm:h-3 rounded-full transition-all duration-500 ease-out"
                           style={{ width: `${(Object.values(dailyTasks).filter(Boolean).length / 3) * 100}%` }}
                         />
                       </div>
@@ -680,30 +682,30 @@ const AppJujuDashboard = () => {
             </TabsContent>
 
             <TabsContent value="avaliacao" className="mt-0">
-              <div className="text-center space-y-6">
-                <h2 className="text-3xl font-bold text-gray-800">Avaliação 📸</h2>
-                <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-2xl border border-gray-200 max-w-md mx-auto">
-                  <Camera className="text-gray-400 mx-auto mb-4" size={48} />
+              <div className="text-center space-y-6 px-4">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Avaliação 📸</h2>
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-6 sm:p-8 rounded-2xl border border-gray-200 max-w-sm sm:max-w-md mx-auto">
+                  <Camera className="text-gray-400 mx-auto mb-4" size={isMobile ? 40 : 48} />
                   <p className="text-gray-600 mb-2">Liberação em:</p>
-                  <p className="text-2xl font-bold text-pink-600">7 dias</p>
+                  <p className="text-xl sm:text-2xl font-bold text-pink-600">7 dias</p>
                   <p className="text-sm text-gray-500 mt-2">Continue seguindo seu plano! 💪</p>
                 </div>
               </div>
             </TabsContent>
 
             <TabsContent value="perfil" className="mt-0">
-              <div className="text-center space-y-6">
-                <h2 className="text-3xl font-bold text-gray-800">Perfil 👤</h2>
-                <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-6 rounded-2xl border border-pink-200 max-w-md mx-auto space-y-4">
-                  <div className="w-20 h-20 bg-gradient-to-br from-pink-400 to-pink-500 rounded-full flex items-center justify-center mx-auto">
-                    <span className="text-2xl">👩‍💪</span>
+              <div className="text-center space-y-6 px-4">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Perfil 👤</h2>
+                <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-4 sm:p-6 rounded-2xl border border-pink-200 max-w-sm sm:max-w-md mx-auto space-y-4">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-pink-400 to-pink-500 rounded-full flex items-center justify-center mx-auto">
+                    <span className="text-xl sm:text-2xl">👩‍💪</span>
                   </div>
                   <div className="space-y-2">
                     <p className="font-bold text-gray-800 text-lg">{userName}</p>
                     {userData ? (
                       <>
-                        <p className="text-gray-600">{userData.email}</p>
-                        <p className="text-gray-600">{userData.whatsapp}</p>
+                        <p className="text-gray-600 text-sm sm:text-base">{userData.email}</p>
+                        <p className="text-gray-600 text-sm sm:text-base">{userData.whatsapp}</p>
                         <div className="pt-2 space-y-1">
                           <p className="text-sm text-gray-500">
                             Membro desde: {new Date(userData.created_at).toLocaleDateString('pt-BR')}
@@ -711,7 +713,7 @@ const AppJujuDashboard = () => {
                           <p className="text-sm text-gray-500">
                             Dias no app: {userData.dias_no_app} dias
                           </p>
-                          <div className="flex justify-center gap-4 pt-2">
+                          <div className="flex justify-center gap-3 sm:gap-4 pt-2">
                             <div className="text-center">
                               <p className="text-xs text-gray-400">Quiz Alimentar</p>
                               <p className={`text-sm font-bold ${userData.quiz_alimentar_concluido ? 'text-green-600' : 'text-gray-400'}`}>
@@ -733,7 +735,7 @@ const AppJujuDashboard = () => {
                   </div>
                   <button 
                     onClick={() => setIsEditModalOpen(true)}
-                    className="bg-gradient-to-r from-pink-500 to-pink-600 text-white px-6 py-2 rounded-xl hover:from-pink-600 hover:to-pink-700 transition-all"
+                    className="bg-gradient-to-r from-pink-500 to-pink-600 text-white px-4 sm:px-6 py-2 rounded-xl hover:from-pink-600 hover:to-pink-700 transition-all text-sm sm:text-base"
                   >
                     Editar Perfil
                   </button>
@@ -744,18 +746,18 @@ const AppJujuDashboard = () => {
         </motion.div>
       </div>
 
-      {/* Dock na parte inferior */}
-      <div className="absolute bottom-0 left-0 right-0 flex justify-center pb-8">
+      {/* Dock na parte inferior - Responsivo */}
+      <div className="fixed bottom-0 left-0 right-0 flex justify-center pb-4 sm:pb-6 md:pb-8 z-10">
         <Dock 
           items={dockItems}
-          panelHeight={68}
-          baseItemSize={50}
-          magnification={70}
+          panelHeight={isMobile ? 60 : 68}
+          baseItemSize={isMobile ? 45 : 50}
+          magnification={isMobile ? 60 : 70}
         />
       </div>
 
-      {/* Instrução */}
-      <p className="fixed bottom-2 left-1/2 -translate-x-1/2 text-center text-xs text-gray-400">
+      {/* Instrução - Responsiva */}
+      <p className="fixed bottom-1 sm:bottom-2 left-1/2 -translate-x-1/2 text-center text-xs text-gray-400 px-4">
         Navegue pelas opções no dock 💕
       </p>
 

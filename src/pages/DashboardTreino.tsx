@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -77,17 +78,17 @@ const DashboardTreino = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center">
         <div className="text-center space-y-4">
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-16 h-16 bg-gradient-to-r from-pink-400 to-pink-600 rounded-full flex items-center justify-center mx-auto"
+            className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-700 rounded-full flex items-center justify-center mx-auto"
           >
             <Dumbbell className="text-white" size={32} />
           </motion.div>
           <h2 className="text-xl font-bold text-gray-800">Preparando seus treinos...</h2>
-          <p className="text-gray-600">A Juju está montando seu plano de exercícios perfeito! 💪</p>
+          <p className="text-gray-600">O Basa está montando seu plano de exercícios perfeito! 💪</p>
         </div>
       </div>
     );
@@ -95,14 +96,14 @@ const DashboardTreino = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center">
         <div className="text-center space-y-4 max-w-md mx-auto p-6">
           <AlertCircle className="text-red-500 mx-auto" size={48} />
           <h2 className="text-xl font-bold text-gray-800">Ops! Algo deu errado</h2>
           <p className="text-gray-600">{error}</p>
           <button
             onClick={simulateNewWorkoutData}
-            className="bg-gradient-to-r from-pink-500 to-pink-600 text-white px-6 py-3 rounded-xl hover:from-pink-600 hover:to-pink-700 transition-all"
+            className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all"
           >
             Tentar novamente
           </button>
@@ -112,7 +113,7 @@ const DashboardTreino = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100">
       
       {/* Header com navegação */}
       <Header 
@@ -145,31 +146,31 @@ const DashboardTreino = () => {
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl p-6 shadow-lg border border-pink-100 mb-6"
+              className="bg-white rounded-2xl p-6 shadow-lg border border-blue-100 mb-6"
             >
               <div className="flex items-center space-x-3 mb-4">
-                <Target className="text-pink-500" size={24} />
+                <Target className="text-blue-600" size={24} />
                 <h2 className="text-xl font-bold text-gray-800">Seu Perfil de Treino</h2>
               </div>
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="text-center p-4 bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl">
-                  <Activity className="text-pink-600 mx-auto mb-2" size={24} />
+                <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
+                  <Activity className="text-blue-600 mx-auto mb-2" size={24} />
                   <p className="text-sm text-gray-600">Objetivo</p>
                   <p className="font-bold text-gray-800">{workoutData.objetivo}</p>
                 </div>
-                <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
-                  <Clock className="text-blue-600 mx-auto mb-2" size={24} />
+                <div className="text-center p-4 bg-gradient-to-br from-cyan-50 to-cyan-100 rounded-xl">
+                  <Clock className="text-cyan-600 mx-auto mb-2" size={24} />
                   <p className="text-sm text-gray-600">Frequência</p>
                   <p className="font-bold text-gray-800">{workoutData.frequencia}</p>
                 </div>
-                <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl">
-                  <Dumbbell className="text-green-600 mx-auto mb-2" size={24} />
+                <div className="text-center p-4 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl">
+                  <Dumbbell className="text-indigo-600 mx-auto mb-2" size={24} />
                   <p className="text-sm text-gray-600">Experiência</p>
                   <p className="font-bold text-gray-800">{workoutData.experiencia}</p>
                 </div>
-                <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl">
-                  <CheckCircle className="text-purple-600 mx-auto mb-2" size={24} />
+                <div className="text-center p-4 bg-gradient-to-br from-teal-50 to-teal-100 rounded-xl">
+                  <CheckCircle className="text-teal-600 mx-auto mb-2" size={24} />
                   <p className="text-sm text-gray-600">Status</p>
                   <p className="font-bold text-gray-800">Ativo</p>
                 </div>
@@ -183,15 +184,15 @@ const DashboardTreino = () => {
                     <p className="text-sm text-gray-600">{workoutData.tempo_sessao}</p>
                   </div>
 
-                  <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200">
-                    <h4 className="font-semibold text-purple-700 mb-2">Foco Principal</h4>
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
+                    <h4 className="font-semibold text-blue-700 mb-2">Foco Principal</h4>
                     <p className="text-sm text-gray-600">{workoutData.foco_regiao}</p>
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <div className="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-xl border border-red-200">
-                    <h4 className="font-semibold text-red-700 mb-2">Intensidade</h4>
+                  <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
+                    <h4 className="font-semibold text-green-700 mb-2">Intensidade</h4>
                     <p className="text-sm text-gray-600">{workoutData.intensidade}</p>
                   </div>
 
@@ -213,10 +214,10 @@ const DashboardTreino = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-white rounded-2xl p-6 shadow-lg border border-pink-100"
+              className="bg-white rounded-2xl p-6 shadow-lg border border-blue-100"
             >
               <div className="flex items-center space-x-3 mb-4">
-                <Calendar className="text-pink-500" size={24} />
+                <Calendar className="text-blue-600" size={24} />
                 <h3 className="text-xl font-bold text-gray-800">Cronograma Semanal</h3>
               </div>
               
@@ -226,9 +227,9 @@ const DashboardTreino = () => {
                 <p className="text-gray-500">
                   Seu plano de treino personalizado será gerado em breve!
                 </p>
-                <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-4 rounded-xl mt-4 max-w-md mx-auto">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl mt-4 max-w-md mx-auto">
                   <p className="text-sm text-gray-600">
-                    ✨ A Juju está criando exercícios específicos para seus objetivos
+                    💪 O Basa está criando exercícios específicos para seus objetivos
                   </p>
                 </div>
               </div>
@@ -242,7 +243,7 @@ const DashboardTreino = () => {
               className="mt-8 text-center"
             >
               <p className="text-sm text-gray-500">
-                💪 Seus treinos são personalizados baseados no seu perfil e objetivos
+                💪 Seus treinos são personalizados baseados no seu perfil e objetivos pelo Basa
               </p>
             </motion.div>
           </>
@@ -252,9 +253,9 @@ const DashboardTreino = () => {
               <AlertCircle className="text-gray-400 mx-auto mb-4" size={48} />
               <h3 className="text-xl font-bold text-gray-800 mb-2">Treinos em Preparação</h3>
               <p className="text-gray-500 text-lg mb-4">Complete o quiz de treino para ver seu plano personalizado aqui!</p>
-              <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-4 rounded-xl">
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl">
                 <p className="text-sm text-gray-600">
-                  ✨ A Juju está esperando suas preferências para criar o plano perfeito!
+                  💪 O Basa está esperando suas preferências para criar o plano perfeito!
                 </p>
               </div>
             </div>

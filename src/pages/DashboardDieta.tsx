@@ -136,47 +136,47 @@ const DashboardDieta = () => {
     }
   };
 
-  // Configuração das refeições
+  // Configuração das refeições com tema rosa
   const refeicoes = [
     {
       id: 'cafeDaManha',
       nome: 'Café da Manhã',
       emoji: '☀️',
-      icon: <Coffee className="text-orange-500" size={24} />,
-      cor: 'from-orange-100 to-orange-200 border-orange-200',
-      corTexto: 'text-orange-700'
+      icon: <Coffee className="text-pink-500" size={24} />,
+      cor: 'from-pink-100 to-rose-200 border-pink-200',
+      corTexto: 'text-pink-700'
     },
     {
       id: 'almoco',
       nome: 'Almoço',
       emoji: '🍽️',
-      icon: <Utensils className="text-green-500" size={24} />,
-      cor: 'from-green-100 to-green-200 border-green-200',
-      corTexto: 'text-green-700'
+      icon: <Utensils className="text-pink-600" size={24} />,
+      cor: 'from-rose-100 to-pink-200 border-rose-200',
+      corTexto: 'text-pink-800'
     },
     {
       id: 'lanche',
       nome: 'Lanche',
       emoji: '🥪',
-      icon: <Sandwich className="text-yellow-500" size={24} />,
-      cor: 'from-yellow-100 to-yellow-200 border-yellow-200',
-      corTexto: 'text-yellow-700'
+      icon: <Sandwich className="text-rose-500" size={24} />,
+      cor: 'from-pink-50 to-pink-150 border-pink-150',
+      corTexto: 'text-rose-700'
     },
     {
       id: 'jantar',
       nome: 'Jantar',
       emoji: '🌙',
-      icon: <Moon className="text-blue-500" size={24} />,
-      cor: 'from-blue-100 to-blue-200 border-blue-200',
-      corTexto: 'text-blue-700'
+      icon: <Moon className="text-pink-500" size={24} />,
+      cor: 'from-rose-50 to-rose-150 border-rose-150',
+      corTexto: 'text-pink-700'
     },
     {
       id: 'ceia',
       nome: 'Ceia',
       emoji: '🌟',
-      icon: <Moon className="text-purple-500" size={24} />,
-      cor: 'from-purple-100 to-purple-200 border-purple-200',
-      corTexto: 'text-purple-700'
+      icon: <Moon className="text-rose-400" size={24} />,
+      cor: 'from-pink-100 to-rose-100 border-pink-100',
+      corTexto: 'text-rose-600'
     }
   ];
 
@@ -186,17 +186,17 @@ const DashboardDieta = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 flex items-center justify-center">
         <div className="text-center space-y-4">
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-16 h-16 bg-gradient-to-r from-pink-400 to-pink-600 rounded-full flex items-center justify-center mx-auto"
+            className="w-16 h-16 bg-gradient-to-r from-pink-400 to-rose-500 rounded-full flex items-center justify-center mx-auto"
           >
             <ChefHat className="text-white" size={32} />
           </motion.div>
-          <h2 className="text-xl font-bold text-gray-800">Preparando sua dieta...</h2>
-          <p className="text-gray-600">A Juju está montando seu plano alimentar perfeito! ✨</p>
+          <h2 className="text-xl font-bold text-pink-800">Preparando sua dieta...</h2>
+          <p className="text-pink-600">A Juju está montando seu plano alimentar perfeito! ✨</p>
         </div>
       </div>
     );
@@ -204,14 +204,14 @@ const DashboardDieta = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 flex items-center justify-center">
         <div className="text-center space-y-4 max-w-md mx-auto p-6">
-          <AlertCircle className="text-red-500 mx-auto" size={48} />
-          <h2 className="text-xl font-bold text-gray-800">Ops! Algo deu errado</h2>
-          <p className="text-gray-600">{error}</p>
+          <AlertCircle className="text-rose-500 mx-auto" size={48} />
+          <h2 className="text-xl font-bold text-pink-800">Ops! Algo deu errado</h2>
+          <p className="text-pink-600">{error}</p>
           <button
             onClick={simulateNewDietData}
-            className="bg-gradient-to-r from-pink-500 to-pink-600 text-white px-6 py-3 rounded-xl hover:from-pink-600 hover:to-pink-700 transition-all"
+            className="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-6 py-3 rounded-xl hover:from-pink-600 hover:to-rose-600 transition-all"
           >
             Tentar novamente
           </button>
@@ -221,7 +221,7 @@ const DashboardDieta = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100">
       
       {/* Header com navegação */}
       <Header 
@@ -235,14 +235,14 @@ const DashboardDieta = () => {
         <div className="flex gap-3 mb-6">
           <button
             onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition-all"
+            className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-pink-200 hover:bg-pink-50 transition-all"
           >
             <Home size={16} />
             <span className="text-sm">Dashboard</span>
           </button>
           <button
             onClick={() => navigate('/dashboard/treino')}
-            className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition-all"
+            className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-pink-200 hover:bg-pink-50 transition-all"
           >
             <span className="text-sm">💪 Ver Treinos</span>
           </button>
@@ -250,33 +250,33 @@ const DashboardDieta = () => {
 
         {userData?.quiz_alimentar_concluido ? (
           <>
-            {/* Resumo diário */}
+            {/* Resumo diário com tema rosa */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl p-6 shadow-lg border border-pink-100 mb-6"
+              className="bg-white rounded-2xl p-6 shadow-lg border border-pink-200 mb-6"
             >
               <div className="flex items-center space-x-3 mb-4">
                 <Calendar className="text-pink-500" size={24} />
-                <h2 className="text-xl font-bold text-gray-800">Resumo do Dia</h2>
+                <h2 className="text-xl font-bold text-pink-800">Resumo do Dia</h2>
               </div>
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl">
+                <div className="text-center p-4 bg-gradient-to-br from-pink-50 to-rose-100 rounded-xl">
                   <p className="text-2xl font-bold text-pink-600">{calcularCaloriasTotais()}</p>
-                  <p className="text-sm text-gray-600">Calorias Totais</p>
+                  <p className="text-sm text-pink-700">Calorias Totais</p>
                 </div>
-                <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
-                  <p className="text-2xl font-bold text-blue-600">5</p>
-                  <p className="text-sm text-gray-600">Refeições</p>
+                <div className="text-center p-4 bg-gradient-to-br from-rose-50 to-pink-100 rounded-xl">
+                  <p className="text-2xl font-bold text-rose-600">5</p>
+                  <p className="text-sm text-rose-700">Refeições</p>
                 </div>
-                <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-xl">
-                  <p className="text-2xl font-bold text-green-600">Saudável</p>
-                  <p className="text-sm text-gray-600">Objetivo</p>
+                <div className="text-center p-4 bg-gradient-to-br from-pink-100 to-rose-100 rounded-xl">
+                  <p className="text-2xl font-bold text-pink-600">Saudável</p>
+                  <p className="text-sm text-pink-700">Objetivo</p>
                 </div>
-                <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl">
-                  <CheckCircle className="text-purple-600 mx-auto mb-1" size={24} />
-                  <p className="text-sm text-gray-600">Plano Ativo</p>
+                <div className="text-center p-4 bg-gradient-to-br from-rose-100 to-pink-100 rounded-xl">
+                  <CheckCircle className="text-rose-600 mx-auto mb-1" size={24} />
+                  <p className="text-sm text-rose-700">Plano Ativo</p>
                 </div>
               </div>
             </motion.div>
@@ -304,7 +304,7 @@ const DashboardDieta = () => {
                           <h4 className={`font-bold ${tipoRefeicao.corTexto}`}>
                             {tipoRefeicao.nome}
                           </h4>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-pink-600">
                             {refeicaoData?.horario || '--:--'}
                           </p>
                         </div>
@@ -316,7 +316,7 @@ const DashboardDieta = () => {
                     {refeicaoData && (
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">Calorias:</span>
+                          <span className="text-sm text-pink-600">Calorias:</span>
                           <span className={`font-bold ${tipoRefeicao.corTexto}`}>
                             {refeicaoData.calorias} kcal
                           </span>
@@ -324,31 +324,31 @@ const DashboardDieta = () => {
                         
                         {/* Macros */}
                         <div className="grid grid-cols-3 gap-2 text-xs">
-                          <div className="text-center p-2 bg-white/50 rounded-lg">
-                            <p className="font-medium">Proteína</p>
+                          <div className="text-center p-2 bg-white/60 rounded-lg">
+                            <p className="font-medium text-pink-700">Proteína</p>
                             <p className={tipoRefeicao.corTexto}>{refeicaoData.macros.proteina}g</p>
                           </div>
-                          <div className="text-center p-2 bg-white/50 rounded-lg">
-                            <p className="font-medium">Carbo</p>
+                          <div className="text-center p-2 bg-white/60 rounded-lg">
+                            <p className="font-medium text-pink-700">Carbo</p>
                             <p className={tipoRefeicao.corTexto}>{refeicaoData.macros.carboidrato}g</p>
                           </div>
-                          <div className="text-center p-2 bg-white/50 rounded-lg">
-                            <p className="font-medium">Gordura</p>
+                          <div className="text-center p-2 bg-white/60 rounded-lg">
+                            <p className="font-medium text-pink-700">Gordura</p>
                             <p className={tipoRefeicao.corTexto}>{refeicaoData.macros.gordura}g</p>
                           </div>
                         </div>
 
                         {/* Lista de alimentos */}
                         <div className="space-y-2">
-                          <p className="text-sm font-medium text-gray-700">Alimentos:</p>
+                          <p className="text-sm font-medium text-pink-700">Alimentos:</p>
                           <div className="space-y-1 max-h-32 overflow-y-auto">
                             {refeicaoData.alimentos.map((alimento, idx) => (
-                              <div key={idx} className="text-xs bg-white/30 p-2 rounded-lg">
+                              <div key={idx} className="text-xs bg-white/40 p-2 rounded-lg">
                                 <div className="flex justify-between">
-                                  <span className="font-medium">{alimento.nome}</span>
+                                  <span className="font-medium text-pink-800">{alimento.nome}</span>
                                   <span className={tipoRefeicao.corTexto}>{alimento.calorias} kcal</span>
                                 </div>
-                                <p className="text-gray-600">{alimento.quantidade}</p>
+                                <p className="text-pink-600">{alimento.quantidade}</p>
                               </div>
                             ))}
                           </div>
@@ -367,19 +367,19 @@ const DashboardDieta = () => {
               transition={{ delay: 0.5 }}
               className="mt-8 text-center"
             >
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-pink-500">
                 💡 Sua dieta é atualizada automaticamente baseada nas suas preferências
               </p>
             </motion.div>
           </>
         ) : (
           <div className="text-center py-12">
-            <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md mx-auto">
-              <AlertCircle className="text-gray-400 mx-auto mb-4" size={48} />
-              <h3 className="text-xl font-bold text-gray-800 mb-2">Dieta em Preparação</h3>
-              <p className="text-gray-500 text-lg mb-4">Complete o quiz alimentar para ver suas refeições personalizadas aqui!</p>
-              <div className="bg-gradient-to-br from-pink-50 to-pink-100 p-4 rounded-xl">
-                <p className="text-sm text-gray-600">
+            <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md mx-auto border border-pink-200">
+              <AlertCircle className="text-pink-400 mx-auto mb-4" size={48} />
+              <h3 className="text-xl font-bold text-pink-800 mb-2">Dieta em Preparação</h3>
+              <p className="text-pink-600 text-lg mb-4">Complete o quiz alimentar para ver suas refeições personalizadas aqui!</p>
+              <div className="bg-gradient-to-br from-pink-50 to-rose-100 p-4 rounded-xl">
+                <p className="text-sm text-pink-600">
                   ✨ A Juju está esperando suas preferências para criar o plano perfeito!
                 </p>
               </div>

@@ -58,21 +58,13 @@ const Onboarding = () => {
     <div className="min-h-screen bg-slate-50 p-5">
       <div className="max-w-sm mx-auto bg-white rounded-3xl p-8 shadow-2xl">
         
-        {/* Logo */}
-        <div className="w-16 h-16 mx-auto mb-6 flex items-center justify-center">
+        {/* Logo/Image */}
+        <div className="w-full mb-8 flex items-center justify-center">
           <img 
-            src="/lovable-uploads/0c9b5349-78f8-4f60-8dd1-9107430b2df7.png" 
-            alt="Método BJ Logo" 
-            className="w-full h-full object-contain rounded-2xl"
+            src="/lovable-uploads/a23e08fd-0211-4def-8682-4af9586d245f.png" 
+            alt="Método BJ" 
+            className="w-48 h-48 object-contain rounded-2xl"
           />
-        </div>
-
-        {/* Title */}
-        <div className="text-center mb-2">
-          <h1 className="text-3xl font-bold text-slate-800">
-            Bem-vindo ao <span className="text-blue-600">Método</span><br/>
-            <span className="text-sky-300">BJ!</span>
-          </h1>
         </div>
 
         {/* Subtitle */}

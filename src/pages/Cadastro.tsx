@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -15,6 +14,50 @@ const Cadastro = () => {
     confirmPassword: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  // Preload agressivo da nova logo - MÁXIMA PRIORIDADE
+  useEffect(() => {
+    const imageUrl = "/lovable-uploads/5c7d156f-f9d2-453e-9c50-28c742329168.png";
+    
+    // 1. Preload crítico no head com highest priority
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = imageUrl;
+    link.fetchPriority = 'high';
+    document.head.insertBefore(link, document.head.firstChild);
+    
+    // 2. Preload via Image object com cache
+    const img = new Image();
+    img.fetchPriority = 'high';
+    img.loading = 'eager';
+    img.decoding = 'sync';
+    img.onload = () => {
+      setImageLoaded(true);
+      console.log('Nova logo carregada instantaneamente!');
+    };
+    img.onerror = () => {
+      console.error('Erro ao carregar nova logo');
+      setImageLoaded(true); // Ainda mostra o container
+    };
+    img.src = imageUrl;
+    
+    // 3. Prefetch adicional
+    const prefetchLink = document.createElement('link');
+    prefetchLink.rel = 'prefetch';
+    prefetchLink.href = imageUrl;
+    document.head.appendChild(prefetchLink);
+
+    return () => {
+      if (document.head.contains(link)) {
+        document.head.removeChild(link);
+      }
+      if (document.head.contains(prefetchLink)) {
+        document.head.removeChild(prefetchLink);
+      }
+    };
+  }, []);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -112,19 +155,29 @@ const Cadastro = () => {
       <div className="max-w-sm w-full mx-4">
         <div className="fitness-card animate-slide-in-up">
           <div className="text-center mb-8">
-            {/* Logo atualizada */}
-            <div className="flex items-center justify-center w-24 h-24 mx-auto mb-6">
+            {/* Nova logo otimizada e maior */}
+            <div className="flex items-center justify-center w-32 h-32 mx-auto mb-6">
               <img 
-                src="/lovable-uploads/573712ac-9063-4efa-ab2c-2291286e6046.png" 
-                alt="App da Juju Logo" 
-                className="w-full h-full object-contain"
+                src="/lovable-uploads/5c7d156f-f9d2-453e-9c50-28c742329168.png" 
+                alt="Logo" 
+                className={`w-full h-full object-contain transition-opacity duration-300 ${
+                  imageLoaded ? 'opacity-100' : 'opacity-0'
+                }`}
+                loading="eager"
+                fetchPriority="high"
+                decoding="sync"
+                onLoad={() => setImageLoaded(true)}
+                style={{
+                  contentVisibility: 'auto',
+                  containIntrinsicSize: '128px 128px'
+                }}
               />
+              {!imageLoaded && (
+                <div className="w-32 h-32 bg-gradient-to-br from-pink-100 to-pink-200 rounded-2xl animate-pulse absolute" />
+              )}
             </div>
             
-            <h2 className="text-3xl font-bold fitness-text mb-3">
-              App da Juju
-            </h2>
-            <p className="text-gray-600 font-medium mb-2">Comece agora!</p>
+            <p className="text-gray-600 font-bold mb-2">Comece agora!</p>
             <p className="text-gray-500 text-sm">
               Sua transformação começa aqui!
             </p>

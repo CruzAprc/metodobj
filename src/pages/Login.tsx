@@ -79,7 +79,7 @@ const Login = () => {
   if (loading) {
     return <div className="min-h-screen fitness-gradient-bg flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Carregando...</p>
         </div>
       </div>;
@@ -126,7 +126,7 @@ const Login = () => {
               <input type="password" name="password" value={formData.password} onChange={handleChange} className="fitness-input" placeholder="Sua senha" required disabled={isSubmitting} />
             </div>
 
-            <button type="submit" className="w-full fitness-button text-lg" disabled={isSubmitting}>
+            <button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] text-lg" disabled={isSubmitting}>
               {isSubmitting ? 'Entrando...' : 'Entrar'}
             </button>
           </form>
@@ -134,7 +134,7 @@ const Login = () => {
           <div className="mt-8 text-center">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-pink-200"></div>
+                <div className="w-full border-t border-blue-200"></div>
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-4 bg-white text-gray-500 font-medium">ou</span>
@@ -143,8 +143,8 @@ const Login = () => {
             
             <p className="text-gray-600 mt-6 text-sm">
               Não tem conta?{' '}
-              <button onClick={() => navigate('/cadastro')} className="font-medium text-pink-600 hover:text-pink-700 underline">
-                Cadastre-se grátis! 💕
+              <button onClick={() => navigate('/cadastro')} className="font-medium text-blue-600 hover:text-blue-700 underline">
+                Cadastre-se grátis! 💙
               </button>
             </p>
           </div>

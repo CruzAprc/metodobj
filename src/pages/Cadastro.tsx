@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -188,8 +187,7 @@ const Cadastro = () => {
                 onLoad={() => setImageLoaded(true)}
                 style={{
                   contentVisibility: 'auto',
-                  containIntrinsicSize: '160px 160px',
-                  imageRendering: 'high-quality'
+                  containIntrinsicSize: '160px 160px'
                 }}
               />
               {!imageLoaded && (

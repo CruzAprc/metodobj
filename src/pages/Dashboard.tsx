@@ -358,11 +358,8 @@ const AppJujuDashboard = () => {
                   </motion.div>
                 </div>
 
-                {/* Novo componente de calendário de progresso */}
-                <ProgressCalendar userData={userData} />
-
                 {/* Botões de ação rápida */}
-                <div className="grid grid-cols-2 gap-4 max-w-md mx-auto">
+                <div className="grid grid-cols-2 gap-4 max-w-md mx-auto mt-8">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}

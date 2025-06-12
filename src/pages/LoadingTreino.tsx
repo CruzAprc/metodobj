@@ -9,61 +9,83 @@ const LoadingTreino = () => {
   const [currentMessage, setCurrentMessage] = useState(0);
   const [userName, setUserName] = useState('');
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
-  // PRIMEIRA PRIORIDADE ABSOLUTA: IMAGEM
+  // PRIMEIRA PRIORIDADE ABSOLUTA: IMAGEM COM TÉCNICAS AVANÇADAS
   useEffect(() => {
     const imageUrl = "/lovable-uploads/f85d4059-57d5-4753-a12e-639ca86ca889.png";
     
-    // 1. PRELOAD CRÍTICO IMEDIATO - MÁXIMA PRIORIDADE
+    // 1. PRELOAD CRÍTICO COM MÁXIMA PRIORIDADE NO HEAD
     const criticalPreload = document.createElement('link');
     criticalPreload.rel = 'preload';
     criticalPreload.as = 'image';
     criticalPreload.href = imageUrl;
     criticalPreload.fetchPriority = 'high';
     criticalPreload.crossOrigin = 'anonymous';
-    // Insere no topo absoluto do head
+    // Força inserção no topo absoluto
     document.head.insertBefore(criticalPreload, document.head.firstChild);
     
-    // 2. CARREGAMENTO INSTANTÂNEO VIA IMAGE
-    const img = new Image();
-    img.fetchPriority = 'high';
-    img.loading = 'eager';
-    img.decoding = 'sync';
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      setImageLoaded(true);
-      console.log('Imagem do personal trainer carregada INSTANTANEAMENTE');
-    };
-    img.src = imageUrl;
+    // 2. PREFETCH ADICIONAL PARA CACHE DO BROWSER
+    const prefetchLink = document.createElement('link');
+    prefetchLink.rel = 'prefetch';
+    prefetchLink.href = imageUrl;
+    prefetchLink.fetchPriority = 'high';
+    document.head.appendChild(prefetchLink);
     
-    // 3. MÚLTIPLOS PRELOADS PARA GARANTIR
-    for (let i = 0; i < 5; i++) {
-      const extraImg = new Image();
-      extraImg.fetchPriority = 'high';
-      extraImg.loading = 'eager';
-      extraImg.src = imageUrl;
+    // 3. PRÉ-CARREGAMENTO VIA MÚLTIPLAS IMAGENS PARA CACHE
+    for (let i = 0; i < 3; i++) {
+      const preloadImg = new Image();
+      preloadImg.fetchPriority = 'high';
+      preloadImg.loading = 'eager';
+      preloadImg.decoding = 'sync';
+      preloadImg.crossOrigin = 'anonymous';
+      preloadImg.src = imageUrl;
     }
+    
+    // 4. IMAGEM PRINCIPAL COM CARREGAMENTO OTIMIZADO
+    const mainImg = new Image();
+    mainImg.fetchPriority = 'high';
+    mainImg.loading = 'eager';
+    mainImg.decoding = 'sync';
+    mainImg.crossOrigin = 'anonymous';
+    
+    // Event listeners otimizados
+    mainImg.onload = () => {
+      setImageLoaded(true);
+      setImageError(false);
+      console.log('✅ Imagem do personal trainer carregada INSTANTANEAMENTE');
+    };
+    
+    mainImg.onerror = () => {
+      console.error('❌ Erro ao carregar imagem');
+      setImageError(true);
+      setImageLoaded(true); // Ainda mostra o container
+    };
+    
+    // Carrega a imagem principal
+    mainImg.src = imageUrl;
 
     return () => {
+      // Cleanup
       if (document.head.contains(criticalPreload)) {
         document.head.removeChild(criticalPreload);
+      }
+      if (document.head.contains(prefetchLink)) {
+        document.head.removeChild(prefetchLink);
       }
     };
   }, []);
 
-  // Recuperar o nome do usuário APÓS a imagem
+  // Recuperar o nome do usuário APÓS garantir o carregamento da imagem
   useEffect(() => {
-    // Delay mínimo para garantir que a imagem tenha prioridade
-    const timer = setTimeout(() => {
+    if (imageLoaded) {
       const dadosPessoais = localStorage.getItem('dadosPessoais');
       if (dadosPessoais) {
         const dados = JSON.parse(dadosPessoais);
         setUserName(dados.nomeCompleto.split(' ')[0]);
       }
-    }, 10);
-
-    return () => clearTimeout(timer);
-  }, []);
+    }
+  }, [imageLoaded]);
 
   const messages = [
     "Juju está preparando sua anamnese de treino...",
@@ -73,6 +95,9 @@ const LoadingTreino = () => {
   ];
 
   useEffect(() => {
+    // Só inicia as mensagens após a imagem estar carregada
+    if (!imageLoaded) return;
+    
     const intervals = [2000, 2000, 2000, 1500];
     
     const timer = setTimeout(() => {
@@ -86,14 +111,19 @@ const LoadingTreino = () => {
     }, intervals[currentMessage]);
 
     return () => clearTimeout(timer);
-  }, [currentMessage, navigate, userName]);
+  }, [currentMessage, navigate, userName, imageLoaded]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex flex-col justify-center items-center p-4 relative overflow-hidden">
       
-      {/* IMAGEM PRINCIPAL - RENDERIZAÇÃO PRIORITÁRIA ABSOLUTA */}
-      <div className="mb-8 relative" style={{ willChange: 'transform', contain: 'layout style paint' }}>
+      {/* IMAGEM PRINCIPAL - RENDERIZAÇÃO COM MÁXIMA PRIORIDADE */}
+      <div className="mb-8 relative" style={{ 
+        willChange: 'transform', 
+        contain: 'layout style paint',
+        transform: 'translateZ(0)' // Force GPU acceleration
+      }}>
         <div className="w-40 h-40 sm:w-48 sm:h-48 bg-gradient-to-br from-blue-400 to-blue-600 rounded-3xl flex items-center justify-center shadow-2xl p-4">
+          {/* IMAGEM OTIMIZADA COM TÉCNICAS AVANÇADAS */}
           <img 
             src="/lovable-uploads/f85d4059-57d5-4753-a12e-639ca86ca889.png" 
             alt="Personal Trainer - Método BJ" 
@@ -102,8 +132,16 @@ const LoadingTreino = () => {
             fetchPriority="high"
             decoding="sync"
             crossOrigin="anonymous"
-            onLoad={() => setImageLoaded(true)}
+            onLoad={() => {
+              setImageLoaded(true);
+              console.log('🚀 Imagem renderizada com sucesso!');
+            }}
+            onError={() => {
+              setImageError(true);
+              setImageLoaded(true);
+            }}
             style={{
+              // Otimizações críticas de performance
               contentVisibility: 'visible',
               containIntrinsicSize: '192px 192px',
               imageRendering: 'crisp-edges',
@@ -111,12 +149,15 @@ const LoadingTreino = () => {
               backfaceVisibility: 'hidden',
               WebkitBackfaceVisibility: 'hidden',
               transform: 'translateZ(0)',
-              WebkitTransform: 'translateZ(0)'
+              WebkitTransform: 'translateZ(0)',
+              // Força o browser a tratar como critical resource
+              position: 'relative',
+              zIndex: 1000
             }}
           />
           
-          {/* Fallback APENAS se imagem não carregou */}
-          {!imageLoaded && (
+          {/* Fallback mínimo apenas para erros */}
+          {imageError && (
             <div className="w-full h-full bg-gradient-to-br from-blue-200 to-blue-300 rounded-2xl absolute inset-0 flex items-center justify-center">
               <span className="text-white font-bold text-2xl">BJ</span>
             </div>
@@ -124,12 +165,12 @@ const LoadingTreino = () => {
         </div>
       </div>
 
-      {/* APENAS APÓS IMAGEM: Container das mensagens */}
+      {/* CONTEÚDO SECUNDÁRIO - RENDERIZA APENAS APÓS IMAGEM */}
       {imageLoaded && (
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
           className="text-center space-y-6 max-w-md mx-auto"
         >
           

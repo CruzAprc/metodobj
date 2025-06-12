@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -21,7 +20,7 @@ const Loading = () => {
 
   // Preload agressivo da imagem da Juju - MÁXIMA PRIORIDADE
   useEffect(() => {
-    const imageUrl = "/lovable-uploads/4f268362-785c-45b9-aeba-4c33c58fa0e1.png";
+    const imageUrl = "/assets/juju-avatar.png";
     
     // Múltiplas estratégias de preload para garantir carregamento instantâneo
     
@@ -111,7 +110,7 @@ const Loading = () => {
       >
         <div className="w-32 h-32 sm:w-40 sm:h-40 bg-gradient-to-br from-pink-400 to-pink-600 rounded-3xl flex items-center justify-center shadow-2xl p-3">
           <img 
-            src="/lovable-uploads/4f268362-785c-45b9-aeba-4c33c58fa0e1.png" 
+            src="/assets/juju-avatar.png" 
             alt="Juju - Método BJ" 
             className="w-full h-full object-contain"
             loading="eager"

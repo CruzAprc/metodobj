@@ -69,8 +69,9 @@ const Onboarding = () => {
 
         {/* Subtitle */}
         <div className="text-center mb-8 text-slate-600">
-          Sua jornada de <span className="text-blue-600 font-semibold">evolução</span> e <span className="text-sky-300 font-semibold">alta performance</span><br/>
-          começa aqui!
+          <span className="text-blue-600 font-semibold">Ele traz a força.</span> <span className="text-pink-500 font-semibold">Ela ativa a constância</span><br/>
+          <span className="text-slate-600">juntos criamos o método que vai</span><br/>
+          <span className="text-blue-600 font-semibold">transformar seu corpo</span>
         </div>
 
         {/* Main Video Card */}

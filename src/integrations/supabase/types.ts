@@ -953,6 +953,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_daily_progress: {
+        Row: {
+          created_at: string
+          date: string
+          dieta_seguida: boolean
+          id: string
+          treino_realizado: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          dieta_seguida?: boolean
+          id?: string
+          treino_realizado?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          dieta_seguida?: boolean
+          id?: string
+          treino_realizado?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_evaluation_access: {
         Row: {
           created_at: string

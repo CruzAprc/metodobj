@@ -19,48 +19,64 @@ const LoadingTreino = () => {
     }
   }, []);
 
-  // Preload agressivo da imagem do personal trainer - MÁXIMA PRIORIDADE
+  // SUPER AGRESSIVO: Preload instantâneo da imagem - PRIORIDADE MÁXIMA
   useEffect(() => {
     const imageUrl = "/lovable-uploads/f85d4059-57d5-4753-a12e-639ca86ca889.png";
     
-    // Múltiplas estratégias de preload para garantir carregamento instantâneo
+    // 1. Preload crítico no head com prioridade máxima
+    const criticalPreload = document.createElement('link');
+    criticalPreload.rel = 'preload';
+    criticalPreload.as = 'image';
+    criticalPreload.href = imageUrl;
+    criticalPreload.fetchPriority = 'high';
+    criticalPreload.crossOrigin = 'anonymous';
+    document.head.insertBefore(criticalPreload, document.head.firstChild);
     
-    // 1. Preload via link no head com highest priority
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.as = 'image';
-    link.href = imageUrl;
-    link.fetchPriority = 'high';
-    document.head.insertBefore(link, document.head.firstChild);
+    // 2. Prefetch adicional para cache
+    const prefetch = document.createElement('link');
+    prefetch.rel = 'prefetch';
+    prefetch.href = imageUrl;
+    prefetch.fetchPriority = 'high';
+    document.head.appendChild(prefetch);
     
-    // 2. Preload via Image object com cache
-    const img = new Image();
-    img.fetchPriority = 'high';
-    img.loading = 'eager';
-    img.decoding = 'sync';
-    img.onload = () => {
-      setImageLoaded(true);
-      console.log('Imagem do personal trainer carregada com sucesso!');
+    // 3. Cache agressivo via Image com múltiplas instâncias
+    for (let i = 0; i < 3; i++) {
+      const img = new Image();
+      img.fetchPriority = 'high';
+      img.loading = 'eager';
+      img.decoding = 'sync';
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        setImageLoaded(true);
+        console.log(`Imagem do personal trainer carregada - instância ${i + 1}`);
+      };
+      img.src = imageUrl;
+    }
+    
+    // 4. Força o browser a priorizar esta imagem
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', imageUrl, true);
+    xhr.responseType = 'blob';
+    xhr.onload = () => {
+      console.log('Imagem pré-carregada via XHR');
     };
-    img.onerror = () => {
-      console.error('Erro ao carregar imagem do personal trainer');
-      setImageLoaded(true); // Ainda mostra o container
-    };
-    img.src = imageUrl;
-    
-    // 3. Prefetch adicional
-    const prefetchLink = document.createElement('link');
-    prefetchLink.rel = 'prefetch';
-    prefetchLink.href = imageUrl;
-    document.head.appendChild(prefetchLink);
+    xhr.send();
+
+    // 5. Service Worker cache se disponível
+    if ('caches' in window) {
+      caches.open('image-cache-v1').then(cache => {
+        cache.add(imageUrl).then(() => {
+          console.log('Imagem cached via Service Worker');
+        });
+      });
+    }
 
     return () => {
-      if (document.head.contains(link)) {
-        document.head.removeChild(link);
-      }
-      if (document.head.contains(prefetchLink)) {
-        document.head.removeChild(prefetchLink);
-      }
+      [criticalPreload, prefetch].forEach(link => {
+        if (document.head.contains(link)) {
+          document.head.removeChild(link);
+        }
+      });
     };
   }, []);
 
@@ -102,35 +118,38 @@ const LoadingTreino = () => {
         <div className="w-12 h-12 bg-gradient-to-br from-blue-300 to-blue-400 rounded-full" />
       </div>
 
-      {/* Imagem do Personal Trainer - RENDERIZAÇÃO PRIORITÁRIA */}
+      {/* IMAGEM CRÍTICA - RENDERIZAÇÃO SUPER PRIORITÁRIA */}
       <motion.div 
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
         className="mb-8 relative"
       >
-        <div className="w-32 h-32 sm:w-40 sm:h-40 bg-gradient-to-br from-blue-400 to-blue-600 rounded-3xl flex items-center justify-center shadow-2xl p-3">
+        <div className="w-40 h-40 sm:w-48 sm:h-48 bg-gradient-to-br from-blue-400 to-blue-600 rounded-3xl flex items-center justify-center shadow-2xl p-4">
+          {/* IMAGEM SUPER OTIMIZADA */}
           <img 
             src="/lovable-uploads/f85d4059-57d5-4753-a12e-639ca86ca889.png" 
             alt="Personal Trainer - Método BJ" 
-            className="w-full h-full object-contain"
+            className="w-full h-full object-contain transform-gpu"
             loading="eager"
             fetchPriority="high"
             decoding="sync"
+            crossOrigin="anonymous"
             onLoad={() => setImageLoaded(true)}
             style={{
               contentVisibility: 'visible',
-              containIntrinsicSize: '160px 160px',
+              containIntrinsicSize: '192px 192px',
               imageRendering: 'crisp-edges',
-              willChange: 'transform'
+              willChange: 'transform',
+              backfaceVisibility: 'hidden',
+              WebkitBackfaceVisibility: 'hidden'
             }}
           />
-          {/* Fallback mínimo - apenas para garantir que algo apareça */}
-          {!imageLoaded && (
-            <div className="w-full h-full bg-gradient-to-br from-blue-200 to-blue-300 rounded-2xl absolute inset-0 flex items-center justify-center">
-              <span className="text-white font-bold text-lg">BJ</span>
-            </div>
-          )}
+          
+          {/* Fallback instantâneo - sempre visível até carregamento */}
+          <div className={`w-full h-full bg-gradient-to-br from-blue-200 to-blue-300 rounded-2xl absolute inset-0 flex items-center justify-center transition-opacity duration-100 ${imageLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+            <span className="text-white font-bold text-2xl">BJ</span>
+          </div>
         </div>
       </motion.div>
 
@@ -141,7 +160,7 @@ const LoadingTreino = () => {
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.1 }}
         >
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
             Agora vamos para o treino, <span className="bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent">
@@ -158,7 +177,7 @@ const LoadingTreino = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
+              transition={{ duration: 0.3 }}
               className="text-center"
             >
               <p className="text-lg sm:text-xl text-gray-700 font-medium leading-relaxed px-4">
@@ -189,7 +208,7 @@ const LoadingTreino = () => {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.2 }}
           className="flex justify-center mt-6"
         >
           <div className="relative">
@@ -202,7 +221,7 @@ const LoadingTreino = () => {
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
+          transition={{ delay: 0.3 }}
           className="text-sm text-gray-500 mt-6 px-4"
         >
           💪 Preparando sua anamnese de treino personalizada!

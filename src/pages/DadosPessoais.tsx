@@ -132,7 +132,7 @@ const DadosPessoais = () => {
   const steps = [
     {
       id: 1,
-      icon: <Target size={32} className="text-pink-500" />,
+      icon: <Target size={32} className="text-blue-600" />,
       title: "Qual é o seu nome?",
       subtitle: "Queremos te conhecer melhor! 💕",
       field: "nomeCompleto" as keyof FormData,
@@ -141,7 +141,7 @@ const DadosPessoais = () => {
     },
     {
       id: 2,
-      icon: <Calendar size={32} className="text-purple-500" />,
+      icon: <Calendar size={32} className="text-blue-600" />,
       title: "Quantos anos você tem?",
       subtitle: "Isso nos ajuda a personalizar seu plano! 🎂",
       field: "idade" as keyof FormData,
@@ -150,7 +150,7 @@ const DadosPessoais = () => {
     },
     {
       id: 3,
-      icon: <Weight size={32} className="text-blue-500" />,
+      icon: <Weight size={32} className="text-blue-600" />,
       title: "Qual é o seu peso atual?",
       subtitle: "Sem julgamentos, apenas para criar sua dieta! ⚖️",
       field: "peso" as keyof FormData,
@@ -160,7 +160,7 @@ const DadosPessoais = () => {
     },
     {
       id: 4,
-      icon: <Ruler size={32} className="text-green-500" />,
+      icon: <Ruler size={32} className="text-blue-600" />,
       title: "Qual é a sua altura?",
       subtitle: "Última informação para começarmos! 📏",
       field: "altura" as keyof FormData,
@@ -173,38 +173,19 @@ const DadosPessoais = () => {
   const currentStepData = steps[currentStep - 1];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-100 flex flex-col justify-center items-center p-4 relative overflow-hidden">
-      
-      {/* Ilustrações de fundo */}
-      <div className="absolute top-20 right-10 opacity-10 hidden md:block">
-        <div className="w-24 h-24 bg-gradient-to-br from-pink-300 to-pink-400 rounded-full flex items-center justify-center">
-          <span className="text-3xl">✨</span>
-        </div>
-      </div>
-      
-      <div className="absolute bottom-20 left-10 opacity-10 hidden md:block">
-        <div className="w-20 h-20 bg-gradient-to-br from-purple-300 to-purple-400 rounded-full flex items-center justify-center">
-          <span className="text-2xl">💪</span>
-        </div>
-      </div>
-
-      {/* Card principal */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl border border-pink-200/50 p-8 relative"
-      >
+    <div className="min-h-screen bg-slate-50 p-3 sm:p-5">
+      <div className="max-w-sm sm:max-w-md mx-auto bg-white rounded-3xl p-4 sm:p-8 shadow-2xl">
         
         {/* Progress bar */}
-        <div className="flex justify-center mb-8">
+        <div className="flex justify-center mb-6 sm:mb-8">
           <div className="flex space-x-2">
             {[1, 2, 3, 4].map((step) => (
               <motion.div
                 key={step}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                className={`h-2 rounded-full transition-all duration-300 ${
                   step <= currentStep 
-                    ? 'bg-gradient-to-r from-pink-400 to-pink-500' 
-                    : 'bg-gray-200'
+                    ? 'bg-blue-600 w-6' 
+                    : 'bg-slate-300 w-2'
                 }`}
                 animate={{
                   scale: step === currentStep ? 1.2 : 1
@@ -222,7 +203,7 @@ const DadosPessoais = () => {
           transition={{ duration: 0.3 }}
           className="flex justify-center mb-6"
         >
-          <div className="w-16 h-16 bg-gradient-to-br from-pink-100 to-pink-200 rounded-2xl flex items-center justify-center border border-pink-200">
+          <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl flex items-center justify-center border-2 border-blue-200">
             {currentStepData.icon}
           </div>
         </motion.div>
@@ -235,14 +216,14 @@ const DadosPessoais = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className="text-center space-y-6"
+            className="text-center space-y-4 sm:space-y-6"
           >
             {/* Título */}
             <div className="space-y-2">
-              <h2 className="text-2xl font-bold text-gray-800">
+              <h2 className="text-lg sm:text-2xl font-bold text-slate-800">
                 {currentStepData.title}
               </h2>
-              <p className="text-gray-600 text-sm">
+              <p className="text-slate-600 text-sm">
                 {currentStepData.subtitle}
               </p>
             </div>
@@ -255,17 +236,17 @@ const DadosPessoais = () => {
                   value={formData[currentStepData.field]}
                   onChange={(e) => handleInputChange(currentStepData.field, e.target.value)}
                   placeholder={currentStepData.placeholder}
-                  className={`w-full px-6 py-4 rounded-2xl text-center text-lg font-medium
-                            bg-pink-50/60 border-2 transition-all duration-300
-                            focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-pink-300
+                  className={`w-full px-4 sm:px-6 py-3 sm:py-4 rounded-2xl text-center text-base sm:text-lg font-medium
+                            bg-blue-50/60 border-2 transition-all duration-300
+                            focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300
                             ${errors[currentStepData.field] 
                               ? 'border-red-300 bg-red-50/30' 
-                              : 'border-pink-200/50'
+                              : 'border-blue-200/50'
                             }`}
                   min={currentStepData.type === 'number' ? '1' : undefined}
                 />
                 {currentStepData.unit && (
-                  <span className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-500 text-lg">
+                  <span className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 text-slate-500 text-base sm:text-lg">
                     {currentStepData.unit}
                   </span>
                 )}
@@ -289,46 +270,46 @@ const DadosPessoais = () => {
         </AnimatePresence>
 
         {/* Botões de navegação */}
-        <div className="flex justify-between items-center mt-8 space-x-4">
+        <div className="flex justify-between items-center mt-6 sm:mt-8 space-x-4">
           <button
             onClick={handlePrevious}
-            className="flex items-center space-x-2 px-6 py-3 rounded-2xl font-medium transition-all
-                     text-gray-600 hover:text-gray-800 hover:bg-gray-100"
+            className="flex items-center space-x-2 px-4 sm:px-6 py-2 sm:py-3 rounded-2xl font-medium transition-all
+                     text-slate-600 hover:text-slate-800 hover:bg-slate-100 text-sm sm:text-base"
           >
-            <ArrowLeft size={20} />
+            <ArrowLeft size={16} className="sm:w-5 sm:h-5" />
             <span>Voltar</span>
           </button>
 
           <button
             onClick={handleNext}
-            className="flex items-center space-x-2 px-6 py-3 rounded-2xl font-medium
-                     bg-gradient-to-r from-pink-500 to-pink-600 text-white
-                     hover:from-pink-600 hover:to-pink-700 
+            className="flex items-center space-x-2 px-4 sm:px-6 py-2 sm:py-3 rounded-2xl font-medium
+                     bg-gradient-to-r from-blue-600 to-blue-800 text-white
+                     hover:from-blue-700 hover:to-blue-900 
                      transform hover:scale-105 active:scale-95
-                     transition-all duration-300 shadow-lg"
+                     transition-all duration-300 shadow-lg text-sm sm:text-base"
           >
             <span>{currentStep === 4 ? 'Finalizar' : 'Continuar'}</span>
-            <ArrowRight size={20} />
+            <ArrowRight size={16} className="sm:w-5 sm:h-5" />
           </button>
         </div>
 
         {/* Indicador de etapa */}
-        <div className="text-center mt-6">
-          <p className="text-xs text-gray-400">
+        <div className="text-center mt-4 sm:mt-6">
+          <p className="text-xs text-slate-400">
             Etapa {currentStep} de 4
           </p>
         </div>
-      </motion.div>
 
-      {/* Mensagem motivacional */}
-      <motion.p 
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="text-center text-gray-500 text-sm mt-6 max-w-md"
-      >
-        Estamos quase lá! Essas informações nos ajudam a criar o plano perfeito para você! 💕
-      </motion.p>
+        {/* Mensagem motivacional */}
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="text-center text-slate-500 text-sm mt-4 sm:mt-6 px-2"
+        >
+          Estamos quase lá! Essas informações nos ajudam a criar o plano perfeito para você! 💕
+        </motion.p>
+      </div>
     </div>
   );
 };

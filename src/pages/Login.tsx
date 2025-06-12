@@ -1,12 +1,14 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { toast } from 'sonner';
-
 const Login = () => {
   const navigate = useNavigate();
-  const { signIn, user, loading } = useAuth();
+  const {
+    signIn,
+    user,
+    loading
+  } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -19,14 +21,13 @@ const Login = () => {
       navigate('/onboarding');
     }
   }, [user, loading, navigate]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-
     try {
-      const { error } = await signIn(formData.email, formData.password);
-      
+      const {
+        error
+      } = await signIn(formData.email, formData.password);
       if (error) {
         if (error.message.includes('Invalid login credentials')) {
           toast.error('Email ou senha incorretos');
@@ -43,42 +44,30 @@ const Login = () => {
       setIsSubmitting(false);
     }
   };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
   };
-
   if (loading) {
-    return (
-      <div className="min-h-screen fitness-gradient-bg flex items-center justify-center">
+    return <div className="min-h-screen fitness-gradient-bg flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600 font-medium">Carregando...</p>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center fitness-gradient-bg relative overflow-hidden">
+  return <div className="min-h-screen flex flex-col items-center justify-center fitness-gradient-bg relative overflow-hidden">
       <div className="max-w-sm w-full mx-4">
         <div className="fitness-card animate-slide-in-up">
           <div className="text-center mb-8">
             {/* Logo atualizada */}
             <div className="flex items-center justify-center w-24 h-24 mx-auto mb-6">
-              <img 
-                src="/lovable-uploads/573712ac-9063-4efa-ab2c-2291286e6046.png" 
-                alt="App da Juju Logo" 
-                className="w-full h-full object-contain"
-              />
+              <img src="/lovable-uploads/573712ac-9063-4efa-ab2c-2291286e6046.png" alt="App da Juju Logo" className="w-full h-full object-contain" />
             </div>
             
-            <h2 className="text-3xl font-bold fitness-text mb-3">
-              App da Juju
-            </h2>
+            <h2 className="text-3xl font-bold fitness-text mb-3">Método BJ</h2>
             <p className="text-gray-600 font-medium mb-2">Bem-vinda de volta!</p>
             <p className="text-gray-500 text-sm">
               Sua jornada fitness continua aqui!
@@ -87,36 +76,14 @@ const Login = () => {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="fitness-input"
-                placeholder="Seu email"
-                required
-                disabled={isSubmitting}
-              />
+              <input type="email" name="email" value={formData.email} onChange={handleChange} className="fitness-input" placeholder="Seu email" required disabled={isSubmitting} />
             </div>
 
             <div>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="fitness-input"
-                placeholder="Sua senha"
-                required
-                disabled={isSubmitting}
-              />
+              <input type="password" name="password" value={formData.password} onChange={handleChange} className="fitness-input" placeholder="Sua senha" required disabled={isSubmitting} />
             </div>
 
-            <button 
-              type="submit" 
-              className="w-full fitness-button text-lg"
-              disabled={isSubmitting}
-            >
+            <button type="submit" className="w-full fitness-button text-lg" disabled={isSubmitting}>
               {isSubmitting ? 'Entrando...' : 'Entrar'}
             </button>
           </form>
@@ -133,18 +100,13 @@ const Login = () => {
             
             <p className="text-gray-600 mt-6 text-sm">
               Não tem conta?{' '}
-              <button 
-                onClick={() => navigate('/cadastro')}
-                className="font-medium text-pink-600 hover:text-pink-700 underline"
-              >
+              <button onClick={() => navigate('/cadastro')} className="font-medium text-pink-600 hover:text-pink-700 underline">
                 Cadastre-se grátis! 💕
               </button>
             </p>
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Login;

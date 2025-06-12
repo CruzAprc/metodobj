@@ -369,92 +369,102 @@ const AppJujuDashboard = () => {
                 </div>
 
                 {/* Seção de Séries/Atividades - Nova estrutura inspirada na imagem */}
-                <div className="max-w-2xl mx-auto space-y-4">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-6">Suas Atividades Hoje</h2>
+                <div className="w-full max-w-6xl mx-auto space-y-4 px-4">
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 md:mb-6 text-center">Suas Atividades Hoje</h2>
                   
-                  {/* Card de Série - Dieta da Juju */}
-                  <motion.div
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    className="bg-white rounded-2xl border-l-4 border-pink-400 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
-                    onClick={() => navigate('/dashboard/dieta')}
-                  >
-                    <div className="p-6 flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-pink-400 to-pink-500 rounded-xl flex items-center justify-center">
-                          <Coffee className="text-white" size={24} />
-                        </div>
-                        <div className="text-left">
-                          <h3 className="font-bold text-gray-800 text-lg">PLANO ALIMENTAR</h3>
-                          <p className="text-gray-600 text-sm">Cardápio personalizado da Juju para você se sentir incrível</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Flame size={14} className="text-pink-500" />
-                            <span className="text-xs text-pink-600 font-semibold">Nutrição Otimizada</span>
+                  {/* Grid responsivo para cards */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+                    
+                    {/* Card de Série - Dieta da Juju */}
+                    <motion.div
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      className="bg-white rounded-2xl border-l-4 border-pink-400 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer col-span-1"
+                      onClick={() => navigate('/dashboard/dieta')}
+                    >
+                      <div className="p-4 md:p-6">
+                        <div className="flex items-start space-x-3 md:space-x-4">
+                          <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-pink-400 to-pink-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <Coffee className="text-white" size={20} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-gray-800 text-base md:text-lg leading-tight">PLANO ALIMENTAR</h3>
+                            <p className="text-gray-600 text-xs md:text-sm mt-1 leading-relaxed">Cardápio personalizado da Juju para você se sentir incrível</p>
+                            <div className="flex items-center gap-2 mt-2">
+                              <Flame size={12} className="text-pink-500 flex-shrink-0" />
+                              <span className="text-xs text-pink-600 font-semibold">Nutrição Otimizada</span>
+                            </div>
                           </div>
                         </div>
+                        <div className="flex justify-end mt-3">
+                          <ChevronRight className="text-gray-400" size={20} />
+                        </div>
                       </div>
-                      <ChevronRight className="text-gray-400" size={24} />
-                    </div>
-                  </motion.div>
+                    </motion.div>
 
-                  {/* Card de Série - Treino do Basa */}
-                  <motion.div
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    className="bg-white rounded-2xl border-l-4 border-blue-400 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
-                    onClick={() => navigate('/dashboard/treino')}
-                  >
-                    <div className="p-6 flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-500 rounded-xl flex items-center justify-center">
-                          <Dumbbell className="text-white" size={24} />
-                        </div>
-                        <div className="text-left">
-                          <h3 className="font-bold text-gray-800 text-lg">TREINO DO BASA</h3>
-                          <p className="text-gray-600 text-sm">Exercícios desenvolvidos especialmente para seus objetivos</p>
-                          <div className="flex items-center gap-2 mt-2">
-                            <Target size={14} className="text-blue-500" />
-                            <span className="text-xs text-blue-600 font-semibold">Foco & Resultado</span>
+                    {/* Card de Série - Treino do Basa */}
+                    <motion.div
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      className="bg-white rounded-2xl border-l-4 border-blue-400 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer col-span-1"
+                      onClick={() => navigate('/dashboard/treino')}
+                    >
+                      <div className="p-4 md:p-6">
+                        <div className="flex items-start space-x-3 md:space-x-4">
+                          <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-blue-400 to-blue-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                            <Dumbbell className="text-white" size={20} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-gray-800 text-base md:text-lg leading-tight">TREINO DO BASA</h3>
+                            <p className="text-gray-600 text-xs md:text-sm mt-1 leading-relaxed">Exercícios desenvolvidos especialmente para seus objetivos</p>
+                            <div className="flex items-center gap-2 mt-2">
+                              <Target size={12} className="text-blue-500 flex-shrink-0" />
+                              <span className="text-xs text-blue-600 font-semibold">Foco & Resultado</span>
+                            </div>
                           </div>
                         </div>
+                        <div className="flex justify-end mt-3">
+                          <ChevronRight className="text-gray-400" size={20} />
+                        </div>
                       </div>
-                      <ChevronRight className="text-gray-400" size={24} />
-                    </div>
-                  </motion.div>
+                    </motion.div>
 
-                  {/* Card de Progresso */}
-                  <motion.div
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    className="bg-white rounded-2xl border-l-4 border-green-400 shadow-lg hover:shadow-xl transition-all duration-300"
-                  >
-                    <div className="p-6 flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-500 rounded-xl flex items-center justify-center">
-                          <Activity className="text-white" size={24} />
-                        </div>
-                        <div className="text-left">
-                          <h3 className="font-bold text-gray-800 text-lg">ACOMPANHAMENTO</h3>
-                          <p className="text-gray-600 text-sm">Monitore sua evolução diária e celebre suas conquistas</p>
-                          <div className="flex items-center gap-4 mt-3">
-                            <div className="flex items-center gap-1">
-                              <div className="w-2 h-2 bg-pink-400 rounded-full"></div>
-                              <span className="text-xs text-gray-600">Dieta</span>
+                    {/* Card de Progresso */}
+                    <motion.div
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      className="bg-white rounded-2xl border-l-4 border-green-400 shadow-lg hover:shadow-xl transition-all duration-300 col-span-1 lg:col-span-2 xl:col-span-1"
+                    >
+                      <div className="p-4 md:p-6">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-start space-x-3 md:space-x-4 flex-1">
+                            <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-green-400 to-green-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                              <Activity className="text-white" size={20} />
                             </div>
-                            <div className="flex items-center gap-1">
-                              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                              <span className="text-xs text-gray-600">Treino</span>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-bold text-gray-800 text-base md:text-lg leading-tight">ACOMPANHAMENTO</h3>
+                              <p className="text-gray-600 text-xs md:text-sm mt-1 leading-relaxed">Monitore sua evolução diária e celebre suas conquistas</p>
+                              <div className="flex flex-wrap items-center gap-3 md:gap-4 mt-3">
+                                <div className="flex items-center gap-1">
+                                  <div className="w-2 h-2 bg-pink-400 rounded-full flex-shrink-0"></div>
+                                  <span className="text-xs text-gray-600">Dieta</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <div className="w-2 h-2 bg-blue-400 rounded-full flex-shrink-0"></div>
+                                  <span className="text-xs text-gray-600">Treino</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <div className="w-2 h-2 bg-green-400 rounded-full flex-shrink-0"></div>
+                                  <span className="text-xs text-gray-600">Progresso</span>
+                                </div>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                              <span className="text-xs text-gray-600">Progresso</span>
-                            </div>
+                          </div>
+                          <div className="text-right flex-shrink-0 ml-2">
+                            <div className="text-xl md:text-2xl font-bold text-green-600">{calculateProgress()}%</div>
+                            <div className="text-xs text-gray-500">completo</div>
                           </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-2xl font-bold text-green-600">{calculateProgress()}%</div>
-                        <div className="text-xs text-gray-500">completo</div>
-                      </div>
-                    </div>
-                  </motion.div>
+                    </motion.div>
+                  </div>
                 </div>
 
                 {/* Motivação do dia */}

@@ -8,6 +8,7 @@ const Loading = () => {
   const navigate = useNavigate();
   const [currentMessage, setCurrentMessage] = useState(0);
   const [userName, setUserName] = useState('');
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   // Recuperar o nome do usuário do localStorage
   useEffect(() => {
@@ -16,6 +17,27 @@ const Loading = () => {
       const dados = JSON.parse(dadosPessoais);
       setUserName(dados.nomeCompleto.split(' ')[0]); // Pega apenas o primeiro nome
     }
+  }, []);
+
+  // Preload da imagem da logo para garantir carregamento rápido
+  useEffect(() => {
+    const imageUrl = "/lovable-uploads/a34eec64-90e0-443e-adcb-970b1fdb0de5.png";
+    const img = new Image();
+    img.onload = () => setImageLoaded(true);
+    img.src = imageUrl;
+    
+    // Adicionar preload no head
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = imageUrl;
+    document.head.appendChild(link);
+
+    return () => {
+      if (document.head.contains(link)) {
+        document.head.removeChild(link);
+      }
+    };
   }, []);
 
   const messages = [
@@ -56,19 +78,32 @@ const Loading = () => {
         <div className="w-12 h-12 bg-gradient-to-br from-pink-300 to-pink-400 rounded-full" />
       </div>
 
-      {/* Logo da Juju */}
+      {/* Logo da Juju com otimização de carregamento */}
       <motion.div 
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="mb-8"
+        className="mb-8 relative"
       >
         <div className="w-20 h-20 bg-gradient-to-br from-pink-400 to-pink-600 rounded-3xl flex items-center justify-center shadow-2xl p-2">
           <img 
-            src="/lovable-uploads/02d55ca0-b017-487b-a9a2-275d8eef05b6.png" 
-            alt="Juju Logo" 
-            className="w-full h-full object-contain"
+            src="/lovable-uploads/a34eec64-90e0-443e-adcb-970b1fdb0de5.png" 
+            alt="Método BJ Logo" 
+            className={`w-full h-full object-contain transition-opacity duration-300 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            loading="eager"
+            fetchPriority="high"
+            decoding="sync"
+            onLoad={() => setImageLoaded(true)}
+            style={{
+              contentVisibility: 'auto',
+              containIntrinsicSize: '80px 80px'
+            }}
           />
+          {!imageLoaded && (
+            <div className="w-full h-full bg-gradient-to-br from-pink-100 to-pink-200 rounded-2xl animate-pulse absolute inset-0" />
+          )}
         </div>
       </motion.div>
 

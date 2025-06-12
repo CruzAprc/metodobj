@@ -56,7 +56,7 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 p-5">
-      <div className="max-w-sm mx-auto bg-white rounded-3xl p-8 shadow-2xl">
+      <div className="max-w-md mx-auto bg-white rounded-3xl p-8 shadow-2xl">
         
         {/* Logo/Image */}
         <div className="w-full mb-8 flex items-center justify-center">
@@ -75,7 +75,7 @@ const Onboarding = () => {
         </div>
 
         {/* Main Video Card */}
-        <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl px-8 py-6 text-white text-center mb-6 relative overflow-hidden min-h-[200px] flex flex-col justify-center">
+        <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl px-6 py-6 text-white text-center mb-6 relative overflow-hidden min-h-[220px] flex flex-col justify-center">
           <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full transform translate-x-8 -translate-y-8"></div>
           
           <h2 className="text-lg font-bold mb-3">Sistema Método BJ</h2>

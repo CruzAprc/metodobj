@@ -142,7 +142,7 @@ const LoadingTreino = () => {
         className="absolute top-1/3 left-1/4 animate-pulse"
       >
         <div className="w-12 h-12 bg-gradient-to-br from-blue-300 to-blue-400 rounded-full" />
-      </div>
+      </motion.div>
     </div>
   );
 };

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, Target, Calendar, Weight, Ruler } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface FormData {
   nomeCompleto: string;
@@ -24,6 +25,7 @@ const DadosPessoais = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     nomeCompleto: '',
     idade: '',
@@ -68,8 +70,8 @@ const DadosPessoais = () => {
       case 4:
         if (!formData.altura) {
           newErrors.altura = 'Sua altura é essencial para calcular suas necessidades! 📏';
-        } else if (parseFloat(formData.altura) < 120 || parseFloat(formData.altura) > 220) {
-          newErrors.altura = 'Digite uma altura válida entre 120cm e 220cm! ✨';
+        } else if (parseFloat(formData.altura) < 140 || parseFloat(formData.altura) > 220) {
+          newErrors.altura = 'Digite uma altura válida entre 140cm e 220cm! ✨';
         }
         break;
     }
@@ -79,44 +81,96 @@ const DadosPessoais = () => {
   };
 
   const saveToDatabase = async (): Promise<boolean> => {
-    if (!user) return false;
+    if (!user) {
+      toast.error('Usuário não encontrado. Faça login novamente.');
+      return false;
+    }
 
     try {
-      // Atualizar dados pessoais na tabela teste_app
-      const { error } = await supabase
-        .from('teste_app')
-        .update({
-          nome: formData.nomeCompleto,
-          // Podemos adicionar idade, peso e altura se necessário na tabela
-        })
-        .eq('user_id', user.id);
+      console.log('Salvando dados para o usuário:', user.id);
+      console.log('Dados a serem salvos:', formData);
 
-      if (error) {
-        console.error('Erro ao salvar dados:', error);
+      // Primeiro, verificar se já existe um registro para este usuário
+      const { data: existingData, error: checkError } = await supabase
+        .from('teste_app')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Erro ao verificar dados existentes:', checkError);
+        toast.error('Erro ao verificar dados existentes');
         return false;
       }
 
-      console.log('Dados pessoais salvos com sucesso!');
+      let result;
+      if (existingData) {
+        // Atualizar registro existente
+        result = await supabase
+          .from('teste_app')
+          .update({
+            nome: formData.nomeCompleto,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id);
+      } else {
+        // Criar novo registro
+        result = await supabase
+          .from('teste_app')
+          .insert({
+            user_id: user.id,
+            nome: formData.nomeCompleto,
+            email: user.email || '',
+            whatsapp: ''
+          });
+      }
+
+      if (result.error) {
+        console.error('Erro ao salvar dados:', result.error);
+        toast.error('Erro ao salvar dados: ' + result.error.message);
+        return false;
+      }
+
+      console.log('Dados salvos com sucesso!');
+      toast.success('Dados salvos com sucesso!');
       return true;
     } catch (error) {
       console.error('Erro ao salvar dados:', error);
+      toast.error('Erro inesperado ao salvar dados');
       return false;
     }
   };
 
   const handleNext = async () => {
-    if (validateStep(currentStep)) {
-      if (currentStep < 4) {
-        setCurrentStep(currentStep + 1);
-      } else {
-        // Finalizar e enviar dados
-        console.log('Dados coletados:', formData);
+    if (!validateStep(currentStep)) {
+      return;
+    }
+
+    if (currentStep < 4) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      // Finalizar e enviar dados
+      setIsSubmitting(true);
+      try {
+        console.log('Finalizando dados pessoais:', formData);
+        
         const saved = await saveToDatabase();
         if (saved) {
           // Salvar no localStorage para usar em outras partes da aplicação
           localStorage.setItem('dadosPessoais', JSON.stringify(formData));
-          navigate('/loading'); // Redirecionar para a página de loading
+          
+          toast.success('Dados pessoais salvos! Redirecionando...');
+          
+          // Aguardar um pouco antes de redirecionar
+          setTimeout(() => {
+            navigate('/loading');
+          }, 1000);
         }
+      } catch (error) {
+        console.error('Erro no processo final:', error);
+        toast.error('Erro ao finalizar dados pessoais');
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
@@ -244,6 +298,7 @@ const DadosPessoais = () => {
                               : 'border-blue-200/50'
                             }`}
                   min={currentStepData.type === 'number' ? '1' : undefined}
+                  disabled={isSubmitting}
                 />
                 {currentStepData.unit && (
                   <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-500 text-lg">
@@ -273,8 +328,10 @@ const DadosPessoais = () => {
         <div className="flex justify-between items-center mt-8 space-x-4">
           <button
             onClick={handlePrevious}
+            disabled={isSubmitting}
             className="flex items-center space-x-2 px-6 py-3 rounded-2xl font-medium transition-all
-                     text-slate-600 hover:text-slate-800 hover:bg-slate-100"
+                     text-slate-600 hover:text-slate-800 hover:bg-slate-100
+                     disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <ArrowLeft size={18} />
             <span>Voltar</span>
@@ -282,14 +339,23 @@ const DadosPessoais = () => {
 
           <button
             onClick={handleNext}
+            disabled={isSubmitting}
             className="flex items-center space-x-2 px-6 py-3 rounded-2xl font-medium
                      bg-gradient-to-r from-blue-600 to-blue-800 text-white
                      hover:from-blue-700 hover:to-blue-900 
                      transform hover:scale-105 active:scale-95
-                     transition-all duration-300 shadow-lg"
+                     transition-all duration-300 shadow-lg
+                     disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
-            <span>{currentStep === 4 ? 'Finalizar' : 'Continuar'}</span>
-            <ArrowRight size={18} />
+            <span>
+              {isSubmitting 
+                ? 'Salvando...' 
+                : currentStep === 4 
+                  ? 'Finalizar' 
+                  : 'Continuar'
+              }
+            </span>
+            {!isSubmitting && <ArrowRight size={18} />}
           </button>
         </div>
 

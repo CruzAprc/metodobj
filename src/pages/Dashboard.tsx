@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
-import { Coffee, Utensils, Sandwich, Moon, Dumbbell, Camera, User, Settings, Calendar, TrendingUp, Clock, ChefHat, RefreshCw, CheckCircle, AlertCircle, ChevronRight, Target, Activity, Timer, Flame, Check, Plus } from 'lucide-react';
+import { Coffee, Utensils, Sandwich, Moon, Dumbbell, Camera, User, Settings, Calendar, TrendingUp, Clock, ChefHat, RefreshCw, CheckCircle, AlertCircle, ChevronRight, Target, Activity, Timer, Flame, Check, Plus, LogOut } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -459,6 +459,26 @@ const AppJujuDashboard = () => {
     loadPersonalData();
   };
 
+  // Function to handle logout with confirmation
+  const handleLogout = async () => {
+    const confirmLogout = window.confirm('Tem certeza que deseja sair da sua conta?');
+    if (confirmLogout) {
+      try {
+        await signOut();
+        toast({
+          title: "Logout realizado",
+          description: "Você foi desconectado com sucesso!"
+        });
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Erro ao fazer logout",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
   // Priorizar nome dos dados pessoais se disponível
   const displayName = personalData?.nome_completo || userName || 'Usuário';
   
@@ -800,9 +820,21 @@ const AppJujuDashboard = () => {
                         </div>
                       </> : <p className="text-gray-500">Carregando dados...</p>}
                   </div>
-                  <button onClick={() => setIsEditModalOpen(true)} className="bg-gradient-to-r from-sky-500 to-sky-600 text-white px-4 sm:px-6 py-2 rounded-xl hover:from-sky-600 hover:to-sky-700 transition-all text-sm sm:text-base">
-                    Editar Perfil
-                  </button>
+                  
+                  {/* Botões de ação */}
+                  <div className="space-y-3">
+                    <button onClick={() => setIsEditModalOpen(true)} className="w-full bg-gradient-to-r from-sky-500 to-sky-600 text-white px-4 sm:px-6 py-2 rounded-xl hover:from-sky-600 hover:to-sky-700 transition-all text-sm sm:text-base">
+                      Editar Perfil
+                    </button>
+                    
+                    <button 
+                      onClick={handleLogout} 
+                      className="w-full bg-gradient-to-r from-red-500 to-red-600 text-white px-4 sm:px-6 py-2 rounded-xl hover:from-red-600 hover:to-red-700 transition-all text-sm sm:text-base flex items-center justify-center gap-2"
+                    >
+                      <LogOut size={isMobile ? 16 : 18} />
+                      Sair da Conta
+                    </button>
+                  </div>
                 </div>
               </div>
             </TabsContent>

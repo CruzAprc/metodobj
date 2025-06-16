@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -172,7 +173,7 @@ const QuizAlimentar = () => {
         result = await supabase
           .from('user_quiz_data')
           .update({
-            quiz_data: quizData,
+            quiz_data: quizData as any,
             updated_at: new Date().toISOString(),
             completed_at: new Date().toISOString()
           })
@@ -184,7 +185,7 @@ const QuizAlimentar = () => {
           .insert({
             user_id: user.id,
             quiz_type: 'alimentar',
-            quiz_data: quizData,
+            quiz_data: quizData as any,
             completed_at: new Date().toISOString()
           });
       }
@@ -198,7 +199,7 @@ const QuizAlimentar = () => {
         await supabase.rpc('log_user_event', {
           p_user_id: user.id,
           p_event_type: 'quiz_alimentar_completed',
-          p_event_data: quizData,
+          p_event_data: quizData as any,
           p_table_reference: 'user_quiz_data'
         });
       } catch (logError) {

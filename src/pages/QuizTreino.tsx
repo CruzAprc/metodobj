@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,7 +17,7 @@ interface QuizData {
 const quizSteps = [
   {
     pergunta: 1,
-    titulo: 'Qual sua experiência com exercícios?',
+    titulo: 'Qual sua experiência com musculação?',
     opcoes: [
       { id: 'iniciante', texto: 'Iniciante (nunca treinei)', emoji: '🆕' },
       { id: 'basico', texto: 'Básico (menos de 6 meses)', emoji: '📚' },
@@ -42,10 +41,10 @@ const quizSteps = [
     pergunta: 3,
     titulo: 'Qual seu principal objetivo no treino?',
     opcoes: [
-      { id: 'perder_gordura', texto: 'Perder gordura', emoji: '🔥' },
       { id: 'ganhar_massa', texto: 'Ganhar massa muscular', emoji: '💪' },
       { id: 'definir', texto: 'Definição muscular', emoji: '✨' },
-      { id: 'condicionamento', texto: 'Melhorar condicionamento', emoji: '❤️' }
+      { id: 'forca', texto: 'Ganhar força', emoji: '🏋️' },
+      { id: 'hipertrofia', texto: 'Hipertrofia', emoji: '💥' }
     ],
     campo: 'objetivo' as keyof QuizData
   },
@@ -64,13 +63,12 @@ const quizSteps = [
   },
   {
     pergunta: 5,
-    titulo: 'Que tipo de treino você prefere?',
+    titulo: 'Que tipo de treino de musculação você prefere?',
     opcoes: [
-      { id: 'musculacao', texto: 'Musculação', emoji: '🏋️' },
-      { id: 'funcional', texto: 'Treino funcional', emoji: '🤸' },
-      { id: 'cardio', texto: 'Exercícios cardio', emoji: '🏃' },
-      { id: 'misto', texto: 'Treino misto', emoji: '🔄' },
-      { id: 'casa', texto: 'Treino em casa', emoji: '🏠' }
+      { id: 'musculacao_tradicional', texto: 'Musculação tradicional', emoji: '🏋️' },
+      { id: 'powerlifting', texto: 'Powerlifting', emoji: '💪' },
+      { id: 'bodybuilding', texto: 'Bodybuilding', emoji: '🏆' },
+      { id: 'hiit_muscular', texto: 'HIIT com pesos', emoji: '🔥' }
     ],
     campo: 'preferencias' as keyof QuizData,
     multipla: true
@@ -425,7 +423,7 @@ const QuizTreino = () => {
         {/* Indicador de etapa */}
         <div className="text-center mt-6">
           <p className="text-xs text-slate-400">
-            Pergunta {currentPergunta} de {quizSteps.length} - Quiz Treino
+            Pergunta {currentPergunta} de {quizSteps.length} - Quiz Musculação
           </p>
         </div>
       </div>

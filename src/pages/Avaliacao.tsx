@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
@@ -64,46 +65,83 @@ const Avaliacao = () => {
     if (!user) return;
 
     try {
-      // Carregar dados do usuário para calcular dias
+      console.log('Carregando dados de avaliação para usuário:', user.id);
+
+      // Carregar dados do usuário para calcular dias - corrigido para evitar múltiplas linhas
       const { data: userData } = await supabase
         .from('teste_app')
         .select('data_registro')
         .eq('user_id', user.id)
-        .single();
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      console.log('Dados do usuário para cálculo de dias:', userData);
 
       if (userData) {
         const regDate = new Date(userData.data_registro);
         const today = new Date();
         const diffTime = Math.abs(today.getTime() - regDate.getTime());
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        console.log('Dias usando app calculados:', diffDays);
         setDaysUsingApp(diffDays);
       }
 
       // Carregar status de acesso à avaliação
-      const { data: accessData } = await supabase
+      const { data: accessData, error: accessError } = await supabase
         .from('user_evaluation_access')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
-      setEvaluationAccess(accessData);
+      console.log('Dados de acesso à avaliação:', { accessData, accessError });
 
-      // Carregar fotos do mês atual se desbloqueado
-      if (accessData?.is_unlocked) {
-        const currentMonth = new Date().toISOString().slice(0, 7) + '-01';
-        const { data: photosData } = await supabase
-          .from('evaluation_photos')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('evaluation_period', currentMonth);
+      if (accessData) {
+        // Verificar se deve desbloquear baseado nos dias
+        const unlockDate = new Date(accessData.unlock_date);
+        const today = new Date();
+        const shouldUnlock = today >= unlockDate;
 
-        // Type casting para garantir compatibilidade de tipos
-        const typedPhotos = (photosData || []).map(photo => ({
-          ...photo,
-          photo_type: photo.photo_type as 'frente' | 'costas' | 'lado'
-        }));
+        console.log('Verificação de desbloqueio:', {
+          unlockDate: accessData.unlock_date,
+          today: today.toISOString().split('T')[0],
+          shouldUnlock,
+          currentIsUnlocked: accessData.is_unlocked
+        });
 
-        setCurrentPhotos(typedPhotos);
+        // Atualizar status se necessário
+        if (shouldUnlock && !accessData.is_unlocked) {
+          console.log('Atualizando status de desbloqueio...');
+          const { error: updateError } = await supabase
+            .from('user_evaluation_access')
+            .update({ is_unlocked: true })
+            .eq('user_id', user.id);
+
+          if (!updateError) {
+            accessData.is_unlocked = true;
+            console.log('Status atualizado com sucesso');
+          }
+        }
+
+        setEvaluationAccess(accessData);
+
+        // Carregar fotos do mês atual se desbloqueado
+        if (accessData.is_unlocked || shouldUnlock) {
+          const currentMonth = new Date().toISOString().slice(0, 7) + '-01';
+          const { data: photosData } = await supabase
+            .from('evaluation_photos')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('evaluation_period', currentMonth);
+
+          // Type casting para garantir compatibilidade de tipos
+          const typedPhotos = (photosData || []).map(photo => ({
+            ...photo,
+            photo_type: photo.photo_type as 'frente' | 'costas' | 'lado'
+          }));
+
+          setCurrentPhotos(typedPhotos);
+        }
       }
     } catch (error) {
       console.error('Erro ao carregar dados da avaliação:', error);
@@ -239,6 +277,12 @@ const Avaliacao = () => {
                 </p>
                 <div className="mt-3 text-sm text-gray-600">
                   Você está usando o app há {daysUsingApp} dias
+                </div>
+                <div className="mt-4 w-full bg-gray-200 rounded-full h-3">
+                  <div 
+                    className="bg-gradient-to-r from-pink-400 to-pink-500 h-3 rounded-full transition-all duration-300"
+                    style={{ width: `${Math.min((daysUsingApp / (evaluationAccess?.days_required || 7)) * 100, 100)}%` }}
+                  />
                 </div>
               </div>
             </div>

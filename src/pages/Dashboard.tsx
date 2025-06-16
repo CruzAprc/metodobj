@@ -153,6 +153,7 @@ const AppJujuDashboard = () => {
   });
   const [todayProgress, setTodayProgress] = useState<any>(null);
   const [diasNoApp, setDiasNoApp] = useState(0);
+  const [evaluationUnlocked, setEvaluationUnlocked] = useState(false);
   const {
     user
   } = useAuth();
@@ -166,6 +167,13 @@ const AppJujuDashboard = () => {
     const hoje = new Date();
     const diffTime = hoje.getTime() - registroDate.getTime();
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    console.log('Calculando dias no app:', {
+      dataRegistro,
+      registroDate,
+      hoje,
+      diffTime,
+      diffDays
+    });
     return Math.max(0, diffDays);
   };
 
@@ -304,18 +312,31 @@ const AppJujuDashboard = () => {
       loadWorkoutData();
       loadUserPhotos();
       loadTodayProgress();
+      checkEvaluationAccess();
     }
   }, [user]);
+
   const loadUserData = async () => {
     if (!user) return;
     try {
-      const {
-        data,
-        error
-      } = await supabase.from('teste_app').select('*').eq('user_id', user.id).single();
+      console.log('Carregando dados do usuário:', user.id);
+      
+      // Usar maybeSingle em vez de single para evitar erro de múltiplas linhas
+      const { data, error } = await supabase
+        .from('teste_app')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      console.log('Resultado da consulta teste_app:', { data, error });
+
       if (data && !error) {
         // Calcular dias no app baseado na data de registro
         const calculatedDays = calculateDaysInApp(data.data_registro);
+        console.log('Dias calculados no app:', calculatedDays);
+        
         setDiasNoApp(calculatedDays);
         setUserData(data);
         setUserName(data.nome || 'Usuário');
@@ -328,6 +349,60 @@ const AppJujuDashboard = () => {
       setUserName('Usuário');
     }
   };
+
+  const checkEvaluationAccess = async () => {
+    if (!user) return;
+    
+    try {
+      console.log('Verificando acesso à avaliação para usuário:', user.id);
+      
+      const { data: accessData, error } = await supabase
+        .from('user_evaluation_access')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      console.log('Dados de acesso à avaliação:', { accessData, error });
+
+      if (accessData) {
+        // Verificar se já passou dos 7 dias
+        const unlockDate = new Date(accessData.unlock_date);
+        const today = new Date();
+        const isUnlocked = today >= unlockDate;
+        
+        console.log('Verificação de desbloqueio:', {
+          unlockDate: accessData.unlock_date,
+          today: today.toISOString().split('T')[0],
+          isUnlocked,
+          storedIsUnlocked: accessData.is_unlocked
+        });
+
+        setEvaluationUnlocked(isUnlocked);
+
+        // Atualizar o status no banco se necessário
+        if (isUnlocked && !accessData.is_unlocked) {
+          console.log('Atualizando status de desbloqueio no banco...');
+          const { error: updateError } = await supabase
+            .from('user_evaluation_access')
+            .update({ is_unlocked: true })
+            .eq('user_id', user.id);
+
+          if (updateError) {
+            console.error('Erro ao atualizar status de desbloqueio:', updateError);
+          } else {
+            console.log('Status de desbloqueio atualizado com sucesso');
+          }
+        }
+      } else {
+        console.log('Nenhum dado de acesso à avaliação encontrado');
+        setEvaluationUnlocked(false);
+      }
+    } catch (error) {
+      console.error('Erro ao verificar acesso à avaliação:', error);
+      setEvaluationUnlocked(false);
+    }
+  };
+
   const loadPersonalData = async () => {
     if (!user) return;
     try {
@@ -385,6 +460,7 @@ const AppJujuDashboard = () => {
 
   // Priorizar nome dos dados pessoais se disponível
   const displayName = personalData?.nome_completo || userName || 'Usuário';
+  
   const dockItems = [{
     icon: <TrendingUp size={iconSize} />,
     label: 'Dashboard',
@@ -400,12 +476,13 @@ const AppJujuDashboard = () => {
   }, {
     icon: <Camera size={iconSize} />,
     label: 'Avaliação',
-    onClick: () => setCurrentTab('avaliacao')
+    onClick: () => evaluationUnlocked ? navigate('/avaliacao') : setCurrentTab('avaliacao')
   }, {
     icon: <User size={iconSize} />,
     label: 'Perfil',
     onClick: () => setCurrentTab('perfil')
   }];
+
   return <div className="flex flex-col w-full min-h-screen justify-center items-center relative bg-gradient-to-br from-sky-50 via-white to-sky-100 transition-colors duration-300">
       
       {/* Ilustrações de fundo - apenas em desktop */}
@@ -651,12 +728,38 @@ const AppJujuDashboard = () => {
             <TabsContent value="avaliacao" className="mt-0">
               <div className="text-center space-y-6 px-4">
                 <h2 className="text-2xl sm:text-3xl font-bold text-gray-800">Avaliação 📸</h2>
-                <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-6 sm:p-8 rounded-2xl border border-gray-200 max-w-sm sm:max-w-md mx-auto">
-                  <Camera className="text-gray-400 mx-auto mb-4" size={isMobile ? 40 : 48} />
-                  <p className="text-gray-600 mb-2">Liberação em:</p>
-                  <p className="text-xl sm:text-2xl font-bold text-sky-600">7 dias</p>
-                  <p className="text-sm text-gray-500 mt-2">Continue seguindo seu plano! 💪</p>
-                </div>
+                {evaluationUnlocked ? (
+                  <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 sm:p-8 rounded-2xl border border-green-200 max-w-sm sm:max-w-md mx-auto">
+                    <CheckCircle className="text-green-500 mx-auto mb-4" size={isMobile ? 40 : 48} />
+                    <p className="text-green-700 font-semibold mb-2">✅ Área Desbloqueada!</p>
+                    <p className="text-gray-600 mb-4">
+                      Parabéns! Você completou {diasNoApp} dias no app e agora pode acessar a área de avaliação.
+                    </p>
+                    <button
+                      onClick={() => navigate('/avaliacao')}
+                      className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-xl hover:from-green-600 hover:to-green-700 transition-all font-semibold"
+                    >
+                      Acessar Avaliação
+                    </button>
+                  </div>
+                ) : (
+                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-6 sm:p-8 rounded-2xl border border-gray-200 max-w-sm sm:max-w-md mx-auto">
+                    <Camera className="text-gray-400 mx-auto mb-4" size={isMobile ? 40 : 48} />
+                    <p className="text-gray-600 mb-2">Liberação em:</p>
+                    <p className="text-xl sm:text-2xl font-bold text-sky-600">
+                      {Math.max(0, 7 - diasNoApp)} dias
+                    </p>
+                    <p className="text-sm text-gray-500 mt-2">
+                      Você está há {diasNoApp} dias no app. Continue seguindo seu plano! 💪
+                    </p>
+                    <div className="mt-4 w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-gradient-to-r from-sky-400 to-sky-500 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${Math.min((diasNoApp / 7) * 100, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </TabsContent>
 

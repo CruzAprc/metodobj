@@ -50,8 +50,8 @@ const Onboarding = () => {
         console.log('Onboarding: Quiz alimentar:', { dietQuiz, dietError });
 
         if (!dietQuiz && (!dietError || dietError.code === 'PGRST116')) {
-          console.log('Onboarding: Quiz alimentar não encontrado, redirecionando para quiz-alimentar');
-          navigate('/quiz-alimentar/1');
+          console.log('Onboarding: Quiz alimentar não encontrado, redirecionando para loading');
+          navigate('/loading');
           return;
         }
 
@@ -66,8 +66,8 @@ const Onboarding = () => {
         console.log('Onboarding: Quiz treino:', { workoutQuiz, workoutError });
 
         if (!workoutQuiz && (!workoutError || workoutError.code === 'PGRST116')) {
-          console.log('Onboarding: Quiz treino não encontrado, redirecionando para quiz-treino');
-          navigate('/quiz-treino/1');
+          console.log('Onboarding: Quiz treino não encontrado, redirecionando para loading-treino');
+          navigate('/loading-treino');
           return;
         }
 

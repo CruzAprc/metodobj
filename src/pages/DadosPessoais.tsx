@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -222,8 +223,8 @@ const DadosPessoais = () => {
           // Salvar no localStorage para usar em outras partes da aplicação
           localStorage.setItem('dadosPessoais', JSON.stringify(formData));
           
-          // Redirecionar diretamente para o dashboard
-          navigate('/dashboard');
+          // Redirecionar para loading (que vai para quiz-alimentar)
+          navigate('/loading');
         }
       } catch (error) {
         console.error('Erro no processo final:', error);

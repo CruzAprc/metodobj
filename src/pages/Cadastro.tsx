@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -115,7 +116,7 @@ const Cadastro = () => {
         }
       } else {
         toast.success('Conta criada com sucesso!');
-        navigate('/onboarding');
+        // Redirecionar para onboarding será feito pelo useEffect quando user state for atualizado
       }
     } catch (error) {
       toast.error('Erro inesperado ao criar conta');

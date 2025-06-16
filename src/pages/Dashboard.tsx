@@ -179,11 +179,21 @@ const AppJujuDashboard = () => {
     motivation: false
   });
   const [todayProgress, setTodayProgress] = useState<any>(null);
+  const [diasNoApp, setDiasNoApp] = useState(0);
   const { user } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
   const iconSize = isMobile ? 18 : 22;
+
+  // Function to calculate days in app
+  const calculateDaysInApp = (dataRegistro: string) => {
+    const registroDate = new Date(dataRegistro);
+    const hoje = new Date();
+    const diffTime = hoje.getTime() - registroDate.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(0, diffDays);
+  };
 
   // Function to calculate user progress
   const calculateProgress = () => {
@@ -208,8 +218,8 @@ const AppJujuDashboard = () => {
     }
     
     // Dias de uso (15%)
-    if (userData.dias_no_app) {
-      progress += Math.round(Math.min(userData.dias_no_app / 30, 1) * 15);
+    if (diasNoApp) {
+      progress += Math.round(Math.min(diasNoApp / 30, 1) * 15);
     }
 
     // Tarefas diárias (20%)
@@ -237,7 +247,7 @@ const AppJujuDashboard = () => {
       setDailyTasks({
         workout: data.treino_realizado || false,
         diet: data.dieta_seguida || false,
-        motivation: (data as any).motivacao_lida || false
+        motivation: false // Remove motivacao_lida for now
       });
     } else {
       setDailyTasks({
@@ -262,11 +272,6 @@ const AppJujuDashboard = () => {
         treino_realizado: taskType === 'workout' ? newTaskState : dailyTasks.workout,
         dieta_seguida: taskType === 'diet' ? newTaskState : dailyTasks.diet,
       };
-
-      // Adicionar motivacao_lida se a coluna existir
-      if (taskType === 'motivation') {
-        updateData.motivacao_lida = newTaskState;
-      }
 
       if (todayProgress) {
         // Atualizar registro existente
@@ -357,19 +362,8 @@ const AppJujuDashboard = () => {
         
       if (data && !error) {
         // Calcular dias no app baseado na data de registro
-        const dataRegistro = new Date(data.data_registro);
-        const agora = new Date();
-        const diasNoApp = Math.floor((agora.getTime() - dataRegistro.getTime()) / (1000 * 60 * 60 * 24));
-        
-        // Atualizar os dias no app se necessário
-        if (data.dias_no_app !== diasNoApp) {
-          await supabase
-            .from('teste_app')
-            .update({ dias_no_app: diasNoApp })
-            .eq('user_id', user.id);
-          
-          data.dias_no_app = diasNoApp;
-        }
+        const calculatedDays = calculateDaysInApp(data.data_registro);
+        setDiasNoApp(calculatedDays);
         
         setUserData(data);
         setUserName(data.nome || 'Usuário');
@@ -530,7 +524,7 @@ const AppJujuDashboard = () => {
                     <Calendar className="text-sky-500 mx-auto mb-2 sm:mb-3" size={isMobile ? 24 : 28} />
                     <p className="text-xs sm:text-sm text-gray-600 mb-1">Dias no App</p>
                     <p className="font-bold text-gray-800 text-xl sm:text-2xl">
-                      {userData?.dias_no_app || 0}
+                      {diasNoApp}
                     </p>
                     <p className="text-xs text-sky-500 mt-1">dias consecutivos</p>
                   </motion.div>
@@ -790,7 +784,7 @@ const AppJujuDashboard = () => {
                             Membro desde: {new Date(userData.created_at).toLocaleDateString('pt-BR')}
                           </p>
                           <p className="text-sm text-gray-500">
-                            Dias no app: {userData.dias_no_app} dias
+                            Dias no app: {diasNoApp} dias
                           </p>
                           <div className="flex justify-center gap-3 sm:gap-4 pt-2">
                             <div className="text-center">

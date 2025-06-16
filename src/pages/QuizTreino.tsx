@@ -115,9 +115,10 @@ const QuizTreino = () => {
       }
 
       try {
-        console.log('Quiz Treino: Verificando se quiz já foi completado...', {
+        console.log('Quiz Treino: Verificando quiz existente...', {
           userId: user.id,
-          email: user.email
+          currentRoute: window.location.pathname,
+          isSpecificQuestion: !!pergunta
         });
         
         const { data: existingQuiz, error } = await supabase
@@ -130,9 +131,8 @@ const QuizTreino = () => {
         console.log('Quiz Treino: Resultado da verificação:', {
           data: existingQuiz,
           error: error,
-          errorCode: error?.code,
           hasCompletedAt: !!existingQuiz?.completed_at,
-          hasQuizData: !!existingQuiz?.quiz_data
+          isAccessingSpecificQuestion: !!pergunta
         });
 
         if (error && error.code !== 'PGRST116') {
@@ -141,40 +141,34 @@ const QuizTreino = () => {
           return;
         }
 
-        // Verifica se realmente existe um quiz completado
-        if (existingQuiz && existingQuiz.completed_at) {
-          console.log('Quiz Treino: Quiz REALMENTE completado! Redirecionando para dashboard...', {
-            completedAt: existingQuiz.completed_at,
-            quizData: existingQuiz.quiz_data
-          });
+        // SE o usuário está acessando /quiz-treino sem pergunta específica E já completou
+        // ENTÃO redireciona para dashboard
+        if (!pergunta && existingQuiz && existingQuiz.completed_at) {
+          console.log('Quiz Treino: Quiz completado + acesso sem pergunta específica -> redirecionando para dashboard');
           navigate('/dashboard');
           return;
         }
 
-        // Se não há quiz ou não está completo, permite preenchimento
-        if (!existingQuiz) {
-          console.log('Quiz Treino: Nenhum quiz encontrado, permitindo preenchimento');
-        } else if (!existingQuiz.completed_at) {
-          console.log('Quiz Treino: Quiz não completado, permitindo continuação');
-          
-          // Se existem dados parciais, carrega para continuar o preenchimento
-          if (existingQuiz.quiz_data) {
-            console.log('Quiz Treino: Dados parciais encontrados, carregando...');
-            const data = existingQuiz.quiz_data as any;
-            if (data && typeof data === 'object') {
-              setQuizData({
-                experiencia: data.experiencia || '',
-                frequencia: data.frequencia || '',
-                objetivo: data.objetivo || '',
-                limitacoes: Array.isArray(data.limitacoes) ? data.limitacoes : [],
-                preferencias: Array.isArray(data.preferencias) ? data.preferencias : [],
-                tempo_disponivel: data.tempo_disponivel || ''
-              });
-            }
+        // SE está acessando uma pergunta específica OU não tem quiz completado
+        // ENTÃO permite continuar/preencher
+        console.log('Quiz Treino: Permitindo preenchimento do quiz');
+        
+        // Se existem dados (completos ou parciais), carrega para edição
+        if (existingQuiz && existingQuiz.quiz_data) {
+          console.log('Quiz Treino: Carregando dados existentes para edição');
+          const data = existingQuiz.quiz_data as any;
+          if (data && typeof data === 'object') {
+            setQuizData({
+              experiencia: data.experiencia || '',
+              frequencia: data.frequencia || '',
+              objetivo: data.objetivo || '',
+              limitacoes: Array.isArray(data.limitacoes) ? data.limitacoes : [],
+              preferencias: Array.isArray(data.preferencias) ? data.preferencias : [],
+              tempo_disponivel: data.tempo_disponivel || ''
+            });
           }
         }
 
-        console.log('Quiz Treino: Pronto para preenchimento');
         setIsCheckingExisting(false);
       } catch (error) {
         console.error('Quiz Treino: Erro inesperado ao verificar quiz:', error);
@@ -183,7 +177,7 @@ const QuizTreino = () => {
     };
 
     checkQuizCompletion();
-  }, [user, navigate]);
+  }, [user, navigate, pergunta]);
 
   // Mostrar loading enquanto verifica dados existentes
   if (isCheckingExisting) {

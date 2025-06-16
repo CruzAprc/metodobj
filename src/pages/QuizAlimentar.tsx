@@ -1,499 +1,391 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Coffee, X, Sparkles } from 'lucide-react';
+import { ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 
-interface FoodOption {
-  id: string;
-  name: string;
-  emoji: string;
+interface QuizData {
+  objetivo: string;
+  restricoes: string[];
+  preferencias: string[];
+  experiencia: string;
+  suplementos: string[];
 }
+
+const quizSteps = [
+  {
+    etapa: '1',
+    pergunta: 'Qual é o seu principal objetivo?',
+    opcoes: [
+      { id: 'perder_peso', texto: 'Perder peso e definir', emoji: '🔥' },
+      { id: 'ganhar_massa', texto: 'Ganhar massa muscular', emoji: '💪' },
+      { id: 'manter_peso', texto: 'Manter o peso atual', emoji: '⚖️' },
+      { id: 'melhorar_saude', texto: 'Melhorar saúde geral', emoji: '❤️' }
+    ],
+    campo: 'objetivo' as keyof QuizData
+  },
+  {
+    etapa: '2',
+    pergunta: 'Você tem alguma restrição alimentar?',
+    opcoes: [
+      { id: 'nenhuma', texto: 'Nenhuma restrição', emoji: '✅' },
+      { id: 'vegetariano', texto: 'Vegetariano', emoji: '🥗' },
+      { id: 'vegano', texto: 'Vegano', emoji: '🌱' },
+      { id: 'gluten', texto: 'Sem glúten', emoji: '🚫' },
+      { id: 'lactose', texto: 'Sem lactose', emoji: '🥛' },
+      { id: 'diabetes', texto: 'Diabetes', emoji: '🩺' }
+    ],
+    campo: 'restricoes' as keyof QuizData,
+    multipla: true
+  },
+  {
+    etapa: '3',
+    pergunta: 'Quais são suas preferências alimentares?',
+    opcoes: [
+      { id: 'pratico', texto: 'Refeições práticas', emoji: '⚡' },
+      { id: 'caseiro', texto: 'Comida caseira', emoji: '🏠' },
+      { id: 'variado', texto: 'Cardápio variado', emoji: '🌈' },
+      { id: 'economico', texto: 'Opções econômicas', emoji: '💰' },
+      { id: 'gourmet', texto: 'Pratos elaborados', emoji: '👨‍🍳' }
+    ],
+    campo: 'preferencias' as keyof QuizData,
+    multipla: true
+  },
+  {
+    etapa: '4',
+    pergunta: 'Qual sua experiência com dietas?',
+    opcoes: [
+      { id: 'primeira_vez', texto: 'Primeira vez', emoji: '🆕' },
+      { id: 'alguma_experiencia', texto: 'Alguma experiência', emoji: '📚' },
+      { id: 'experiente', texto: 'Muito experiente', emoji: '🎯' },
+      { id: 'profissional', texto: 'Já sou da área', emoji: '👨‍⚕️' }
+    ],
+    campo: 'experiencia' as keyof QuizData
+  },
+  {
+    etapa: '5',
+    pergunta: 'Você toma algum suplemento?',
+    opcoes: [
+      { id: 'nenhum', texto: 'Não tomo nenhum', emoji: '❌' },
+      { id: 'whey', texto: 'Whey Protein', emoji: '🥤' },
+      { id: 'creatina', texto: 'Creatina', emoji: '⚡' },
+      { id: 'multivitaminico', texto: 'Multivitamínico', emoji: '💊' },
+      { id: 'omega3', texto: 'Ômega 3', emoji: '🐟' },
+      { id: 'outros', texto: 'Outros', emoji: '📋' }
+    ],
+    campo: 'suplementos' as keyof QuizData,
+    multipla: true
+  }
+];
 
 const QuizAlimentar = () => {
   const navigate = useNavigate();
-  const { etapa } = useParams();
-  const currentStep = parseInt(etapa || '1');
+  const { etapa } = useParams<{ etapa: string }>();
   const { user } = useAuth();
-  
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [quizData, setQuizData] = useState<Record<string, string[]>>({});
-  const [animatingStep, setAnimatingStep] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [quizData, setQuizData] = useState<QuizData>({
+    objetivo: '',
+    restricoes: [],
+    preferencias: [],
+    experiencia: '',
+    suplementos: []
+  });
 
-  const quizSteps = [
-    {
-      id: 1,
-      title: "Café da Manhã",
-      emoji: "☕",
-      subtitle: "Selecione os alimentos que você NÃO GOSTA ou NÃO CONSOME",
-      foods: [
-        { id: 'ovos', name: 'Ovos', emoji: '🥚' },
-        { id: 'queijo_branco', name: 'Queijo Branco', emoji: '🧀' },
-        { id: 'queijo_mucarela', name: 'Queijo Muçarela', emoji: '🧀' },
-        { id: 'requeijao', name: 'Requeijão', emoji: '🥣' },
-        { id: 'pao_integral', name: 'Pão Integral', emoji: '🍞' },
-        { id: 'pao_frances', name: 'Pão Francês', emoji: '🥖' },
-        { id: 'tapioca', name: 'Tapioca', emoji: '⚪' },
-        { id: 'cuscuz', name: 'Cuscuz', emoji: '🌽' },
-        { id: 'batata_doce', name: 'Batata Doce', emoji: '🍠' },
-        { id: 'frango_desfiado', name: 'Frango Desfiado', emoji: '🍗' },
-        { id: 'peito_peru', name: 'Peito de Peru', emoji: '🦃' },
-        { id: 'frutas_variadas', name: 'Frutas Variadas', emoji: '🍓' },
-        { id: 'banana', name: 'Banana', emoji: '🍌' },
-        { id: 'mamao', name: 'Mamão', emoji: '🥭' },
-        { id: 'abacate', name: 'Abacate', emoji: '🥑' },
-        { id: 'leite', name: 'Leite', emoji: '🥛' },
-        { id: 'iogurte', name: 'Iogurte', emoji: '🍦' },
-        { id: 'whey_protein', name: 'Whey Protein', emoji: '💪' },
-        { id: 'pasta_amendoim', name: 'Pasta de Amendoim', emoji: '🥜' },
-        { id: 'aveia', name: 'Aveia', emoji: '🌾' },
-        { id: 'chia', name: 'Chia', emoji: '🌱' },
-        { id: 'granola', name: 'Granola', emoji: '🥣' },
-        { id: 'cafe', name: 'Café', emoji: '☕' }
-      ]
-    },
-    {
-      id: 2,
-      title: "Almoço",
-      emoji: "🍽️",
-      subtitle: "Selecione os alimentos que você NÃO GOSTA ou NÃO CONSOME",
-      foods: [
-        { id: 'frango', name: 'Frango', emoji: '🍗' },
-        { id: 'patinho', name: 'Patinho', emoji: '🥩' },
-        { id: 'alcatra', name: 'Alcatra', emoji: '🥩' },
-        { id: 'carne_moida', name: 'Carne Moída', emoji: '🥩' },
-        { id: 'mandioca', name: 'Mandioca', emoji: '🥔' },
-        { id: 'carne_porco', name: 'Carne de Porco', emoji: '🐖' },
-        { id: 'batata_doce', name: 'Batata Doce', emoji: '🍠' },
-        { id: 'tilapia', name: 'Tilápia', emoji: '🐟' },
-        { id: 'merluza', name: 'Merluza', emoji: '🐟' },
-        { id: 'legumes', name: 'Legumes', emoji: '🥦' },
-        { id: 'arroz', name: 'Arroz', emoji: '🍚' },
-        { id: 'feijao', name: 'Feijão', emoji: '🫘' },
-        { id: 'salada', name: 'Salada', emoji: '🥗' },
-        { id: 'macarrao', name: 'Macarrão', emoji: '🍝' },
-        { id: 'ovo', name: 'Ovo', emoji: '🥚' },
-        { id: 'inhame', name: 'Inhame', emoji: '🥔' },
-        { id: 'cuscuz', name: 'Cuscuz', emoji: '🌽' },
-        { id: 'batata', name: 'Batata', emoji: '🥔' }
-      ]
-    },
-    {
-      id: 3,
-      title: "Lanche da Tarde",
-      emoji: "🥪",
-      subtitle: "Selecione os alimentos que você NÃO GOSTA ou NÃO CONSOME",
-      foods: [
-        { id: 'whey', name: 'Whey', emoji: '🥛' },
-        { id: 'fruta', name: 'Fruta', emoji: '🍎' },
-        { id: 'cuscuz', name: 'Cuscuz', emoji: '🌽' },
-        { id: 'pao_ovo', name: 'Pão + Ovo', emoji: '🥚' },
-        { id: 'tapioca_frango', name: 'Tapioca + Frango', emoji: '🍗' },
-        { id: 'crepioca_queijo', name: 'Crepioca + Queijo', emoji: '🧀' },
-        { id: 'leite', name: 'Leite', emoji: '🥛' },
-        { id: 'crepioca_frango', name: 'Crepioca + Frango', emoji: '🍗' },
-        { id: 'ovo', name: 'Ovo', emoji: '🥚' },
-        { id: 'sanduiche_frango', name: 'Sanduíche de Frango', emoji: '🥪' },
-        { id: 'sanduiche_peru', name: 'Sanduíche de Peru', emoji: '🥪' },
-        { id: 'suco', name: 'Suco', emoji: '🧃' }
-      ]
-    },
-    {
-      id: 4,
-      title: "Jantar",
-      emoji: "🍽️",
-      subtitle: "Selecione os alimentos que você NÃO GOSTA ou NÃO CONSOME",
-      foods: [
-        { id: 'frango', name: 'Frango', emoji: '🍗' },
-        { id: 'patinho', name: 'Patinho', emoji: '🥩' },
-        { id: 'alcatra', name: 'Alcatra', emoji: '🥩' },
-        { id: 'carne_moida', name: 'Carne Moída', emoji: '🥩' },
-        { id: 'mandioca', name: 'Mandioca', emoji: '🥔' },
-        { id: 'carne_porco', name: 'Carne de Porco', emoji: '🐖' },
-        { id: 'batata_doce', name: 'Batata Doce', emoji: '🍠' },
-        { id: 'tilapia', name: 'Tilápia', emoji: '🐟' },
-        { id: 'merluza', name: 'Merluza', emoji: '🐟' },
-        { id: 'legumes', name: 'Legumes', emoji: '🥦' },
-        { id: 'arroz', name: 'Arroz', emoji: '🍚' },
-        { id: 'feijao', name: 'Feijão', emoji: '🫘' },
-        { id: 'salada', name: 'Salada', emoji: '🥗' },
-        { id: 'macarrao', name: 'Macarrão', emoji: '🍝' },
-        { id: 'ovo', name: 'Ovo', emoji: '🥚' },
-        { id: 'inhame', name: 'Inhame', emoji: '🥔' },
-        { id: 'cuscuz', name: 'Cuscuz', emoji: '🌽' },
-        { id: 'batata', name: 'Batata', emoji: '🥔' }
-      ]
-    },
-    {
-      id: 5,
-      title: "Ceia",
-      emoji: "🌙",
-      subtitle: "Selecione os alimentos que você NÃO GOSTA ou NÃO CONSOME (Opcional)",
-      foods: [
-        { id: 'iogurte_natural', name: 'Iogurte Natural', emoji: '🥛' },
-        { id: 'cha', name: 'Chá', emoji: '🍵' },
-        { id: 'whey_protein', name: 'Whey Protein', emoji: '💪' },
-        { id: 'frutas_leves', name: 'Frutas Leves', emoji: '🍓' },
-        { id: 'queijo_cottage', name: 'Queijo Cottage', emoji: '🧀' },
-        { id: 'leite_morno', name: 'Leite Morno', emoji: '🥛' },
-        { id: 'oleaginosas', name: 'Oleaginosas', emoji: '🥜' }
-      ]
-    }
-  ];
+  const currentEtapa = parseInt(etapa || '1');
+  const currentStep = quizSteps.find(step => parseInt(step.etapa) === currentEtapa);
 
-  const currentQuiz = quizSteps.find(step => step.id === currentStep);
-
+  // Verificar se o usuário já preencheu o quiz alimentar
   useEffect(() => {
-    console.log('Loading quiz data for step:', currentStep);
-    // Carregar dados salvos do quiz
-    const savedData = localStorage.getItem('quizAlimentar');
-    if (savedData) {
-      const parsed = JSON.parse(savedData);
-      setQuizData(parsed);
-      const stepData = parsed[`etapa${currentStep}`] || [];
-      setSelectedItems(stepData);
-      console.log('Loaded data for step:', stepData);
-    } else {
-      setSelectedItems([]);
-    }
-  }, [currentStep]);
+    const checkExistingQuizData = async () => {
+      if (!user) return;
 
-  const toggleSelection = (itemId: string) => {
-    console.log('Toggling selection for:', itemId);
-    setSelectedItems(prev => {
-      const newSelection = prev.includes(itemId) 
-        ? prev.filter(id => id !== itemId)
-        : [...prev, itemId];
-      console.log('New selection:', newSelection);
-      return newSelection;
-    });
+      try {
+        console.log('Verificando se usuário já preencheu quiz alimentar...');
+        
+        const { data: existingQuiz, error } = await supabase
+          .from('user_quiz_data')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('quiz_type', 'alimentar')
+          .maybeSingle();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Erro ao verificar quiz existente:', error);
+          return;
+        }
+
+        if (existingQuiz) {
+          console.log('Quiz alimentar já preenchido, redirecionando para dashboard...');
+          navigate('/dashboard');
+          return;
+        }
+
+        console.log('Quiz alimentar não encontrado, usuário pode preencher');
+      } catch (error) {
+        console.error('Erro inesperado ao verificar quiz:', error);
+      }
+    };
+
+    checkExistingQuizData();
+  }, [user, navigate]);
+
+  const handleOptionSelect = (opcaoId: string) => {
+    if (!currentStep) return;
+
+    const { campo, multipla } = currentStep;
+
+    if (multipla) {
+      setQuizData(prev => {
+        const currentArray = prev[campo] as string[];
+        const newArray = currentArray.includes(opcaoId)
+          ? currentArray.filter(id => id !== opcaoId)
+          : [...currentArray, opcaoId];
+        
+        return { ...prev, [campo]: newArray };
+      });
+    } else {
+      setQuizData(prev => ({ ...prev, [campo]: opcaoId }));
+    }
   };
 
-  const saveToDatabase = async (finalData: Record<string, string[]>) => {
-    if (!user) return;
+  const saveQuizData = async (): Promise<boolean> => {
+    if (!user) return false;
 
     try {
-      console.log('Saving diet quiz data to database:', finalData);
+      console.log('Salvando dados do quiz alimentar:', quizData);
 
-      // Verificar se já existe um registro
-      const { data: existingData } = await supabase
+      const { data: existingQuiz, error: checkError } = await supabase
         .from('user_quiz_data')
-        .select('id')
+        .select('*')
         .eq('user_id', user.id)
         .eq('quiz_type', 'alimentar')
-        .single();
+        .maybeSingle();
 
-      const quizData = {
-        etapa1: finalData.etapa1 || [],
-        etapa2: finalData.etapa2 || [],
-        etapa3: finalData.etapa3 || [],
-        etapa4: finalData.etapa4 || [],
-        etapa5: finalData.etapa5 || []
-      };
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Erro ao verificar quiz existente:', checkError);
+        return false;
+      }
 
-      if (existingData) {
-        // Atualizar registro existente
-        await supabase
+      let result;
+      if (existingQuiz) {
+        result = await supabase
           .from('user_quiz_data')
           .update({
             quiz_data: quizData,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
+            completed_at: new Date().toISOString()
           })
           .eq('user_id', user.id)
           .eq('quiz_type', 'alimentar');
       } else {
-        // Criar novo registro
-        await supabase
+        result = await supabase
           .from('user_quiz_data')
           .insert({
             user_id: user.id,
             quiz_type: 'alimentar',
-            quiz_data: quizData
+            quiz_data: quizData,
+            completed_at: new Date().toISOString()
           });
       }
 
-      // Atualizar status do quiz na tabela teste_app
-      await supabase
-        .from('teste_app')
-        .update({ 
-          quiz_alimentar_concluido: true,
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', user.id);
+      if (result.error) {
+        console.error('Erro ao salvar quiz:', result.error);
+        return false;
+      }
 
-      // Registrar evento
-      await supabase.rpc('log_user_event', {
-        p_user_id: user.id,
-        p_event_type: 'quiz_completed',
-        p_event_data: { quiz_type: 'alimentar', data: quizData },
-        p_table_reference: 'user_quiz_data'
-      });
+      try {
+        await supabase.rpc('log_user_event', {
+          p_user_id: user.id,
+          p_event_type: 'quiz_alimentar_completed',
+          p_event_data: quizData,
+          p_table_reference: 'user_quiz_data'
+        });
+      } catch (logError) {
+        console.warn('Erro ao registrar evento:', logError);
+      }
 
-      console.log('Dados salvos no banco com sucesso!');
+      console.log('Quiz alimentar salvo com sucesso!');
+      return true;
     } catch (error) {
-      console.error('Erro ao salvar dados no banco:', error);
+      console.error('Erro inesperado ao salvar quiz:', error);
+      return false;
     }
   };
 
   const handleNext = async () => {
-    console.log('Saving selection:', selectedItems);
-    setAnimatingStep(true);
+    if (!currentStep) return;
+
+    const { campo, multipla } = currentStep;
+    const value = quizData[campo];
     
-    // Salvar seleção atual
-    const newQuizData = {
-      ...quizData,
-      [`etapa${currentStep}`]: selectedItems
-    };
-    setQuizData(newQuizData);
-    localStorage.setItem('quizAlimentar', JSON.stringify(newQuizData));
+    if (!value || (Array.isArray(value) && value.length === 0)) {
+      return;
+    }
 
-    setTimeout(async () => {
-      if (currentStep < 5) {
-        navigate(`/quiz-alimentar/${currentStep + 1}`);
-      } else {
-        // Quiz concluído - salvar no banco
-        await saveToDatabase(newQuizData);
-        localStorage.setItem('quizAlimentarConcluido', 'true');
-        
-        // Verificar se já completou o quiz de treino
-        const quizTreinoConcluido = localStorage.getItem('quizTreinoConcluido');
-        
-        if (quizTreinoConcluido) {
-          // Se ambos os quizzes estão concluídos, ir direto para o dashboard
-          navigate('/dashboard');
-        } else {
-          // Se ainda não completou o quiz de treino, ir para ele
-          navigate('/quiz-treino/1');
-        }
-      }
-      setAnimatingStep(false);
-    }, 300);
-  };
-
-  const handleSkip = async () => {
-    setAnimatingStep(true);
-    
-    // Pular etapa (útil para ceia ou quando não tem restrições)
-    const newQuizData = {
-      ...quizData,
-      [`etapa${currentStep}`]: []
-    };
-    setQuizData(newQuizData);
-    localStorage.setItem('quizAlimentar', JSON.stringify(newQuizData));
-
-    setTimeout(async () => {
-      if (currentStep < 5) {
-        navigate(`/quiz-alimentar/${currentStep + 1}`);
-      } else {
-        // Quiz concluído - salvar no banco
-        await saveToDatabase(newQuizData);
-        localStorage.setItem('quizAlimentarConcluido', 'true');
-        
-        // Verificar se já completou o quiz de treino
-        const quizTreinoConcluido = localStorage.getItem('quizTreinoConcluido');
-        
-        if (quizTreinoConcluido) {
-          // Se ambos os quizzes estão concluídos, ir direto para o dashboard
-          navigate('/dashboard');
-        } else {
-          // Se ainda não completou o quiz de treino, ir para ele
-          navigate('/quiz-treino/1');
-        }
-      }
-      setAnimatingStep(false);
-    }, 300);
-  };
-
-  const handleBack = () => {
-    if (currentStep > 1) {
-      navigate(`/quiz-alimentar/${currentStep - 1}`);
+    if (currentEtapa < quizSteps.length) {
+      navigate(`/quiz-alimentar/${currentEtapa + 1}`);
     } else {
-      navigate('/onboarding');
+      setIsSubmitting(true);
+      try {
+        const saved = await saveQuizData();
+        if (saved) {
+          navigate('/quiz-treino/1');
+        }
+      } catch (error) {
+        console.error('Erro no processo final:', error);
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
-  if (!currentQuiz) {
-    return <div>Etapa não encontrada</div>;
+  const handlePrevious = () => {
+    if (currentEtapa > 1) {
+      navigate(`/quiz-alimentar/${currentEtapa - 1}`);
+    } else {
+      navigate('/dados-pessoais');
+    }
+  };
+
+  if (!currentStep) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">Etapa não encontrada</p>
+          <button 
+            onClick={() => navigate('/quiz-alimentar/1')}
+            className="text-blue-600 underline"
+          >
+            Voltar ao início
+          </button>
+        </div>
+      </div>
+    );
   }
 
+  const isMultipleChoice = currentStep.multipla;
+  const currentValue = quizData[currentStep.campo];
+  const hasSelection = isMultipleChoice 
+    ? Array.isArray(currentValue) && currentValue.length > 0
+    : currentValue !== '';
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
-      
-      {/* Header igual ao treino */}
-      <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-pink-100 z-10">
-        <div className="flex items-center justify-between p-4 max-w-md mx-auto">
-          <button 
-            onClick={handleBack}
-            className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
-          >
-            <ArrowLeft size={20} className="text-gray-600" />
-          </button>
-          
-          <div className="text-center">
-            <h1 className="text-sm font-medium text-gray-700">Anamnese Alimentar</h1>
-            <div className="flex items-center space-x-2 mt-1">
-              <span className="text-xs text-gray-500">Etapa</span>
-              <span className="text-sm font-bold text-pink-600">{currentStep}/5</span>
-            </div>
-          </div>
-          
-          <div className="w-8" />
-        </div>
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-xl">
         
-        {/* Barra de progresso igual ao treino */}
-        <div className="px-4 pb-3">
-          <div className="flex space-x-1">
-            {[1, 2, 3, 4, 5].map((step) => (
-              <div
-                key={step}
-                className={`h-1.5 rounded-full flex-1 transition-all duration-500 ${
-                  step <= currentStep 
-                    ? 'bg-gradient-to-r from-pink-400 to-pink-600' 
-                    : 'bg-gray-200'
+        {/* Progress bar */}
+        <div className="flex justify-center mb-6 sm:mb-8">
+          <div className="flex space-x-2">
+            {quizSteps.map((_, index) => (
+              <motion.div
+                key={index}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  index + 1 <= currentEtapa 
+                    ? 'bg-blue-600 w-6' 
+                    : 'bg-slate-300 w-2'
                 }`}
+                animate={{
+                  scale: index + 1 === currentEtapa ? 1.2 : 1
+                }}
               />
             ))}
           </div>
         </div>
-      </div>
 
-      <div className="px-4 pb-6 max-w-md mx-auto">
-        
-        {/* Título igual ao treino */}
-        <motion.div 
-          key={currentStep}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center py-6 space-y-4"
-        >
-          <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center mx-auto border border-orange-200 shadow-sm">
-            <Coffee className="text-orange-500" size={24} />
-          </div>
-          
-          <div className="space-y-2">
-            <div className="flex items-center justify-center space-x-2">
-              <span className="text-2xl">{currentQuiz.emoji}</span>
-              <h2 className="text-xl font-bold text-gray-800">
-                {currentQuiz.title}
-              </h2>
-            </div>
-            
-            <p className="text-gray-600 text-base leading-relaxed px-2">
-              {currentQuiz.subtitle}
-            </p>
-          </div>
-          
-          {/* Contador de selecionados */}
-          <div className="flex items-center justify-center space-x-2 pt-2">
-            <div className="flex items-center space-x-1">
-              <X size={14} className="text-red-500" />
-              <span className="text-sm text-gray-600">
-                {selectedItems.length} {selectedItems.length === 1 ? 'item selecionado' : 'itens selecionados'}
-              </span>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Grid de alimentos otimizado */}
-        <motion.div 
-          className="grid grid-cols-2 gap-3 mb-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          {currentQuiz.foods.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => toggleSelection(item.id)}
-              className={`relative p-4 rounded-2xl border-2 transition-all duration-300 group ${
-                selectedItems.includes(item.id)
-                  ? 'border-red-300 bg-red-50 shadow-lg scale-95'
-                  : 'border-gray-200 bg-white hover:border-pink-200 hover:shadow-md hover:scale-105'
-              }`}
-            >
-              {/* Indicador de seleção */}
-              <AnimatePresence>
-                {selectedItems.includes(item.id) && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shadow-lg"
-                  >
-                    <X size={12} className="text-white" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              
-              <div className="text-center space-y-2">
-                <div className="text-2xl">{item.emoji}</div>
-                <p className={`text-sm font-medium transition-colors ${
-                  selectedItems.includes(item.id) 
-                    ? 'text-red-700' 
-                    : 'text-gray-700 group-hover:text-gray-900'
-                }`}>
-                  {item.name}
-                </p>
-              </div>
-            </button>
-          ))}
-        </motion.div>
-
-        {/* Opção de pular */}
-        <div className="text-center mb-6">
-          <button
-            onClick={handleSkip}
-            className="text-sm text-gray-500 hover:text-gray-700 underline transition-colors"
+        {/* Conteúdo do quiz */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentEtapa}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6"
           >
-            {currentStep === 5 ? 'Não faço esta refeição' : 'Não tenho restrições nesta refeição'}
+            {/* Título */}
+            <div className="text-center space-y-2">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-800">
+                {currentStep.pergunta}
+              </h2>
+              <p className="text-slate-600 text-sm">
+                {isMultipleChoice ? 'Selecione todas que se aplicam:' : 'Escolha uma opção:'}
+              </p>
+            </div>
+
+            {/* Opções */}
+            <div className="space-y-3">
+              {currentStep.opcoes.map((opcao) => {
+                const isSelected = isMultipleChoice
+                  ? Array.isArray(currentValue) && currentValue.includes(opcao.id)
+                  : currentValue === opcao.id;
+
+                return (
+                  <motion.button
+                    key={opcao.id}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleOptionSelect(opcao.id)}
+                    className={`w-full p-4 rounded-2xl border-2 text-left transition-all duration-300 ${
+                      isSelected
+                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                        : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50/30'
+                    }`}
+                    disabled={isSubmitting}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <span className="text-2xl">{opcao.emoji}</span>
+                      <span className="font-medium flex-1">{opcao.texto}</span>
+                      {isSelected && <CheckCircle size={20} className="text-blue-600" />}
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Botões de navegação */}
+        <div className="flex justify-between items-center mt-8 space-x-4">
+          <button
+            onClick={handlePrevious}
+            disabled={isSubmitting}
+            className="flex items-center space-x-2 px-6 py-3 rounded-2xl font-medium transition-all
+                     text-slate-600 hover:text-slate-800 hover:bg-slate-100
+                     disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ArrowLeft size={18} />
+            <span>Voltar</span>
+          </button>
+
+          <button
+            onClick={handleNext}
+            disabled={!hasSelection || isSubmitting}
+            className="flex items-center space-x-2 px-6 py-3 rounded-2xl font-medium
+                     bg-gradient-to-r from-blue-600 to-blue-800 text-white
+                     hover:from-blue-700 hover:to-blue-900 
+                     transform hover:scale-105 active:scale-95
+                     transition-all duration-300 shadow-lg
+                     disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          >
+            <span>
+              {isSubmitting 
+                ? 'Salvando...' 
+                : currentEtapa === quizSteps.length 
+                  ? 'Finalizar' 
+                  : 'Continuar'
+              }
+            </span>
+            {!isSubmitting && <ArrowRight size={18} />}
           </button>
         </div>
 
-        {/* Botão igual ao treino */}
-        <motion.button
-          onClick={handleNext}
-          disabled={animatingStep}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg transition-all duration-300 flex items-center justify-center space-x-2 ${
-            animatingStep
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 hover:shadow-xl'
-          }`}
-        >
-          {animatingStep ? (
-            <div className="flex space-x-1">
-              {[0, 1, 2].map((i) => (
-                <motion.div
-                  key={i}
-                  className="w-2 h-2 bg-white rounded-full"
-                  animate={{
-                    scale: [1, 1.5, 1],
-                    opacity: [0.5, 1, 0.5]
-                  }}
-                  transition={{
-                    duration: 1,
-                    repeat: Infinity,
-                    delay: i * 0.2
-                  }}
-                />
-              ))}
-            </div>
-          ) : (
-            <>
-              <Sparkles size={18} />
-              <span>{currentStep === 5 ? 'Finalizar Anamnese Alimentar' : 'Continuar'}</span>
-              <ArrowRight size={18} />
-            </>
-          )}
-        </motion.button>
-        
-        {/* Informação igual ao treino */}
-        <p className="text-center text-xs text-gray-500 mt-4">
-          🍽️ Etapa {currentStep} de 5 - Você está indo muito bem!
-        </p>
-
+        {/* Indicador de etapa */}
+        <div className="text-center mt-6">
+          <p className="text-xs text-slate-400">
+            Etapa {currentEtapa} de {quizSteps.length} - Quiz Alimentar
+          </p>
+        </div>
       </div>
     </div>
   );

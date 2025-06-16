@@ -1,126 +1,175 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Play, ArrowLeft, Target, Utensils, TrendingUp, BarChart3 } from 'lucide-react';
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [isChecking, setIsChecking] = useState(true);
 
-  useEffect(() => {
-    const checkUserProgress = async () => {
-      if (!user) {
-        console.log('Onboarding: Usuário não logado, redirecionando para login');
-        navigate('/login');
-        return;
-      }
+  const features = [
+    {
+      icon: <Utensils className="w-6 h-6" />,
+      title: "Nutrição Inteligente",
+      description: "Sistema alimentar baseado em dados e objetivos específicos",
+      color: "bg-orange-100 text-orange-600"
+    },
+    {
+      icon: <Target className="w-6 h-6" />,
+      title: "Treino Eficiente", 
+      description: "Protocolos otimizados para máximos resultados em menor tempo",
+      color: "bg-purple-100 text-purple-600"
+    },
+    {
+      icon: <BarChart3 className="w-6 h-6" />,
+      title: "Análise de Dados",
+      description: "Métricas precisas para acompanhar sua evolução",
+      color: "bg-blue-100 text-blue-600"
+    }
+  ];
 
-      try {
-        console.log('Onboarding: Verificando progresso do usuário:', {
-          userId: user.id,
-          email: user.email
-        });
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-sky-50 p-4">
+      <div className="max-w-md mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8 pt-4">
+          <button 
+            onClick={() => navigate('/login')}
+            className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 mr-1" />
+            Voltar ao Login
+          </button>
+        </div>
 
-        // Verificar dados pessoais
-        const { data: personalData, error: personalError } = await supabase
-          .from('user_personal_data')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        console.log('Onboarding: Dados pessoais:', { personalData, personalError });
-
-        if (!personalData && (!personalError || personalError.code === 'PGRST116')) {
-          console.log('Onboarding: Dados pessoais não encontrados, redirecionando para dados-pessoais');
-          navigate('/dados-pessoais');
-          return;
-        }
-
-        // Verificar quiz alimentar
-        const { data: dietQuiz, error: dietError } = await supabase
-          .from('user_quiz_data')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('quiz_type', 'alimentar')
-          .maybeSingle();
-
-        console.log('Onboarding: Quiz alimentar:', { dietQuiz, dietError });
-
-        if (!dietQuiz && (!dietError || dietError.code === 'PGRST116')) {
-          console.log('Onboarding: Quiz alimentar não encontrado, redirecionando para loading');
-          navigate('/loading');
-          return;
-        }
-
-        // Verificar quiz de treino
-        const { data: workoutQuiz, error: workoutError } = await supabase
-          .from('user_quiz_data')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('quiz_type', 'treino')
-          .maybeSingle();
-
-        console.log('Onboarding: Quiz treino:', { workoutQuiz, workoutError });
-
-        if (!workoutQuiz && (!workoutError || workoutError.code === 'PGRST116')) {
-          console.log('Onboarding: Quiz treino não encontrado, redirecionando para loading-treino');
-          navigate('/loading-treino');
-          return;
-        }
-
-        // Se chegou até aqui, tudo está completo
-        console.log('Onboarding: Todos os dados completos, redirecionando para dashboard');
-        navigate('/dashboard');
-
-      } catch (error) {
-        console.error('Onboarding: Erro ao verificar progresso:', error);
-        // Em caso de erro, redirecionar para dados pessoais por segurança
-        navigate('/dados-pessoais');
-      } finally {
-        setIsChecking(false);
-      }
-    };
-
-    checkUserProgress();
-  }, [user, navigate]);
-
-  if (isChecking) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-pink-50 to-sky-50 flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center space-y-6"
+        {/* Logo e Título */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-6"
         >
-          <div className="relative">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-              className="w-16 h-16 border-4 border-pink-200 border-t-pink-500 rounded-full mx-auto"
-            />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-2xl">💪</span>
-            </div>
+          <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 flex items-center justify-center">
+            <div className="text-white text-2xl font-bold">DJ</div>
           </div>
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">MÉTODO DJ</h1>
+          <p className="text-gray-600 text-sm">
+            Ele traz a força. Ela alivia a consciência.
+            <br />
+            Juntos criamos o método que vai
+            <br />
+            <span className="text-pink-600 font-semibold">transformar seu corpo</span>
+          </p>
+        </motion.div>
+
+        {/* Vídeo Principal */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
+          className="mb-8"
+        >
+          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-xl">
+            <CardContent className="p-6">
+              <h2 className="text-xl font-bold mb-2">Sistema Método DJ</h2>
+              <p className="text-blue-100 text-sm mb-4">
+                Descubra o sistema completo para atingir seus objetivos de forma consistente
+              </p>
+              
+              <div className="relative bg-blue-400/30 rounded-lg p-8 mb-4">
+                <div className="flex items-center justify-center">
+                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                    <Play className="w-8 h-8 text-white ml-1" />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between text-sm text-blue-100">
+                <span>🕐 3:45 min</span>
+                <span>📹 Vídeo explicativo</span>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Features */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="space-y-4 mb-8"
+        >
+          {features.map((feature, index) => (
+            <Card key={index} className="bg-white/80 backdrop-blur-sm border-gray-200/50">
+              <CardContent className="p-4">
+                <div className="flex items-start space-x-3">
+                  <div className={`w-10 h-10 rounded-lg ${feature.color} flex items-center justify-center flex-shrink-0`}>
+                    {feature.icon}
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-800 mb-1">{feature.title}</h3>
+                    <p className="text-sm text-gray-600">{feature.description}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </motion.div>
+
+        {/* Resultados */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="mb-8"
+        >
+          <h3 className="text-lg font-bold text-center text-gray-800 mb-4">
+            Resultados Reais ✨
+          </h3>
           
-          <div className="space-y-2">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-500 to-sky-500 bg-clip-text text-transparent">
-              Verificando seu progresso...
-            </h2>
-            <p className="text-gray-600">
-              Estamos checando onde você parou para continuar sua jornada!
-            </p>
+          <Card className="bg-white/80 backdrop-blur-sm border-gray-200/50">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <span className="text-blue-600 font-bold text-sm">AC</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm text-gray-700 italic">
+                    "Metodologia incrível! Finalmente encontrei algo que funciona de verdade."
+                  </p>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-sm font-medium text-gray-800">Ana Costa</span>
+                    <span className="text-xs text-green-600 font-medium">-10kg em 3 meses</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* CTA Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          className="mb-8"
+        >
+          <Button 
+            onClick={() => navigate('/dados-pessoais')}
+            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-4 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
+          >
+            Começar com o Método
+          </Button>
+          
+          <div className="flex items-center justify-center mt-3 text-sm text-gray-600">
+            <span className="mr-2">⏱️</span>
+            Apenas 5 minutos para personalizar tudo para você
           </div>
         </motion.div>
       </div>
-    );
-  }
-
-  // Este return nunca deveria ser alcançado, mas é necessário para o TypeScript
-  return null;
+    </div>
+  );
 };
 
 export default Onboarding;

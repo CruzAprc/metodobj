@@ -139,7 +139,7 @@ const DadosPessoais = () => {
         return false;
       }
 
-      // Atualizar também a tabela teste_app para manter compatibilidade
+      // Atualizar também a tabela teste_app para manter compatibilidade e calcular dias corretos
       const { data: existingTesteApp, error: checkTesteError } = await supabase
         .from('teste_app')
         .select('*')
@@ -150,13 +150,19 @@ const DadosPessoais = () => {
         console.error('Erro ao verificar teste_app existente:', checkTesteError);
       } else {
         let testeAppResult;
+        const agora = new Date().toISOString();
+        
         if (existingTesteApp) {
-          // Atualizar registro existente
+          // Atualizar registro existente - calcular dias corretamente
+          const dataRegistro = new Date(existingTesteApp.data_registro);
+          const diasNoApp = Math.floor((new Date().getTime() - dataRegistro.getTime()) / (1000 * 60 * 60 * 24));
+          
           testeAppResult = await supabase
             .from('teste_app')
             .update({
               nome: formData.nomeCompleto,
-              updated_at: new Date().toISOString()
+              dias_no_app: diasNoApp,
+              updated_at: agora
             })
             .eq('user_id', user.id);
         } else {
@@ -167,7 +173,9 @@ const DadosPessoais = () => {
               user_id: user.id,
               nome: formData.nomeCompleto,
               email: user.email || '',
-              whatsapp: ''
+              whatsapp: '',
+              data_registro: agora,
+              dias_no_app: 0 // Primeiro dia
             });
         }
 

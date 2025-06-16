@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
 import { 
@@ -169,6 +168,7 @@ const AppJujuDashboard = () => {
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [userName, setUserName] = useState('');
   const [userData, setUserData] = useState<any>(null);
+  const [personalData, setPersonalData] = useState<any>(null);
   const [dietData, setDietData] = useState<any>(null);
   const [workoutData, setWorkoutData] = useState<any>(null);
   const [userPhotos, setUserPhotos] = useState<any[]>([]);
@@ -230,19 +230,25 @@ const AppJujuDashboard = () => {
       .select('*')
       .eq('user_id', user.id)
       .eq('date', today)
-      .single();
+      .maybeSingle();
       
     if (data) {
       setTodayProgress(data);
       setDailyTasks({
-        workout: data.treino_realizado,
-        diet: data.dieta_seguida,
+        workout: data.treino_realizado || false,
+        diet: data.dieta_seguida || false,
         motivation: (data as any).motivacao_lida || false
+      });
+    } else {
+      setDailyTasks({
+        workout: false,
+        diet: false,
+        motivation: false
       });
     }
   };
 
-  // Toggle daily task - SEM NOTIFICAÇÕES
+  // Toggle daily task - Melhorado para funcionar corretamente
   const toggleDailyTask = async (taskType: 'workout' | 'diet' | 'motivation') => {
     if (!user) return;
     
@@ -250,41 +256,80 @@ const AppJujuDashboard = () => {
     const newTaskState = !dailyTasks[taskType];
     
     try {
-      const updateData = {
+      let updateData: any = {
         user_id: user.id,
         date: today,
         treino_realizado: taskType === 'workout' ? newTaskState : dailyTasks.workout,
         dieta_seguida: taskType === 'diet' ? newTaskState : dailyTasks.diet,
-        motivacao_lida: taskType === 'motivation' ? newTaskState : dailyTasks.motivation
       };
 
+      // Adicionar motivacao_lida se a coluna existir
+      if (taskType === 'motivation') {
+        updateData.motivacao_lida = newTaskState;
+      }
+
       if (todayProgress) {
-        // Update existing record
+        // Atualizar registro existente
         const { error } = await supabase
           .from('user_daily_progress')
           .update(updateData)
           .eq('id', todayProgress.id);
           
-        if (error) throw error;
+        if (error) {
+          console.error('Erro ao atualizar progresso:', error);
+          toast({
+            title: "Erro",
+            description: "Não foi possível atualizar o progresso",
+            variant: "destructive"
+          });
+          return;
+        }
       } else {
-        // Create new record
+        // Criar novo registro
         const { data, error } = await supabase
           .from('user_daily_progress')
           .insert(updateData)
           .select()
           .single();
           
-        if (error) throw error;
+        if (error) {
+          console.error('Erro ao criar progresso:', error);
+          toast({
+            title: "Erro",
+            description: "Não foi possível criar o progresso",
+            variant: "destructive"
+          });
+          return;
+        }
+        
         setTodayProgress(data);
       }
 
+      // Atualizar estado local apenas se a operação foi bem-sucedida
       setDailyTasks(prev => ({
         ...prev,
         [taskType]: newTaskState
       }));
 
+      // Mostrar feedback positivo
+      const taskNames = {
+        workout: 'Treino',
+        diet: 'Dieta',
+        motivation: 'Motivação'
+      };
+
+      toast({
+        title: "Sucesso!",
+        description: `${taskNames[taskType]} ${newTaskState ? 'marcado' : 'desmarcado'} com sucesso!`,
+      });
+
     } catch (error) {
       console.error('Erro ao atualizar tarefa:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar a tarefa",
+        variant: "destructive"
+      });
     }
   };
 
@@ -292,6 +337,7 @@ const AppJujuDashboard = () => {
   useEffect(() => {
     if (user) {
       loadUserData();
+      loadPersonalData();
       loadDietData();
       loadWorkoutData();
       loadUserPhotos();
@@ -302,18 +348,60 @@ const AppJujuDashboard = () => {
   const loadUserData = async () => {
     if (!user) return;
     
-    const { data, error } = await supabase
-      .from('teste_app')
-      .select('*')
-      .eq('user_id', user.id)
-      .single();
-      
-    if (data && !error) {
-      setUserData(data);
-      setUserName(data.nome || 'Usuário');
-    } else {
-      console.log('Erro ao carregar dados do usuário:', error);
+    try {
+      const { data, error } = await supabase
+        .from('teste_app')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+        
+      if (data && !error) {
+        // Calcular dias no app baseado na data de registro
+        const dataRegistro = new Date(data.data_registro);
+        const agora = new Date();
+        const diasNoApp = Math.floor((agora.getTime() - dataRegistro.getTime()) / (1000 * 60 * 60 * 24));
+        
+        // Atualizar os dias no app se necessário
+        if (data.dias_no_app !== diasNoApp) {
+          await supabase
+            .from('teste_app')
+            .update({ dias_no_app: diasNoApp })
+            .eq('user_id', user.id);
+          
+          data.dias_no_app = diasNoApp;
+        }
+        
+        setUserData(data);
+        setUserName(data.nome || 'Usuário');
+      } else {
+        console.log('Erro ao carregar dados do usuário:', error);
+        setUserName('Usuário');
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados do usuário:', error);
       setUserName('Usuário');
+    }
+  };
+
+  const loadPersonalData = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('user_personal_data')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+        
+      if (data && !error) {
+        setPersonalData(data);
+        // Se temos dados pessoais mas não temos nome no userData, usar o nome dos dados pessoais
+        if (data.nome_completo && !userName) {
+          setUserName(data.nome_completo);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados pessoais:', error);
     }
   };
 
@@ -363,7 +451,11 @@ const AppJujuDashboard = () => {
   // Handler for when profile is updated
   const handleProfileUpdate = () => {
     loadUserData();
+    loadPersonalData();
   };
+
+  // Priorizar nome dos dados pessoais se disponível
+  const displayName = personalData?.nome_completo || userName || 'Usuário';
 
   const dockItems = [
     {
@@ -424,7 +516,7 @@ const AppJujuDashboard = () => {
               <div className="text-center space-y-6 md:space-y-8">
                 <div className="space-y-2 px-4">
                   <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-sky-500 to-sky-600 bg-clip-text text-transparent">
-                    Olá, {userName}! 👋
+                    Olá, {displayName}! 👋
                   </h1>
                   <p className="text-gray-600 text-base sm:text-lg">Pronta para mais um dia incrível?</p>
                 </div>
@@ -688,7 +780,7 @@ const AppJujuDashboard = () => {
                     <span className="text-xl sm:text-2xl">👩‍💪</span>
                   </div>
                   <div className="space-y-2">
-                    <p className="font-bold text-gray-800 text-lg">{userName}</p>
+                    <p className="font-bold text-gray-800 text-lg">{displayName}</p>
                     {userData ? (
                       <>
                         <p className="text-gray-600 text-sm sm:text-base">{userData.email}</p>

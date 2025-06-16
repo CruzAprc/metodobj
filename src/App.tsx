@@ -36,7 +36,7 @@ const App = () => (
             <Route path="/loading-treino" element={<LoadingTreino />} />
             <Route path="/quiz-alimentar" element={<QuizAlimentar />} />
             <Route path="/quiz-alimentar/:etapa" element={<QuizAlimentar />} />
-            <Route path="/quiz-treino" element={<QuizTreino />} />
+            <Route path="/quiz-treino" element={<Navigate to="/quiz-treino/1" replace />} />
             <Route path="/quiz-treino/:pergunta" element={<QuizTreino />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/dieta" element={<DashboardDieta />} />

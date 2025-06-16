@@ -16,7 +16,7 @@ const Login = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (user && !loading) {
-      console.log('Usuário já logado, redirecionando...');
+      console.log('Usuário já logado, redirecionando para onboarding...');
       navigate('/onboarding');
     }
   }, [user, loading, navigate]);

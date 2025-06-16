@@ -105,6 +105,71 @@ const QuizTreino = () => {
   const currentPergunta = parseInt(pergunta || '1');
   const currentStep = quizSteps.find(step => step.pergunta === currentPergunta);
 
+  // Verificar se o usuário já completou o quiz
+  useEffect(() => {
+    const checkQuizCompletion = async () => {
+      if (!user) {
+        console.log('Quiz Treino: Usuário não logado');
+        setIsCheckingExisting(false);
+        return;
+      }
+
+      try {
+        console.log('Quiz Treino: Verificando se quiz já foi completado...', {
+          userId: user.id,
+          email: user.email
+        });
+        
+        const { data: existingQuiz, error } = await supabase
+          .from('user_quiz_data')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('quiz_type', 'treino')
+          .maybeSingle();
+
+        console.log('Quiz Treino: Resultado da verificação:', {
+          data: existingQuiz,
+          error: error,
+          errorCode: error?.code
+        });
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Quiz Treino: Erro ao verificar quiz existente:', error);
+          setIsCheckingExisting(false);
+          return;
+        }
+
+        if (existingQuiz && existingQuiz.completed_at) {
+          console.log('Quiz Treino: Quiz já completado! Redirecionando para dashboard...');
+          navigate('/dashboard');
+          return;
+        } else if (existingQuiz && existingQuiz.quiz_data) {
+          console.log('Quiz Treino: Dados parciais encontrados, carregando...');
+          // Validar e carregar dados existentes
+          const data = existingQuiz.quiz_data as any;
+          if (data && typeof data === 'object') {
+            setQuizData({
+              experiencia: data.experiencia || '',
+              frequencia: data.frequencia || '',
+              objetivo: data.objetivo || '',
+              limitacoes: Array.isArray(data.limitacoes) ? data.limitacoes : [],
+              preferencias: Array.isArray(data.preferencias) ? data.preferencias : [],
+              tempo_disponivel: data.tempo_disponivel || ''
+            });
+          }
+        }
+
+        console.log('Quiz Treino: Pronto para preenchimento');
+        setIsCheckingExisting(false);
+      } catch (error) {
+        console.error('Quiz Treino: Erro inesperado ao verificar quiz:', error);
+        setIsCheckingExisting(false);
+      }
+    };
+
+    checkQuizCompletion();
+  }, [user, navigate]);
+
   // Carregar dados existentes do quiz se houver
   useEffect(() => {
     const loadExistingQuizData = async () => {
@@ -161,7 +226,7 @@ const QuizTreino = () => {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando quiz...</p>
+          <p className="text-gray-600">Verificando dados do quiz...</p>
         </div>
       </div>
     );

@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface QuizData {
   experiencia: string;
@@ -187,6 +188,140 @@ const QuizTreino = () => {
     }
   };
 
+  const updateCompleteProfile = async (data: QuizData) => {
+    if (!user) return;
+
+    try {
+      console.log('Atualizando perfil consolidado com dados do quiz treino:', data);
+
+      const profileData = {
+        user_id: user.id,
+        experiencia_treino: data.experiencia,
+        frequencia_treino: data.frequencia,
+        objetivo_treino: data.objetivo,
+        limitacoes_fisicas: data.limitacoes,
+        preferencias_treino: data.preferencias,
+        tempo_disponivel: data.tempo_disponivel,
+        quiz_treino_completed: true,
+        updated_at: new Date().toISOString()
+      };
+
+      const { error } = await supabase
+        .from('user_complete_profile')
+        .upsert(profileData, { onConflict: 'user_id' });
+
+      if (error) {
+        console.error('Erro ao atualizar perfil consolidado:', error);
+        throw error;
+      }
+
+      console.log('Perfil consolidado atualizado com dados do quiz treino');
+    } catch (error) {
+      console.error('Erro ao atualizar perfil consolidado:', error);
+      throw error;
+    }
+  };
+
+  const sendCompleteDataToWebhook = async () => {
+    if (!user) return;
+
+    try {
+      console.log('Verificando se todos os dados estão completos para envio ao webhook...');
+      
+      // Buscar dados completos do perfil
+      const { data: completeProfile, error } = await supabase
+        .from('user_complete_profile')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Erro ao buscar perfil completo:', error);
+        return;
+      }
+
+      if (completeProfile && completeProfile.all_data_completed && !completeProfile.webhook_sent) {
+        console.log('Todos os dados completos! Enviando para webhook...');
+        
+        // Buscar dados do usuário para o webhook
+        const { data: userData } = await supabase
+          .from('teste_app')
+          .select('email, nome')
+          .eq('user_id', user.id)
+          .single();
+
+        const webhookPayload = {
+          user_id: user.id,
+          universal_id: completeProfile.universal_id,
+          email: userData?.email || user.email,
+          nome: userData?.nome || completeProfile.nome_completo,
+          dados_completos: {
+            dados_pessoais: {
+              nome_completo: completeProfile.nome_completo,
+              data_nascimento: completeProfile.data_nascimento,
+              altura: completeProfile.altura,
+              peso_atual: completeProfile.peso_atual,
+              sexo: completeProfile.sexo
+            },
+            quiz_alimentar: {
+              objetivo: completeProfile.objetivo_alimentar,
+              restricoes: completeProfile.restricoes_alimentares,
+              preferencias: completeProfile.preferencias_alimentares,
+              frequencia_refeicoes: completeProfile.frequencia_refeicoes,
+              nivel_atividade: completeProfile.nivel_atividade,
+              alergias: completeProfile.alergias,
+              suplementos: completeProfile.suplementos,
+              horario_preferencia: completeProfile.horario_preferencia,
+              orcamento: completeProfile.orcamento
+            },
+            quiz_treino: {
+              experiencia: completeProfile.experiencia_treino,
+              frequencia: completeProfile.frequencia_treino,
+              objetivo: completeProfile.objetivo_treino,
+              limitacoes: completeProfile.limitacoes_fisicas,
+              preferencias: completeProfile.preferencias_treino,
+              tempo_disponivel: completeProfile.tempo_disponivel
+            }
+          },
+          timestamp: new Date().toISOString()
+        };
+
+        console.log('Enviando dados completos para webhook:', webhookPayload);
+
+        const webhookResponse = await fetch('https://webhook.sv-02.botfai.com.br/webhook/1613f464-324c-494d-945a-efedd0a0dbd5', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(webhookPayload)
+        });
+
+        let webhookResult = null;
+        if (webhookResponse.ok) {
+          webhookResult = await webhookResponse.json();
+          console.log('Dados enviados com sucesso para o webhook');
+          
+          // Marcar como enviado
+          await supabase
+            .from('user_complete_profile')
+            .update({
+              webhook_sent: true,
+              webhook_sent_at: new Date().toISOString(),
+              webhook_response: webhookResult
+            })
+            .eq('user_id', user.id);
+            
+          toast.success('Dados completos enviados com sucesso!');
+        } else {
+          console.error('Erro no webhook:', webhookResponse.statusText);
+          toast.error('Erro ao enviar dados completos');
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao enviar dados completos para webhook:', error);
+    }
+  };
+
   const sendToWebhook = async (data: QuizData): Promise<boolean> => {
     try {
       console.log('Quiz Treino: Enviando dados para webhook:', data);
@@ -267,8 +402,11 @@ const QuizTreino = () => {
         return false;
       }
 
-      // Enviar dados para o webhook após salvar com sucesso
-      await sendToWebhook(quizData);
+      // Atualizar perfil consolidado
+      await updateCompleteProfile(quizData);
+
+      // Verificar e enviar dados completos se necessário
+      await sendCompleteDataToWebhook();
 
       try {
         await supabase.rpc('log_user_event', {
@@ -282,6 +420,7 @@ const QuizTreino = () => {
       }
 
       console.log('Quiz Treino: Quiz salvo com sucesso!');
+      toast.success('Quiz de treino concluído com sucesso!');
       return true;
     } catch (error) {
       console.error('Quiz Treino: Erro inesperado ao salvar quiz:', error);
@@ -320,7 +459,7 @@ const QuizTreino = () => {
     if (currentPergunta > 1) {
       navigate(`/quiz-treino/${currentPergunta - 1}`);
     } else {
-      navigate('/quiz-alimentar/5');
+      navigate('/quiz-alimentar');
     }
   };
 

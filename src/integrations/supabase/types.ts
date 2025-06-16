@@ -279,6 +279,111 @@ export type Database = {
         }
         Relationships: []
       }
+      user_complete_profile: {
+        Row: {
+          alergias: string[] | null
+          all_data_completed: boolean | null
+          altura: number | null
+          created_at: string
+          dados_pessoais_completed: boolean | null
+          data_nascimento: string | null
+          experiencia_treino: string | null
+          frequencia_refeicoes: string | null
+          frequencia_treino: string | null
+          horario_preferencia: string | null
+          id: string
+          limitacoes_fisicas: string[] | null
+          nivel_atividade: string | null
+          nome_completo: string | null
+          objetivo_alimentar: string | null
+          objetivo_treino: string | null
+          orcamento: string | null
+          peso_atual: number | null
+          preferencias_alimentares: string[] | null
+          preferencias_treino: string[] | null
+          quiz_alimentar_completed: boolean | null
+          quiz_treino_completed: boolean | null
+          restricoes_alimentares: string[] | null
+          sexo: string | null
+          suplementos: string[] | null
+          tempo_disponivel: string | null
+          universal_id: string
+          updated_at: string
+          user_id: string
+          webhook_response: Json | null
+          webhook_sent: boolean | null
+          webhook_sent_at: string | null
+        }
+        Insert: {
+          alergias?: string[] | null
+          all_data_completed?: boolean | null
+          altura?: number | null
+          created_at?: string
+          dados_pessoais_completed?: boolean | null
+          data_nascimento?: string | null
+          experiencia_treino?: string | null
+          frequencia_refeicoes?: string | null
+          frequencia_treino?: string | null
+          horario_preferencia?: string | null
+          id?: string
+          limitacoes_fisicas?: string[] | null
+          nivel_atividade?: string | null
+          nome_completo?: string | null
+          objetivo_alimentar?: string | null
+          objetivo_treino?: string | null
+          orcamento?: string | null
+          peso_atual?: number | null
+          preferencias_alimentares?: string[] | null
+          preferencias_treino?: string[] | null
+          quiz_alimentar_completed?: boolean | null
+          quiz_treino_completed?: boolean | null
+          restricoes_alimentares?: string[] | null
+          sexo?: string | null
+          suplementos?: string[] | null
+          tempo_disponivel?: string | null
+          universal_id?: string
+          updated_at?: string
+          user_id: string
+          webhook_response?: Json | null
+          webhook_sent?: boolean | null
+          webhook_sent_at?: string | null
+        }
+        Update: {
+          alergias?: string[] | null
+          all_data_completed?: boolean | null
+          altura?: number | null
+          created_at?: string
+          dados_pessoais_completed?: boolean | null
+          data_nascimento?: string | null
+          experiencia_treino?: string | null
+          frequencia_refeicoes?: string | null
+          frequencia_treino?: string | null
+          horario_preferencia?: string | null
+          id?: string
+          limitacoes_fisicas?: string[] | null
+          nivel_atividade?: string | null
+          nome_completo?: string | null
+          objetivo_alimentar?: string | null
+          objetivo_treino?: string | null
+          orcamento?: string | null
+          peso_atual?: number | null
+          preferencias_alimentares?: string[] | null
+          preferencias_treino?: string[] | null
+          quiz_alimentar_completed?: boolean | null
+          quiz_treino_completed?: boolean | null
+          restricoes_alimentares?: string[] | null
+          sexo?: string | null
+          suplementos?: string[] | null
+          tempo_disponivel?: string | null
+          universal_id?: string
+          updated_at?: string
+          user_id?: string
+          webhook_response?: Json | null
+          webhook_sent?: boolean | null
+          webhook_sent_at?: string | null
+        }
+        Relationships: []
+      }
       user_daily_progress: {
         Row: {
           created_at: string | null
@@ -479,6 +584,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      consolidate_user_data: {
+        Args: { p_user_id: string }
+        Returns: string
+      }
       log_user_event: {
         Args: {
           p_user_id: string

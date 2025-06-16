@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -62,19 +61,43 @@ const DadosPessoais = () => {
     try {
       console.log('Verificando dados existentes para user:', user.id);
       
+      // Primeiro verificar na nova tabela consolidada
+      const { data: profileData, error: profileError } = await supabase
+        .from('user_complete_profile')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error('Erro ao buscar perfil:', profileError);
+      }
+
+      if (profileData) {
+        console.log('Dados encontrados no perfil consolidado:', profileData);
+        form.reset({
+          nome_completo: profileData.nome_completo || '',
+          data_nascimento: profileData.data_nascimento || '',
+          altura: profileData.altura?.toString() || '',
+          peso_atual: profileData.peso_atual?.toString() || '',
+          sexo: profileData.sexo || '',
+        });
+        return;
+      }
+
+      // Se não encontrou na consolidada, verificar na tabela antiga
       const { data, error } = await supabase
         .from('user_personal_data')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (error) {
+      if (error && error.code !== 'PGRST116') {
         console.error('Erro ao buscar dados:', error);
         return;
       }
 
       if (data) {
-        console.log('Dados encontrados:', data);
+        console.log('Dados encontrados na tabela antiga:', data);
         form.reset({
           nome_completo: data.nome_completo || '',
           data_nascimento: data.data_nascimento || '',
@@ -87,6 +110,39 @@ const DadosPessoais = () => {
       }
     } catch (error) {
       console.error('Erro inesperado ao verificar dados existentes:', error);
+    }
+  };
+
+  const updateCompleteProfile = async (personalData: FormData) => {
+    if (!user) return;
+
+    try {
+      console.log('Atualizando perfil consolidado com dados pessoais:', personalData);
+
+      const profileData = {
+        user_id: user.id,
+        nome_completo: personalData.nome_completo.trim(),
+        data_nascimento: personalData.data_nascimento,
+        altura: parseFloat(personalData.altura),
+        peso_atual: parseFloat(personalData.peso_atual),
+        sexo: personalData.sexo,
+        dados_pessoais_completed: true,
+        updated_at: new Date().toISOString()
+      };
+
+      const { error } = await supabase
+        .from('user_complete_profile')
+        .upsert(profileData, { onConflict: 'user_id' });
+
+      if (error) {
+        console.error('Erro ao atualizar perfil consolidado:', error);
+        throw error;
+      }
+
+      console.log('Perfil consolidado atualizado com sucesso');
+    } catch (error) {
+      console.error('Erro ao atualizar perfil consolidado:', error);
+      throw error;
     }
   };
 
@@ -143,7 +199,7 @@ const DadosPessoais = () => {
 
       console.log('Dados para salvar:', dataToSave);
 
-      // Primeiro, tentar verificar se já existe um registro
+      // Salvar na tabela original (manter compatibilidade)
       const { data: existingData } = await supabase
         .from('user_personal_data')
         .select('id')
@@ -153,14 +209,12 @@ const DadosPessoais = () => {
       let result;
       
       if (existingData) {
-        // Atualizar registro existente
         console.log('Atualizando registro existente');
         result = await supabase
           .from('user_personal_data')
           .update(dataToSave)
           .eq('user_id', user.id);
       } else {
-        // Inserir novo registro
         console.log('Inserindo novo registro');
         result = await supabase
           .from('user_personal_data')
@@ -173,11 +227,14 @@ const DadosPessoais = () => {
         return;
       }
 
+      // Atualizar perfil consolidado
+      await updateCompleteProfile(data);
+
       console.log('Dados salvos com sucesso');
       toast.success('Dados salvos com sucesso!');
       
       // Navegar para a próxima página
-      navigate('/quiz-alimentar/1');
+      navigate('/quiz-alimentar');
       
     } catch (error) {
       console.error('Erro inesperado:', error);

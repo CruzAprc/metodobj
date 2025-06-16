@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { toast } from 'sonner';
 
 interface QuizData {
   objetivo: string;
@@ -57,6 +57,143 @@ const QuizAlimentar = () => {
     setSuplementos(prev => checked ? [...prev, value] : prev.filter(item => item !== value));
   };
 
+  const updateCompleteProfile = async (quizData: QuizData) => {
+    if (!user) return;
+
+    try {
+      console.log('Atualizando perfil consolidado com dados do quiz alimentar:', quizData);
+
+      const profileData = {
+        user_id: user.id,
+        objetivo_alimentar: quizData.objetivo,
+        restricoes_alimentares: quizData.restricoes,
+        preferencias_alimentares: quizData.preferenciasAlimentares,
+        frequencia_refeicoes: quizData.frequenciaRefeicoes,
+        nivel_atividade: quizData.nivelAtividade,
+        alergias: quizData.alergias,
+        suplementos: quizData.suplementos,
+        horario_preferencia: quizData.horarioPreferencia,
+        orcamento: quizData.orcamento,
+        quiz_alimentar_completed: true,
+        updated_at: new Date().toISOString()
+      };
+
+      const { error } = await supabase
+        .from('user_complete_profile')
+        .upsert(profileData, { onConflict: 'user_id' });
+
+      if (error) {
+        console.error('Erro ao atualizar perfil consolidado:', error);
+        throw error;
+      }
+
+      console.log('Perfil consolidado atualizado com dados do quiz alimentar');
+    } catch (error) {
+      console.error('Erro ao atualizar perfil consolidado:', error);
+      throw error;
+    }
+  };
+
+  const sendCompleteDataToWebhook = async () => {
+    if (!user) return;
+
+    try {
+      console.log('Verificando se todos os dados estão completos para envio ao webhook...');
+      
+      // Buscar dados completos do perfil
+      const { data: completeProfile, error } = await supabase
+        .from('user_complete_profile')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) {
+        console.error('Erro ao buscar perfil completo:', error);
+        return;
+      }
+
+      if (completeProfile && completeProfile.all_data_completed && !completeProfile.webhook_sent) {
+        console.log('Todos os dados completos! Enviando para webhook...');
+        
+        // Buscar dados do usuário para o webhook
+        const { data: userData } = await supabase
+          .from('teste_app')
+          .select('email, nome')
+          .eq('user_id', user.id)
+          .single();
+
+        const webhookPayload = {
+          user_id: user.id,
+          universal_id: completeProfile.universal_id,
+          email: userData?.email || user.email,
+          nome: userData?.nome || completeProfile.nome_completo,
+          dados_completos: {
+            dados_pessoais: {
+              nome_completo: completeProfile.nome_completo,
+              data_nascimento: completeProfile.data_nascimento,
+              altura: completeProfile.altura,
+              peso_atual: completeProfile.peso_atual,
+              sexo: completeProfile.sexo
+            },
+            quiz_alimentar: {
+              objetivo: completeProfile.objetivo_alimentar,
+              restricoes: completeProfile.restricoes_alimentares,
+              preferencias: completeProfile.preferencias_alimentares,
+              frequencia_refeicoes: completeProfile.frequencia_refeicoes,
+              nivel_atividade: completeProfile.nivel_atividade,
+              alergias: completeProfile.alergias,
+              suplementos: completeProfile.suplementos,
+              horario_preferencia: completeProfile.horario_preferencia,
+              orcamento: completeProfile.orcamento
+            },
+            quiz_treino: {
+              experiencia: completeProfile.experiencia_treino,
+              frequencia: completeProfile.frequencia_treino,
+              objetivo: completeProfile.objetivo_treino,
+              limitacoes: completeProfile.limitacoes_fisicas,
+              preferencias: completeProfile.preferencias_treino,
+              tempo_disponivel: completeProfile.tempo_disponivel
+            }
+          },
+          timestamp: new Date().toISOString()
+        };
+
+        console.log('Enviando dados completos para webhook:', webhookPayload);
+
+        const webhookResponse = await fetch('https://webhook.sv-02.botfai.com.br/webhook/1613f464-324c-494d-945a-efedd0a0dbd5', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(webhookPayload)
+        });
+
+        let webhookResult = null;
+        if (webhookResponse.ok) {
+          webhookResult = await webhookResponse.json();
+          console.log('Dados enviados com sucesso para o webhook');
+          
+          // Marcar como enviado
+          await supabase
+            .from('user_complete_profile')
+            .update({
+              webhook_sent: true,
+              webhook_sent_at: new Date().toISOString(),
+              webhook_response: webhookResult
+            })
+            .eq('user_id', user.id);
+            
+          toast.success('Dados completos enviados com sucesso!');
+        } else {
+          console.error('Erro no webhook:', webhookResponse.statusText);
+          toast.error('Erro ao enviar dados completos');
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao enviar dados completos para webhook:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -67,6 +204,7 @@ const QuizAlimentar = () => {
 
     if (!objetivo || !frequenciaRefeicoes || !nivelAtividade || !horarioPreferencia || !orcamento) {
       console.error('Todos os campos obrigatórios devem ser preenchidos');
+      toast.error('Todos os campos obrigatórios devem ser preenchidos');
       return;
     }
 
@@ -88,7 +226,7 @@ const QuizAlimentar = () => {
       // Gerar universal_id para este quiz
       const universalId = crypto.randomUUID();
 
-      // Salvar no banco de dados
+      // Salvar no banco de dados (manter compatibilidade)
       const { error: dbError } = await supabase
         .from('user_quiz_data')
         .insert({
@@ -104,43 +242,11 @@ const QuizAlimentar = () => {
         throw dbError;
       }
 
-      // Buscar dados do usuário para enviar no webhook
-      const { data: userData } = await supabase
-        .from('teste_app')
-        .select('email, nome')
-        .eq('user_id', user.id)
-        .single();
+      // Atualizar perfil consolidado
+      await updateCompleteProfile(quizData);
 
-      // Enviar dados para o webhook
-      try {
-        const webhookPayload = {
-          user_id: user.id,
-          universal_id: universalId,
-          email: userData?.email || user.email,
-          nome: userData?.nome || '',
-          quiz_type: 'alimentar',
-          quiz_data: quizData,
-          timestamp: new Date().toISOString()
-        };
-
-        console.log('Enviando dados para webhook:', webhookPayload);
-
-        const webhookResponse = await fetch('https://webhook.sv-02.botfai.com.br/webhook/1613f464-324c-494d-945a-efedd0a0dbd5', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(webhookPayload)
-        });
-
-        if (!webhookResponse.ok) {
-          console.error('Erro no webhook:', webhookResponse.statusText);
-        } else {
-          console.log('Dados enviados com sucesso para o webhook');
-        }
-      } catch (webhookError) {
-        console.error('Erro ao enviar para webhook:', webhookError);
-      }
+      // Verificar e enviar dados completos se necessário
+      await sendCompleteDataToWebhook();
 
       console.log('Quiz salvo com sucesso!');
       
@@ -151,10 +257,13 @@ const QuizAlimentar = () => {
         p_event_data: quizData
       });
 
-      // Redirecionar para loading-treino
-      navigate('/loading-treino');
+      toast.success('Quiz alimentar concluído com sucesso!');
+      
+      // Redirecionar para quiz de treino
+      navigate('/quiz-treino/1');
     } catch (error) {
       console.error('Erro ao salvar quiz:', error);
+      toast.error('Erro ao salvar quiz alimentar');
     } finally {
       setIsSubmitting(false);
     }
@@ -164,7 +273,7 @@ const QuizAlimentar = () => {
     <div className="min-h-screen bg-gradient-to-br from-pink-50 to-white py-6 px-4 sm:px-6 lg:px-8">
       <Header 
         showBack={true} 
-        onBack={() => navigate('/loading')}
+        onBack={() => navigate('/dados-pessoais')}
         title="Questionário Alimentar"
       />
       

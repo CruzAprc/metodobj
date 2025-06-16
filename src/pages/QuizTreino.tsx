@@ -139,13 +139,16 @@ const QuizTreino = () => {
           return;
         }
 
+        // APENAS redireciona se o quiz foi REALMENTE completado (tem completed_at)
         if (existingQuiz && existingQuiz.completed_at) {
           console.log('Quiz Treino: Quiz já completado! Redirecionando para dashboard...');
           navigate('/dashboard');
           return;
-        } else if (existingQuiz && existingQuiz.quiz_data) {
+        } 
+        
+        // Se existem dados parciais, carrega para continuar o preenchimento
+        if (existingQuiz && existingQuiz.quiz_data) {
           console.log('Quiz Treino: Dados parciais encontrados, carregando...');
-          // Validar e carregar dados existentes com type assertion
           const data = existingQuiz.quiz_data as any;
           if (data && typeof data === 'object') {
             setQuizData({

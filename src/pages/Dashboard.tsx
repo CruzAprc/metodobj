@@ -155,7 +155,8 @@ const AppJujuDashboard = () => {
   const [diasNoApp, setDiasNoApp] = useState(0);
   const [evaluationUnlocked, setEvaluationUnlocked] = useState(false);
   const {
-    user
+    user,
+    signOut
   } = useAuth();
   const navigate = useNavigate();
   const isMobile = useIsMobile();

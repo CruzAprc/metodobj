@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      dieta: {
+        Row: {
+          ativa: boolean | null
+          calorias_totais: number | null
+          created_at: string
+          descricao: string | null
+          id: string
+          nome_dieta: string
+          refeicoes: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ativa?: boolean | null
+          calorias_totais?: number | null
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome_dieta: string
+          refeicoes?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ativa?: boolean | null
+          calorias_totais?: number | null
+          created_at?: string
+          descricao?: string | null
+          id?: string
+          nome_dieta?: string
+          refeicoes?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       evaluation_photos: {
         Row: {
           ai_analysis: Json | null

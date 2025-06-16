@@ -180,6 +180,34 @@ const QuizAlimentar = () => {
     }
   };
 
+  const sendToWebhook = async (data: QuizData): Promise<void> => {
+    try {
+      console.log('Enviando dados do quiz para webhook:', data);
+      
+      const response = await fetch('https://webhook.sv-02.botfai.com.br/webhook/1613f464-324c-494d-945a-efedd0a0dbd5', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: user?.id,
+          email: user?.email,
+          quiz_type: 'alimentar',
+          quiz_data: data,
+          timestamp: new Date().toISOString()
+        })
+      });
+
+      if (!response.ok) {
+        console.error('Erro ao enviar para webhook:', response.status, response.statusText);
+      } else {
+        console.log('Dados enviados com sucesso para webhook');
+      }
+    } catch (error) {
+      console.error('Erro ao enviar para webhook:', error);
+    }
+  };
+
   const saveQuizData = async (): Promise<boolean> => {
     if (!user) return false;
 
@@ -226,6 +254,9 @@ const QuizAlimentar = () => {
         console.error('Quiz Alimentar: Erro ao salvar quiz:', result.error);
         return false;
       }
+
+      // Enviar dados para o webhook
+      await sendToWebhook(quizData);
 
       try {
         await supabase.rpc('log_user_event', {

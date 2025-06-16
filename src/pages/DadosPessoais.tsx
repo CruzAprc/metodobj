@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, Target, Calendar, Weight, Ruler } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { useUserCompleteData } from '@/hooks/useUserCompleteData';
 import { toast } from 'sonner';
 
 interface FormData {
@@ -24,6 +24,7 @@ interface FormErrors {
 const DadosPessoais = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { updateDadosPessoais } = useUserCompleteData();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<FormData>({
@@ -80,67 +81,6 @@ const DadosPessoais = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const saveToDatabase = async (): Promise<boolean> => {
-    if (!user) {
-      toast.error('Usuário não encontrado. Faça login novamente.');
-      return false;
-    }
-
-    try {
-      console.log('Salvando dados para o usuário:', user.id);
-      console.log('Dados a serem salvos:', formData);
-
-      // Primeiro, verificar se já existe um registro para este usuário
-      const { data: existingData, error: checkError } = await supabase
-        .from('teste_app')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (checkError && checkError.code !== 'PGRST116') {
-        console.error('Erro ao verificar dados existentes:', checkError);
-        toast.error('Erro ao verificar dados existentes');
-        return false;
-      }
-
-      let result;
-      if (existingData) {
-        // Atualizar registro existente
-        result = await supabase
-          .from('teste_app')
-          .update({
-            nome: formData.nomeCompleto,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id);
-      } else {
-        // Criar novo registro
-        result = await supabase
-          .from('teste_app')
-          .insert({
-            user_id: user.id,
-            nome: formData.nomeCompleto,
-            email: user.email || '',
-            whatsapp: ''
-          });
-      }
-
-      if (result.error) {
-        console.error('Erro ao salvar dados:', result.error);
-        toast.error('Erro ao salvar dados: ' + result.error.message);
-        return false;
-      }
-
-      console.log('Dados salvos com sucesso!');
-      toast.success('Dados salvos com sucesso!');
-      return true;
-    } catch (error) {
-      console.error('Erro ao salvar dados:', error);
-      toast.error('Erro inesperado ao salvar dados');
-      return false;
-    }
-  };
-
   const handleNext = async () => {
     if (!validateStep(currentStep)) {
       return;
@@ -154,11 +94,14 @@ const DadosPessoais = () => {
       try {
         console.log('Finalizando dados pessoais:', formData);
         
-        const saved = await saveToDatabase();
-        if (saved) {
-          // Salvar no localStorage para usar em outras partes da aplicação
-          localStorage.setItem('dadosPessoais', JSON.stringify(formData));
-          
+        const success = await updateDadosPessoais(
+          formData.nomeCompleto,
+          parseInt(formData.idade),
+          parseFloat(formData.peso),
+          parseFloat(formData.altura)
+        );
+
+        if (success) {
           toast.success('Dados pessoais salvos! Redirecionando...');
           
           // Aguardar um pouco antes de redirecionar

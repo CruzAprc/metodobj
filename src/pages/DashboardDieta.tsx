@@ -134,6 +134,7 @@ const DashboardDieta = () => {
         .select('*')
         .eq('user_id', user.id)
         .eq('ativa', true)
+        .order('created_at', { ascending: false })
         .maybeSingle();
         
       if (data) {

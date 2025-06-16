@@ -18,6 +18,7 @@ export type Database = {
           id: string
           nome_dieta: string
           refeicoes: Json
+          universal_id: string
           updated_at: string
           user_id: string
         }
@@ -29,6 +30,7 @@ export type Database = {
           id?: string
           nome_dieta: string
           refeicoes?: Json
+          universal_id?: string
           updated_at?: string
           user_id: string
         }
@@ -40,6 +42,7 @@ export type Database = {
           id?: string
           nome_dieta?: string
           refeicoes?: Json
+          universal_id?: string
           updated_at?: string
           user_id?: string
         }

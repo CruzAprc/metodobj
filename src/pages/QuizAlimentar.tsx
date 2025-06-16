@@ -1,454 +1,469 @@
-
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import Header from "@/components/Header";
+import { ArrowLeft } from 'lucide-react';
+import { trackEvent } from "@/integrations/analytics/client";
+import { useEffect } from 'react';
+import crypto from 'crypto';
 
 interface QuizData {
   objetivo: string;
   restricoes: string[];
-  preferencias: string[];
-  experiencia: string;
+  preferenciasAlimentares: string[];
+  frequenciaRefeicoes: string;
+  nivelAtividade: string;
+  alergias: string[];
   suplementos: string[];
+  horarioPreferencia: string;
+  orcamento: string;
 }
-
-const quizSteps = [
-  {
-    etapa: '1',
-    pergunta: 'Qual é o seu principal objetivo?',
-    opcoes: [
-      { id: 'perder_peso', texto: 'Perder peso e definir', emoji: '🔥' },
-      { id: 'ganhar_massa', texto: 'Ganhar massa muscular', emoji: '💪' },
-      { id: 'manter_peso', texto: 'Manter o peso atual', emoji: '⚖️' },
-      { id: 'melhorar_saude', texto: 'Melhorar saúde geral', emoji: '❤️' }
-    ],
-    campo: 'objetivo' as keyof QuizData
-  },
-  {
-    etapa: '2',
-    pergunta: 'Você tem alguma restrição alimentar?',
-    opcoes: [
-      { id: 'nenhuma', texto: 'Nenhuma restrição', emoji: '✅' },
-      { id: 'vegetariano', texto: 'Vegetariano', emoji: '🥗' },
-      { id: 'vegano', texto: 'Vegano', emoji: '🌱' },
-      { id: 'gluten', texto: 'Sem glúten', emoji: '🚫' },
-      { id: 'lactose', texto: 'Sem lactose', emoji: '🥛' },
-      { id: 'diabetes', texto: 'Diabetes', emoji: '🩺' }
-    ],
-    campo: 'restricoes' as keyof QuizData,
-    multipla: true
-  },
-  {
-    etapa: '3',
-    pergunta: 'Quais são suas preferências alimentares?',
-    opcoes: [
-      { id: 'pratico', texto: 'Refeições práticas', emoji: '⚡' },
-      { id: 'caseiro', texto: 'Comida caseira', emoji: '🏠' },
-      { id: 'variado', texto: 'Cardápio variado', emoji: '🌈' },
-      { id: 'economico', texto: 'Opções econômicas', emoji: '💰' },
-      { id: 'gourmet', texto: 'Pratos elaborados', emoji: '👨‍🍳' }
-    ],
-    campo: 'preferencias' as keyof QuizData,
-    multipla: true
-  },
-  {
-    etapa: '4',
-    pergunta: 'Qual sua experiência com dietas?',
-    opcoes: [
-      { id: 'primeira_vez', texto: 'Primeira vez', emoji: '🆕' },
-      { id: 'alguma_experiencia', texto: 'Alguma experiência', emoji: '📚' },
-      { id: 'experiente', texto: 'Muito experiente', emoji: '🎯' },
-      { id: 'profissional', texto: 'Já sou da área', emoji: '👨‍⚕️' }
-    ],
-    campo: 'experiencia' as keyof QuizData
-  },
-  {
-    etapa: '5',
-    pergunta: 'Você toma algum suplemento?',
-    opcoes: [
-      { id: 'nenhum', texto: 'Não tomo nenhum', emoji: '❌' },
-      { id: 'whey', texto: 'Whey Protein', emoji: '🥤' },
-      { id: 'creatina', texto: 'Creatina', emoji: '⚡' },
-      { id: 'multivitaminico', texto: 'Multivitamínico', emoji: '💊' },
-      { id: 'omega3', texto: 'Ômega 3', emoji: '🐟' },
-      { id: 'outros', texto: 'Outros', emoji: '📋' }
-    ],
-    campo: 'suplementos' as keyof QuizData,
-    multipla: true
-  }
-];
 
 const QuizAlimentar = () => {
   const navigate = useNavigate();
-  const { etapa } = useParams<{ etapa: string }>();
   const { user } = useAuth();
+
+  const [objetivo, setObjetivo] = useState('');
+  const [restricoes, setRestricoes] = useState<string[]>([]);
+  const [preferenciasAlimentares, setPreferenciasAlimentares] = useState<string[]>([]);
+  const [frequenciaRefeicoes, setFrequenciaRefeicoes] = useState('');
+  const [nivelAtividade, setNivelAtividade] = useState('');
+  const [alergias, setAlergias] = useState<string[]>([]);
+  const [suplementos, setSuplementos] = useState<string[]>([]);
+  const [horarioPreferencia, setHorarioPreferencia] = useState('');
+  const [orcamento, setOrcamento] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isCheckingExisting, setIsCheckingExisting] = useState(true);
-  const [quizData, setQuizData] = useState<QuizData>({
-    objetivo: '',
-    restricoes: [],
-    preferencias: [],
-    experiencia: '',
-    suplementos: []
-  });
 
-  const currentEtapa = parseInt(etapa || '1');
-  const currentStep = quizSteps.find(step => parseInt(step.etapa) === currentEtapa);
-
-  // Verificar se o usuário já preencheu o quiz alimentar
   useEffect(() => {
-    const checkExistingQuizData = async () => {
-      if (!user) {
-        console.log('Quiz Alimentar: Usuário não logado');
-        setIsCheckingExisting(false);
-        return;
-      }
+    trackEvent('quiz_alimentar_view');
+  }, []);
 
-      try {
-        console.log('Quiz Alimentar: Verificando se usuário já preencheu quiz...', {
-          userId: user.id,
-          email: user.email
-        });
-        
-        const { data: existingQuiz, error } = await supabase
-          .from('user_quiz_data')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('quiz_type', 'alimentar')
-          .maybeSingle();
-
-        console.log('Quiz Alimentar: Resultado da verificação:', {
-          data: existingQuiz,
-          error: error,
-          errorCode: error?.code
-        });
-
-        if (error && error.code !== 'PGRST116') {
-          console.error('Quiz Alimentar: Erro ao verificar quiz existente:', error);
-          setIsCheckingExisting(false);
-          return;
-        }
-
-        if (existingQuiz) {
-          console.log('Quiz Alimentar: Quiz já preenchido! Dados:', existingQuiz);
-          console.log('Quiz Alimentar: Redirecionando para dashboard...');
-          navigate('/dashboard');
-          return;
-        }
-
-        console.log('Quiz Alimentar: Quiz não encontrado, usuário pode preencher');
-        setIsCheckingExisting(false);
-      } catch (error) {
-        console.error('Quiz Alimentar: Erro inesperado ao verificar quiz:', error);
-        setIsCheckingExisting(false);
-      }
-    };
-
-    checkExistingQuizData();
-  }, [user, navigate]);
-
-  // Mostrar loading enquanto verifica dados existentes
-  if (isCheckingExisting) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Verificando seus dados...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const handleOptionSelect = (opcaoId: string) => {
-    if (!currentStep) return;
-
-    const { campo, multipla } = currentStep;
-
-    if (multipla) {
-      setQuizData(prev => {
-        const currentArray = prev[campo] as string[];
-        const newArray = currentArray.includes(opcaoId)
-          ? currentArray.filter(id => id !== opcaoId)
-          : [...currentArray, opcaoId];
-        
-        return { ...prev, [campo]: newArray };
-      });
-    } else {
-      setQuizData(prev => ({ ...prev, [campo]: opcaoId }));
-    }
+  const handleRestricaoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, checked } = e.target;
+    setRestricoes(prev => checked ? [...prev, value] : prev.filter(item => item !== value));
   };
 
-  const sendToWebhook = async (data: QuizData): Promise<void> => {
-    try {
-      console.log('Enviando dados do quiz para webhook:', data);
-      
-      const response = await fetch('https://webhook.sv-02.botfai.com.br/webhook/1613f464-324c-494d-945a-efedd0a0dbd5', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          user_id: user?.id,
-          email: user?.email,
-          quiz_type: 'alimentar',
-          quiz_data: data,
-          timestamp: new Date().toISOString()
-        })
-      });
-
-      if (!response.ok) {
-        console.error('Erro ao enviar para webhook:', response.status, response.statusText);
-      } else {
-        console.log('Dados enviados com sucesso para webhook');
-      }
-    } catch (error) {
-      console.error('Erro ao enviar para webhook:', error);
-    }
+  const handlePreferenciaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, checked } = e.target;
+    setPreferenciasAlimentares(prev => checked ? [...prev, value] : prev.filter(item => item !== value));
   };
 
-  const saveQuizData = async (): Promise<boolean> => {
-    if (!user) return false;
-
-    try {
-      console.log('Quiz Alimentar: Salvando dados:', quizData);
-
-      const { data: existingQuiz, error: checkError } = await supabase
-        .from('user_quiz_data')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('quiz_type', 'alimentar')
-        .maybeSingle();
-
-      if (checkError && checkError.code !== 'PGRST116') {
-        console.error('Quiz Alimentar: Erro ao verificar quiz existente:', checkError);
-        return false;
-      }
-
-      let result;
-      if (existingQuiz) {
-        console.log('Quiz Alimentar: Atualizando quiz existente');
-        result = await supabase
-          .from('user_quiz_data')
-          .update({
-            quiz_data: quizData as any,
-            updated_at: new Date().toISOString(),
-            completed_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id)
-          .eq('quiz_type', 'alimentar');
-      } else {
-        console.log('Quiz Alimentar: Criando novo quiz');
-        result = await supabase
-          .from('user_quiz_data')
-          .insert({
-            user_id: user.id,
-            quiz_type: 'alimentar',
-            quiz_data: quizData as any,
-            completed_at: new Date().toISOString()
-          });
-      }
-
-      if (result.error) {
-        console.error('Quiz Alimentar: Erro ao salvar quiz:', result.error);
-        return false;
-      }
-
-      // Enviar dados para o webhook
-      await sendToWebhook(quizData);
-
-      try {
-        await supabase.rpc('log_user_event', {
-          p_user_id: user.id,
-          p_event_type: 'quiz_alimentar_completed',
-          p_event_data: quizData as any,
-          p_table_reference: 'user_quiz_data'
-        });
-      } catch (logError) {
-        console.warn('Quiz Alimentar: Erro ao registrar evento:', logError);
-      }
-
-      console.log('Quiz Alimentar: Quiz salvo com sucesso!');
-      return true;
-    } catch (error) {
-      console.error('Quiz Alimentar: Erro inesperado ao salvar quiz:', error);
-      return false;
-    }
+  const handleAlergiaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, checked } = e.target;
+    setAlergias(prev => checked ? [...prev, value] : prev.filter(item => item !== value));
   };
 
-  const handleNext = async () => {
-    if (!currentStep) return;
+  const handleSuplementoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, checked } = e.target;
+    setSuplementos(prev => checked ? [...prev, value] : prev.filter(item => item !== value));
+  };
 
-    const { campo, multipla } = currentStep;
-    const value = quizData[campo];
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     
-    if (!value || (Array.isArray(value) && value.length === 0)) {
+    if (!user) {
+      console.error('Usuário não logado');
       return;
     }
 
-    if (currentEtapa < quizSteps.length) {
-      navigate(`/quiz-alimentar/${currentEtapa + 1}`);
-    } else {
-      setIsSubmitting(true);
-      try {
-        const saved = await saveQuizData();
-        if (saved) {
-          navigate('/quiz-treino/1');
-        }
-      } catch (error) {
-        console.error('Quiz Alimentar: Erro no processo final:', error);
-      } finally {
-        setIsSubmitting(false);
+    setIsSubmitting(true);
+
+    try {
+      const quizData = {
+        objetivo,
+        restricoes,
+        preferenciasAlimentares,
+        frequenciaRefeicoes,
+        nivelAtividade,
+        alergias,
+        suplementos,
+        horarioPreferencia,
+        orcamento
+      };
+
+      // Gerar universal_id para este quiz
+      const universalId = crypto.randomUUID();
+
+      // Salvar no banco de dados
+      const { error: dbError } = await supabase
+        .from('user_quiz_data')
+        .insert({
+          user_id: user.id,
+          quiz_type: 'alimentar',
+          quiz_data: quizData,
+          universal_id: universalId,
+          completed_at: new Date().toISOString()
+        });
+
+      if (dbError) {
+        console.error('Erro ao salvar quiz:', dbError);
+        throw dbError;
       }
+
+      // Buscar dados do usuário para enviar no webhook
+      const { data: userData } = await supabase
+        .from('teste_app')
+        .select('email, nome')
+        .eq('user_id', user.id)
+        .single();
+
+      // Enviar dados para o webhook
+      try {
+        const webhookPayload = {
+          user_id: user.id,
+          universal_id: universalId,
+          email: userData?.email || user.email,
+          nome: userData?.nome || '',
+          quiz_type: 'alimentar',
+          quiz_data: quizData,
+          timestamp: new Date().toISOString()
+        };
+
+        console.log('Enviando dados para webhook:', webhookPayload);
+
+        const webhookResponse = await fetch('https://webhook.sv-02.botfai.com.br/webhook/1613f464-324c-494d-945a-efedd0a0dbd5', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(webhookPayload)
+        });
+
+        if (!webhookResponse.ok) {
+          console.error('Erro no webhook:', webhookResponse.statusText);
+        } else {
+          console.log('Dados enviados com sucesso para o webhook');
+        }
+      } catch (webhookError) {
+        console.error('Erro ao enviar para webhook:', webhookError);
+        // Não impedir o fluxo se o webhook falhar
+      }
+
+      console.log('Quiz salvo com sucesso!');
+      
+      // Registrar evento de conclusão
+      await supabase.rpc('log_user_event', {
+        p_user_id: user.id,
+        p_event_type: 'quiz_alimentar_completed',
+        p_event_data: quizData
+      });
+
+      // Redirecionar para o dashboard
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Erro ao salvar quiz:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
-
-  const handlePrevious = () => {
-    if (currentEtapa > 1) {
-      navigate(`/quiz-alimentar/${currentEtapa - 1}`);
-    } else {
-      navigate('/dados-pessoais');
-    }
-  };
-
-  if (!currentStep) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-red-500 mb-4">Etapa não encontrada</p>
-          <button 
-            onClick={() => navigate('/quiz-alimentar/1')}
-            className="text-blue-600 underline"
-          >
-            Voltar ao início
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const isMultipleChoice = currentStep.multipla;
-  const currentValue = quizData[currentStep.campo];
-  const hasSelection = isMultipleChoice 
-    ? Array.isArray(currentValue) && currentValue.length > 0
-    : currentValue !== '';
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-xl">
-        
-        {/* Progress bar */}
-        <div className="flex justify-center mb-6 sm:mb-8">
-          <div className="flex space-x-2">
-            {quizSteps.map((_, index) => (
-              <motion.div
-                key={index}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  index + 1 <= currentEtapa 
-                    ? 'bg-blue-600 w-6' 
-                    : 'bg-slate-300 w-2'
-                }`}
-                animate={{
-                  scale: index + 1 === currentEtapa ? 1.2 : 1
-                }}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Conteúdo do quiz */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentEtapa}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-            className="space-y-6"
-          >
-            {/* Título */}
-            <div className="text-center space-y-2">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-800">
-                {currentStep.pergunta}
-              </h2>
-              <p className="text-slate-600 text-sm">
-                {isMultipleChoice ? 'Selecione todas que se aplicam:' : 'Escolha uma opção:'}
-              </p>
+    <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
+      <Header 
+        showBack={true} 
+        onBack={() => navigate('/dashboard')}
+        title="Questionário Alimentar"
+      />
+      <div className="max-w-3xl mx-auto">
+        <div className="bg-white shadow-md rounded-md p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            Nos diga sobre seus hábitos alimentares
+          </h2>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="objetivo" className="block text-sm font-medium text-gray-700">
+                Qual é o seu principal objetivo?
+              </label>
+              <div className="mt-1">
+                <input
+                  type="text"
+                  id="objetivo"
+                  className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                  value={objetivo}
+                  onChange={(e) => setObjetivo(e.target.value)}
+                  required
+                />
+              </div>
             </div>
 
-            {/* Opções */}
-            <div className="space-y-3">
-              {currentStep.opcoes.map((opcao) => {
-                const isSelected = isMultipleChoice
-                  ? Array.isArray(currentValue) && currentValue.includes(opcao.id)
-                  : currentValue === opcao.id;
-
-                return (
-                  <motion.button
-                    key={opcao.id}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleOptionSelect(opcao.id)}
-                    className={`w-full p-4 rounded-2xl border-2 text-left transition-all duration-300 ${
-                      isSelected
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50/30'
-                    }`}
-                    disabled={isSubmitting}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <span className="text-2xl">{opcao.emoji}</span>
-                      <span className="font-medium flex-1">{opcao.texto}</span>
-                      {isSelected && <CheckCircle size={20} className="text-blue-600" />}
-                    </div>
-                  </motion.button>
-                );
-              })}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Você possui alguma restrição alimentar?
+              </label>
+              <div className="mt-2 space-y-2">
+                <div className="flex items-start">
+                  <div className="flex items-center h-5">
+                    <input
+                      id="restricao-vegetariano"
+                      type="checkbox"
+                      value="vegetariano"
+                      className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                      checked={restricoes.includes('vegetariano')}
+                      onChange={handleRestricaoChange}
+                    />
+                  </div>
+                  <div className="ml-3 text-sm">
+                    <label htmlFor="restricao-vegetariano" className="font-medium text-gray-700">
+                      Vegetariano
+                    </label>
+                    <p className="text-gray-500">Não consumo carne.</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="flex items-center h-5">
+                    <input
+                      id="restricao-vegano"
+                      type="checkbox"
+                      value="vegano"
+                      className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                      checked={restricoes.includes('vegano')}
+                      onChange={handleRestricaoChange}
+                    />
+                  </div>
+                  <div className="ml-3 text-sm">
+                    <label htmlFor="restricao-vegano" className="font-medium text-gray-700">
+                      Vegano
+                    </label>
+                    <p className="text-gray-500">Não consumo nenhum produto de origem animal.</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="flex items-center h-5">
+                    <input
+                      id="restricao-sem-gluten"
+                      type="checkbox"
+                      value="sem-gluten"
+                      className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                      checked={restricoes.includes('sem-gluten')}
+                      onChange={handleRestricaoChange}
+                    />
+                  </div>
+                  <div className="ml-3 text-sm">
+                    <label htmlFor="restricao-sem-gluten" className="font-medium text-gray-700">
+                      Sem Glúten
+                    </label>
+                    <p className="text-gray-500">Não consumo glúten.</p>
+                  </div>
+                </div>
+              </div>
             </div>
-          </motion.div>
-        </AnimatePresence>
 
-        {/* Botões de navegação */}
-        <div className="flex justify-between items-center mt-8 space-x-4">
-          <button
-            onClick={handlePrevious}
-            disabled={isSubmitting}
-            className="flex items-center space-x-2 px-6 py-3 rounded-2xl font-medium transition-all
-                     text-slate-600 hover:text-slate-800 hover:bg-slate-100
-                     disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ArrowLeft size={18} />
-            <span>Voltar</span>
-          </button>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Quais são suas preferências alimentares?
+              </label>
+              <div className="mt-2 space-y-2">
+                <div className="flex items-start">
+                  <div className="flex items-center h-5">
+                    <input
+                      id="preferencia-baixo-carboidrato"
+                      type="checkbox"
+                      value="baixo-carboidrato"
+                      className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                      checked={preferenciasAlimentares.includes('baixo-carboidrato')}
+                      onChange={handlePreferenciaChange}
+                    />
+                  </div>
+                  <div className="ml-3 text-sm">
+                    <label htmlFor="preferencia-baixo-carboidrato" className="font-medium text-gray-700">
+                      Baixo Carboidrato
+                    </label>
+                    <p className="text-gray-500">Prefiro alimentos com baixo teor de carboidratos.</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="flex items-center h-5">
+                    <input
+                      id="preferencia-rica-proteina"
+                      type="checkbox"
+                      value="rica-proteina"
+                      className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                      checked={preferenciasAlimentares.includes('rica-proteina')}
+                      onChange={handlePreferenciaChange}
+                    />
+                  </div>
+                  <div className="ml-3 text-sm">
+                    <label htmlFor="preferencia-rica-proteina" className="font-medium text-gray-700">
+                      Rica em Proteína
+                    </label>
+                    <p className="text-gray-500">Prefiro alimentos ricos em proteína.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-          <button
-            onClick={handleNext}
-            disabled={!hasSelection || isSubmitting}
-            className="flex items-center space-x-2 px-6 py-3 rounded-2xl font-medium
-                     bg-gradient-to-r from-blue-600 to-blue-800 text-white
-                     hover:from-blue-700 hover:to-blue-900 
-                     transform hover:scale-105 active:scale-95
-                     transition-all duration-300 shadow-lg
-                     disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-          >
-            <span>
-              {isSubmitting 
-                ? 'Salvando...' 
-                : currentEtapa === quizSteps.length 
-                  ? 'Finalizar' 
-                  : 'Continuar'
-              }
-            </span>
-            {!isSubmitting && <ArrowRight size={18} />}
-          </button>
-        </div>
+            <div>
+              <label htmlFor="frequenciaRefeicoes" className="block text-sm font-medium text-gray-700">
+                Com que frequência você costuma fazer refeições ao dia?
+              </label>
+              <div className="mt-1">
+                <select
+                  id="frequenciaRefeicoes"
+                  className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                  value={frequenciaRefeicoes}
+                  onChange={(e) => setFrequenciaRefeicoes(e.target.value)}
+                  required
+                >
+                  <option value="">Selecione...</option>
+                  <option value="3">3 vezes ao dia</option>
+                  <option value="4">4 vezes ao dia</option>
+                  <option value="5+">5 ou mais vezes ao dia</option>
+                </select>
+              </div>
+            </div>
 
-        {/* Indicador de etapa */}
-        <div className="text-center mt-6">
-          <p className="text-xs text-slate-400">
-            Etapa {currentEtapa} de {quizSteps.length} - Quiz Alimentar
-          </p>
+            <div>
+              <label htmlFor="nivelAtividade" className="block text-sm font-medium text-gray-700">
+                Qual é o seu nível de atividade física?
+              </label>
+              <div className="mt-1">
+                <select
+                  id="nivelAtividade"
+                  className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                  value={nivelAtividade}
+                  onChange={(e) => setNivelAtividade(e.target.value)}
+                  required
+                >
+                  <option value="">Selecione...</option>
+                  <option value="sedentario">Sedentário (pouca ou nenhuma atividade)</option>
+                  <option value="levemente-ativo">Levemente Ativo (exercício leve 1-3 dias/semana)</option>
+                  <option value="moderadamente-ativo">Moderadamente Ativo (exercício moderado 3-5 dias/semana)</option>
+                  <option value="altamente-ativo">Altamente Ativo (exercício intenso 6-7 dias/semana)</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Você possui alguma alergia alimentar?
+              </label>
+              <div className="mt-2 space-y-2">
+                <div className="flex items-start">
+                  <div className="flex items-center h-5">
+                    <input
+                      id="alergia-lactose"
+                      type="checkbox"
+                      value="lactose"
+                      className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                      checked={alergias.includes('lactose')}
+                      onChange={handleAlergiaChange}
+                    />
+                  </div>
+                  <div className="ml-3 text-sm">
+                    <label htmlFor="alergia-lactose" className="font-medium text-gray-700">
+                      Alergia à Lactose
+                    </label>
+                    <p className="text-gray-500">Sou alérgico(a) à lactose.</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="flex items-center h-5">
+                    <input
+                      id="alergia-gluten"
+                      type="checkbox"
+                      value="gluten"
+                      className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                      checked={alergias.includes('gluten')}
+                      onChange={handleAlergiaChange}
+                    />
+                  </div>
+                  <div className="ml-3 text-sm">
+                    <label htmlFor="alergia-gluten" className="font-medium text-gray-700">
+                      Alergia ao Glúten
+                    </label>
+                    <p className="text-gray-500">Sou alérgico(a) ao glúten.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Você utiliza algum suplemento alimentar?
+              </label>
+              <div className="mt-2 space-y-2">
+                <div className="flex items-start">
+                  <div className="flex items-center h-5">
+                    <input
+                      id="suplemento-whey"
+                      type="checkbox"
+                      value="whey"
+                      className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                      checked={suplementos.includes('whey')}
+                      onChange={handleSuplementoChange}
+                    />
+                  </div>
+                  <div className="ml-3 text-sm">
+                    <label htmlFor="suplemento-whey" className="font-medium text-gray-700">
+                      Whey Protein
+                    </label>
+                    <p className="text-gray-500">Utilizo whey protein regularmente.</p>
+                  </div>
+                </div>
+                <div className="flex items-start">
+                  <div className="flex items-center h-5">
+                    <input
+                      id="suplemento-creatina"
+                      type="checkbox"
+                      value="creatina"
+                      className="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                      checked={suplementos.includes('creatina')}
+                      onChange={handleSuplementoChange}
+                    />
+                  </div>
+                  <div className="ml-3 text-sm">
+                    <label htmlFor="suplemento-creatina" className="font-medium text-gray-700">
+                      Creatina
+                    </label>
+                    <p className="text-gray-500">Utilizo creatina regularmente.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="horarioPreferencia" className="block text-sm font-medium text-gray-700">
+                Qual é o seu horário de preferência para as refeições?
+              </label>
+              <div className="mt-1">
+                <input
+                  type="text"
+                  id="horarioPreferencia"
+                  className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                  value={horarioPreferencia}
+                  onChange={(e) => setHorarioPreferencia(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="orcamento" className="block text-sm font-medium text-gray-700">
+                Qual é o seu orçamento para alimentação?
+              </label>
+              <div className="mt-1">
+                <input
+                  type="text"
+                  id="orcamento"
+                  className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
+                  value={orcamento}
+                  onChange={(e) => setOrcamento(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Enviando...' : 'Enviar Questionário'}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>

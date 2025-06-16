@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
 import { 
@@ -195,8 +196,8 @@ const AppJujuDashboard = () => {
       progress += 20;
     }
     
-    // Quiz treino (20%)
-    if (userData.quiz_treino_concluido) {
+    // Quiz treino (20%) - using the new approach to check for workout quiz data
+    if (workoutData) {
       progress += 20;
     }
     
@@ -320,9 +321,10 @@ const AppJujuDashboard = () => {
     if (!user) return;
     
     const { data, error } = await supabase
-      .from('teste_dieta')
+      .from('user_quiz_data')
       .select('*')
       .eq('user_id', user.id)
+      .eq('quiz_type', 'alimentar')
       .single();
       
     if (data) {
@@ -334,9 +336,10 @@ const AppJujuDashboard = () => {
     if (!user) return;
     
     const { data, error } = await supabase
-      .from('teste_treino')
+      .from('user_quiz_data')
       .select('*')
       .eq('user_id', user.id)
+      .eq('quiz_type', 'treino')
       .single();
       
     if (data) {
@@ -348,7 +351,7 @@ const AppJujuDashboard = () => {
     if (!user) return;
     
     const { data, error } = await supabase
-      .from('user_photos')
+      .from('evaluation_photos')
       .select('*')
       .eq('user_id', user.id);
       

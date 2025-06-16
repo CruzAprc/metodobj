@@ -149,8 +149,9 @@ const QuizTreino = () => {
     if (!user) return;
 
     try {
-      const workoutData = {
-        user_id: user.id,
+      console.log('Saving workout quiz data to database:', finalData);
+
+      const quizData = {
         lesoes: finalData.pergunta1?.answer || '',
         lesao_especifica: finalData.pergunta1?.custom || null,
         objetivo: finalData.pergunta2?.answer || '',
@@ -162,27 +163,51 @@ const QuizTreino = () => {
         desafio: finalData.pergunta8?.answer || ''
       };
 
+      // Check if quiz data already exists
       const { data: existingData } = await supabase
-        .from('teste_treino')
+        .from('user_quiz_data')
         .select('id')
         .eq('user_id', user.id)
+        .eq('quiz_type', 'treino')
         .single();
 
       if (existingData) {
+        // Update existing record
         await supabase
-          .from('teste_treino')
-          .update(workoutData)
-          .eq('user_id', user.id);
+          .from('user_quiz_data')
+          .update({
+            quiz_data: quizData,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id)
+          .eq('quiz_type', 'treino');
       } else {
+        // Create new record
         await supabase
-          .from('teste_treino')
-          .insert(workoutData);
+          .from('user_quiz_data')
+          .insert({
+            user_id: user.id,
+            quiz_type: 'treino',
+            quiz_data: quizData
+          });
       }
 
+      // Update quiz completion status in teste_app
       await supabase
         .from('teste_app')
-        .update({ quiz_treino_concluido: true })
+        .update({ 
+          quiz_alimentar_concluido: true, // Keep existing value, just update what we need
+          updated_at: new Date().toISOString()
+        })
         .eq('user_id', user.id);
+
+      // Log event
+      await supabase.rpc('log_user_event', {
+        p_user_id: user.id,
+        p_event_type: 'quiz_completed',
+        p_event_data: { quiz_type: 'treino', data: quizData },
+        p_table_reference: 'user_quiz_data'
+      });
 
       console.log('Dados de treino salvos no banco com sucesso!');
     } catch (error) {

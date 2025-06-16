@@ -1,11 +1,9 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, Target, Calendar, Weight, Ruler } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 
 interface FormData {
   nomeCompleto: string;
@@ -82,7 +80,6 @@ const DadosPessoais = () => {
 
   const saveToDatabase = async (): Promise<boolean> => {
     if (!user) {
-      toast.error('Usuário não encontrado. Faça login novamente.');
       return false;
     }
 
@@ -109,7 +106,6 @@ const DadosPessoais = () => {
 
       if (checkPersonalError && checkPersonalError.code !== 'PGRST116') {
         console.error('Erro ao verificar dados pessoais existentes:', checkPersonalError);
-        toast.error('Erro ao verificar dados existentes');
         return false;
       }
 
@@ -136,7 +132,6 @@ const DadosPessoais = () => {
 
       if (personalResult.error) {
         console.error('Erro ao salvar dados pessoais:', personalResult.error);
-        toast.error('Erro ao salvar dados pessoais: ' + personalResult.error.message);
         return false;
       }
 
@@ -202,11 +197,9 @@ const DadosPessoais = () => {
       }
 
       console.log('Dados pessoais salvos com sucesso!');
-      toast.success('Dados pessoais salvos com sucesso!');
       return true;
     } catch (error) {
       console.error('Erro inesperado ao salvar dados pessoais:', error);
-      toast.error('Erro inesperado ao salvar dados');
       return false;
     }
   };
@@ -229,26 +222,11 @@ const DadosPessoais = () => {
           // Salvar no localStorage para usar em outras partes da aplicação
           localStorage.setItem('dadosPessoais', JSON.stringify(formData));
           
-          toast.success('Dados pessoais salvos! Redirecionando...');
-          
-          // Verificar se já completou os quizzes
-          const quizAlimentarConcluido = localStorage.getItem('quizAlimentarConcluido');
-          const quizTreinoConcluido = localStorage.getItem('quizTreinoConcluido');
-          
-          // Aguardar um pouco antes de redirecionar
-          setTimeout(() => {
-            if (quizAlimentarConcluido && quizTreinoConcluido) {
-              // Se ambos os quizzes já foram concluídos, ir direto para o dashboard
-              navigate('/dashboard');
-            } else {
-              // Se não completou os quizzes, ir para o quiz alimentar
-              navigate('/quiz-alimentar/1');
-            }
-          }, 1000);
+          // Redirecionar diretamente para o dashboard
+          navigate('/dashboard');
         }
       } catch (error) {
         console.error('Erro no processo final:', error);
-        toast.error('Erro ao finalizar dados pessoais');
       } finally {
         setIsSubmitting(false);
       }

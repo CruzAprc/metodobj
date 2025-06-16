@@ -1,458 +1,464 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ArrowRight, Coffee, X, Sparkles } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
 
-interface FoodOption {
-  id: string;
-  name: string;
-  emoji: string;
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import Header from "@/components/Header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
+interface QuizData {
+  objetivo: string;
+  restricoes: string[];
+  preferenciasAlimentares: string[];
+  frequenciaRefeicoes: string;
+  nivelAtividade: string;
+  alergias: string[];
+  suplementos: string[];
+  horarioPreferencia: string;
+  orcamento: string;
 }
 
 const QuizAlimentar = () => {
   const navigate = useNavigate();
-  const { etapa } = useParams();
-  const currentStep = parseInt(etapa || '1');
   const { user } = useAuth();
-  
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [quizData, setQuizData] = useState<Record<string, string[]>>({});
-  const [animatingStep, setAnimatingStep] = useState(false);
 
-  const quizSteps = [
-    {
-      id: 1,
-      title: "Café da Manhã",
-      emoji: "☕",
-      subtitle: "Selecione os alimentos que você NÃO GOSTA ou NÃO CONSOME",
-      foods: [
-        { id: 'ovos', name: 'Ovos', emoji: '🥚' },
-        { id: 'queijo_branco', name: 'Queijo Branco', emoji: '🧀' },
-        { id: 'queijo_mucarela', name: 'Queijo Muçarela', emoji: '🧀' },
-        { id: 'requeijao', name: 'Requeijão', emoji: '🥣' },
-        { id: 'pao_integral', name: 'Pão Integral', emoji: '🍞' },
-        { id: 'pao_frances', name: 'Pão Francês', emoji: '🥖' },
-        { id: 'tapioca', name: 'Tapioca', emoji: '⚪' },
-        { id: 'cuscuz', name: 'Cuscuz', emoji: '🌽' },
-        { id: 'batata_doce', name: 'Batata Doce', emoji: '🍠' },
-        { id: 'frango_desfiado', name: 'Frango Desfiado', emoji: '🍗' },
-        { id: 'peito_peru', name: 'Peito de Peru', emoji: '🦃' },
-        { id: 'frutas_variadas', name: 'Frutas Variadas', emoji: '🍓' },
-        { id: 'banana', name: 'Banana', emoji: '🍌' },
-        { id: 'mamao', name: 'Mamão', emoji: '🥭' },
-        { id: 'abacate', name: 'Abacate', emoji: '🥑' },
-        { id: 'leite', name: 'Leite', emoji: '🥛' },
-        { id: 'iogurte', name: 'Iogurte', emoji: '🍦' },
-        { id: 'whey_protein', name: 'Whey Protein', emoji: '💪' },
-        { id: 'pasta_amendoim', name: 'Pasta de Amendoim', emoji: '🥜' },
-        { id: 'aveia', name: 'Aveia', emoji: '🌾' },
-        { id: 'chia', name: 'Chia', emoji: '🌱' },
-        { id: 'granola', name: 'Granola', emoji: '🥣' },
-        { id: 'cafe', name: 'Café', emoji: '☕' }
-      ]
-    },
-    {
-      id: 2,
-      title: "Almoço",
-      emoji: "🍽️",
-      subtitle: "Selecione os alimentos que você NÃO GOSTA ou NÃO CONSOME",
-      foods: [
-        { id: 'frango', name: 'Frango', emoji: '🍗' },
-        { id: 'patinho', name: 'Patinho', emoji: '🥩' },
-        { id: 'alcatra', name: 'Alcatra', emoji: '🥩' },
-        { id: 'carne_moida', name: 'Carne Moída', emoji: '🥩' },
-        { id: 'mandioca', name: 'Mandioca', emoji: '🥔' },
-        { id: 'carne_porco', name: 'Carne de Porco', emoji: '🐖' },
-        { id: 'batata_doce', name: 'Batata Doce', emoji: '🍠' },
-        { id: 'tilapia', name: 'Tilápia', emoji: '🐟' },
-        { id: 'merluza', name: 'Merluza', emoji: '🐟' },
-        { id: 'legumes', name: 'Legumes', emoji: '🥦' },
-        { id: 'arroz', name: 'Arroz', emoji: '🍚' },
-        { id: 'feijao', name: 'Feijão', emoji: '🫘' },
-        { id: 'salada', name: 'Salada', emoji: '🥗' },
-        { id: 'macarrao', name: 'Macarrão', emoji: '🍝' },
-        { id: 'ovo', name: 'Ovo', emoji: '🥚' },
-        { id: 'inhame', name: 'Inhame', emoji: '🥔' },
-        { id: 'cuscuz', name: 'Cuscuz', emoji: '🌽' },
-        { id: 'batata', name: 'Batata', emoji: '🥔' }
-      ]
-    },
-    {
-      id: 3,
-      title: "Lanche da Tarde",
-      emoji: "🥪",
-      subtitle: "Selecione os alimentos que você NÃO GOSTA ou NÃO CONSOME",
-      foods: [
-        { id: 'whey', name: 'Whey', emoji: '🥛' },
-        { id: 'fruta', name: 'Fruta', emoji: '🍎' },
-        { id: 'cuscuz', name: 'Cuscuz', emoji: '🌽' },
-        { id: 'pao_ovo', name: 'Pão + Ovo', emoji: '🥚' },
-        { id: 'tapioca_frango', name: 'Tapioca + Frango', emoji: '🍗' },
-        { id: 'crepioca_queijo', name: 'Crepioca + Queijo', emoji: '🧀' },
-        { id: 'leite', name: 'Leite', emoji: '🥛' },
-        { id: 'crepioca_frango', name: 'Crepioca + Frango', emoji: '🍗' },
-        { id: 'ovo', name: 'Ovo', emoji: '🥚' },
-        { id: 'sanduiche_frango', name: 'Sanduíche de Frango', emoji: '🥪' },
-        { id: 'sanduiche_peru', name: 'Sanduíche de Peru', emoji: '🥪' },
-        { id: 'suco', name: 'Suco', emoji: '🧃' }
-      ]
-    },
-    {
-      id: 4,
-      title: "Jantar",
-      emoji: "🍽️",
-      subtitle: "Selecione os alimentos que você NÃO GOSTA ou NÃO CONSOME",
-      foods: [
-        { id: 'frango', name: 'Frango', emoji: '🍗' },
-        { id: 'patinho', name: 'Patinho', emoji: '🥩' },
-        { id: 'alcatra', name: 'Alcatra', emoji: '🥩' },
-        { id: 'carne_moida', name: 'Carne Moída', emoji: '🥩' },
-        { id: 'mandioca', name: 'Mandioca', emoji: '🥔' },
-        { id: 'carne_porco', name: 'Carne de Porco', emoji: '🐖' },
-        { id: 'batata_doce', name: 'Batata Doce', emoji: '🍠' },
-        { id: 'tilapia', name: 'Tilápia', emoji: '🐟' },
-        { id: 'merluza', name: 'Merluza', emoji: '🐟' },
-        { id: 'legumes', name: 'Legumes', emoji: '🥦' },
-        { id: 'arroz', name: 'Arroz', emoji: '🍚' },
-        { id: 'feijao', name: 'Feijão', emoji: '🫘' },
-        { id: 'salada', name: 'Salada', emoji: '🥗' },
-        { id: 'macarrao', name: 'Macarrão', emoji: '🍝' },
-        { id: 'ovo', name: 'Ovo', emoji: '🥚' },
-        { id: 'inhame', name: 'Inhame', emoji: '🥔' },
-        { id: 'cuscuz', name: 'Cuscuz', emoji: '🌽' },
-        { id: 'batata', name: 'Batata', emoji: '🥔' }
-      ]
-    },
-    {
-      id: 5,
-      title: "Ceia",
-      emoji: "🌙",
-      subtitle: "Selecione os alimentos que você NÃO GOSTA ou NÃO CONSOME (Opcional)",
-      foods: [
-        { id: 'iogurte_natural', name: 'Iogurte Natural', emoji: '🥛' },
-        { id: 'cha', name: 'Chá', emoji: '🍵' },
-        { id: 'whey_protein', name: 'Whey Protein', emoji: '💪' },
-        { id: 'frutas_leves', name: 'Frutas Leves', emoji: '🍓' },
-        { id: 'queijo_cottage', name: 'Queijo Cottage', emoji: '🧀' },
-        { id: 'leite_morno', name: 'Leite Morno', emoji: '🥛' },
-        { id: 'oleaginosas', name: 'Oleaginosas', emoji: '🥜' }
-      ]
-    }
-  ];
-
-  const currentQuiz = quizSteps.find(step => step.id === currentStep);
+  const [objetivo, setObjetivo] = useState('');
+  const [restricoes, setRestricoes] = useState<string[]>([]);
+  const [preferenciasAlimentares, setPreferenciasAlimentares] = useState<string[]>([]);
+  const [frequenciaRefeicoes, setFrequenciaRefeicoes] = useState('');
+  const [nivelAtividade, setNivelAtividade] = useState('');
+  const [alergias, setAlergias] = useState<string[]>([]);
+  const [suplementos, setSuplementos] = useState<string[]>([]);
+  const [horarioPreferencia, setHorarioPreferencia] = useState('');
+  const [orcamento, setOrcamento] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    console.log('Loading quiz data for step:', currentStep);
-    // Carregar dados salvos do quiz
-    const savedData = localStorage.getItem('quizAlimentar');
-    if (savedData) {
-      const parsed = JSON.parse(savedData);
-      setQuizData(parsed);
-      const stepData = parsed[`etapa${currentStep}`] || [];
-      setSelectedItems(stepData);
-      console.log('Loaded data for step:', stepData);
-    } else {
-      setSelectedItems([]);
-    }
-  }, [currentStep]);
+    console.log('Quiz alimentar visualizado');
+  }, []);
 
-  const toggleSelection = (itemId: string) => {
-    console.log('Toggling selection for:', itemId);
-    setSelectedItems(prev => {
-      const newSelection = prev.includes(itemId) 
-        ? prev.filter(id => id !== itemId)
-        : [...prev, itemId];
-      console.log('New selection:', newSelection);
-      return newSelection;
-    });
+  const handleRestricaoChange = (value: string, checked: boolean) => {
+    setRestricoes(prev => checked ? [...prev, value] : prev.filter(item => item !== value));
   };
 
-  const saveToDatabase = async (finalData: Record<string, string[]>) => {
-    if (!user) return;
+  const handlePreferenciaChange = (value: string, checked: boolean) => {
+    setPreferenciasAlimentares(prev => checked ? [...prev, value] : prev.filter(item => item !== value));
+  };
+
+  const handleAlergiaChange = (value: string, checked: boolean) => {
+    setAlergias(prev => checked ? [...prev, value] : prev.filter(item => item !== value));
+  };
+
+  const handleSuplementoChange = (value: string, checked: boolean) => {
+    setSuplementos(prev => checked ? [...prev, value] : prev.filter(item => item !== value));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!user) {
+      console.error('Usuário não logado');
+      return;
+    }
+
+    if (!objetivo || !frequenciaRefeicoes || !nivelAtividade || !horarioPreferencia || !orcamento) {
+      console.error('Todos os campos obrigatórios devem ser preenchidos');
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
-      const dietData = {
-        user_id: user.id,
-        cafe_da_manha: { naoGosta: finalData.etapa1 || [] },
-        almoco: { naoGosta: finalData.etapa2 || [] },
-        lanche: { naoGosta: finalData.etapa3 || [] },
-        jantar: { naoGosta: finalData.etapa4 || [] },
-        ceia: { naoGosta: finalData.etapa5 || [] }
+      const quizData = {
+        objetivo,
+        restricoes,
+        preferenciasAlimentares,
+        frequenciaRefeicoes,
+        nivelAtividade,
+        alergias,
+        suplementos,
+        horarioPreferencia,
+        orcamento
       };
 
-      // Verificar se já existe um registro
-      const { data: existingData } = await supabase
-        .from('teste_dieta')
-        .select('id')
+      // Gerar universal_id para este quiz
+      const universalId = crypto.randomUUID();
+
+      // Salvar no banco de dados
+      const { error: dbError } = await supabase
+        .from('user_quiz_data')
+        .insert({
+          user_id: user.id,
+          quiz_type: 'alimentar',
+          quiz_data: quizData,
+          universal_id: universalId,
+          completed_at: new Date().toISOString()
+        });
+
+      if (dbError) {
+        console.error('Erro ao salvar quiz:', dbError);
+        throw dbError;
+      }
+
+      // Buscar dados do usuário para enviar no webhook
+      const { data: userData } = await supabase
+        .from('teste_app')
+        .select('email, nome')
         .eq('user_id', user.id)
         .single();
 
-      if (existingData) {
-        // Atualizar registro existente
-        await supabase
-          .from('teste_dieta')
-          .update(dietData)
-          .eq('user_id', user.id);
-      } else {
-        // Criar novo registro
-        await supabase
-          .from('teste_dieta')
-          .insert(dietData);
+      // Enviar dados para o webhook
+      try {
+        const webhookPayload = {
+          user_id: user.id,
+          universal_id: universalId,
+          email: userData?.email || user.email,
+          nome: userData?.nome || '',
+          quiz_type: 'alimentar',
+          quiz_data: quizData,
+          timestamp: new Date().toISOString()
+        };
+
+        console.log('Enviando dados para webhook:', webhookPayload);
+
+        const webhookResponse = await fetch('https://webhook.sv-02.botfai.com.br/webhook/1613f464-324c-494d-945a-efedd0a0dbd5', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(webhookPayload)
+        });
+
+        if (!webhookResponse.ok) {
+          console.error('Erro no webhook:', webhookResponse.statusText);
+        } else {
+          console.log('Dados enviados com sucesso para o webhook');
+        }
+      } catch (webhookError) {
+        console.error('Erro ao enviar para webhook:', webhookError);
       }
 
-      // Atualizar status do quiz na tabela teste_app
-      await supabase
-        .from('teste_app')
-        .update({ quiz_alimentar_concluido: true })
-        .eq('user_id', user.id);
+      console.log('Quiz salvo com sucesso!');
+      
+      // Registrar evento de conclusão
+      await supabase.rpc('log_user_event', {
+        p_user_id: user.id,
+        p_event_type: 'quiz_alimentar_completed',
+        p_event_data: quizData
+      });
 
-      console.log('Dados salvos no banco com sucesso!');
+      // Redirecionar para loading-treino
+      navigate('/loading-treino');
     } catch (error) {
-      console.error('Erro ao salvar dados no banco:', error);
+      console.error('Erro ao salvar quiz:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
-
-  const handleNext = async () => {
-    console.log('Saving selection:', selectedItems);
-    setAnimatingStep(true);
-    
-    // Salvar seleção atual
-    const newQuizData = {
-      ...quizData,
-      [`etapa${currentStep}`]: selectedItems
-    };
-    setQuizData(newQuizData);
-    localStorage.setItem('quizAlimentar', JSON.stringify(newQuizData));
-
-    setTimeout(async () => {
-      if (currentStep < 5) {
-        navigate(`/quiz-alimentar/${currentStep + 1}`);
-      } else {
-        // Quiz concluído - salvar no banco
-        await saveToDatabase(newQuizData);
-        localStorage.setItem('quizAlimentarConcluido', 'true');
-        navigate('/loading-treino');
-      }
-      setAnimatingStep(false);
-    }, 300);
-  };
-
-  const handleSkip = async () => {
-    setAnimatingStep(true);
-    
-    // Pular etapa (útil para ceia ou quando não tem restrições)
-    const newQuizData = {
-      ...quizData,
-      [`etapa${currentStep}`]: []
-    };
-    setQuizData(newQuizData);
-    localStorage.setItem('quizAlimentar', JSON.stringify(newQuizData));
-
-    setTimeout(async () => {
-      if (currentStep < 5) {
-        navigate(`/quiz-alimentar/${currentStep + 1}`);
-      } else {
-        // Quiz concluído - salvar no banco
-        await saveToDatabase(newQuizData);
-        localStorage.setItem('quizAlimentarConcluido', 'true');
-        navigate('/loading-treino');
-      }
-      setAnimatingStep(false);
-    }, 300);
-  };
-
-  const handleBack = () => {
-    if (currentStep > 1) {
-      navigate(`/quiz-alimentar/${currentStep - 1}`);
-    } else {
-      navigate('/onboarding');
-    }
-  };
-
-  if (!currentQuiz) {
-    return <div>Etapa não encontrada</div>;
-  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-white py-6 px-4 sm:px-6 lg:px-8">
+      <Header 
+        showBack={true} 
+        onBack={() => navigate('/loading')}
+        title="Questionário Alimentar"
+      />
       
-      {/* Header igual ao treino */}
-      <div className="sticky top-0 bg-white/90 backdrop-blur-sm border-b border-pink-100 z-10">
-        <div className="flex items-center justify-between p-4 max-w-md mx-auto">
-          <button 
-            onClick={handleBack}
-            className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
-          >
-            <ArrowLeft size={20} className="text-gray-600" />
-          </button>
-          
-          <div className="text-center">
-            <h1 className="text-sm font-medium text-gray-700">Anamnese Alimentar</h1>
-            <div className="flex items-center space-x-2 mt-1">
-              <span className="text-xs text-gray-500">Etapa</span>
-              <span className="text-sm font-bold text-pink-600">{currentStep}/5</span>
-            </div>
-          </div>
-          
-          <div className="w-8" />
-        </div>
-        
-        {/* Barra de progresso igual ao treino */}
-        <div className="px-4 pb-3">
-          <div className="flex space-x-1">
-            {[1, 2, 3, 4, 5].map((step) => (
-              <div
-                key={step}
-                className={`h-1.5 rounded-full flex-1 transition-all duration-500 ${
-                  step <= currentStep 
-                    ? 'bg-gradient-to-r from-pink-400 to-pink-600' 
-                    : 'bg-gray-200'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="px-4 pb-6 max-w-md mx-auto">
-        
-        {/* Título igual ao treino */}
-        <motion.div 
-          key={currentStep}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center py-6 space-y-4"
-        >
-          <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center mx-auto border border-orange-200 shadow-sm">
-            <Coffee className="text-orange-500" size={24} />
-          </div>
-          
-          <div className="space-y-2">
-            <div className="flex items-center justify-center space-x-2">
-              <span className="text-2xl">{currentQuiz.emoji}</span>
-              <h2 className="text-xl font-bold text-gray-800">
-                {currentQuiz.title}
-              </h2>
-            </div>
-            
-            <p className="text-gray-600 text-base leading-relaxed px-2">
-              {currentQuiz.subtitle}
-            </p>
-          </div>
-          
-          {/* Contador de selecionados */}
-          <div className="flex items-center justify-center space-x-2 pt-2">
-            <div className="flex items-center space-x-1">
-              <X size={14} className="text-red-500" />
-              <span className="text-sm text-gray-600">
-                {selectedItems.length} {selectedItems.length === 1 ? 'item selecionado' : 'itens selecionados'}
-              </span>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Grid de alimentos otimizado */}
-        <motion.div 
-          className="grid grid-cols-2 gap-3 mb-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          {currentQuiz.foods.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => toggleSelection(item.id)}
-              className={`relative p-4 rounded-2xl border-2 transition-all duration-300 group ${
-                selectedItems.includes(item.id)
-                  ? 'border-red-300 bg-red-50 shadow-lg scale-95'
-                  : 'border-gray-200 bg-white hover:border-pink-200 hover:shadow-md hover:scale-105'
-              }`}
-            >
-              {/* Indicador de seleção */}
-              <AnimatePresence>
-                {selectedItems.includes(item.id) && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    exit={{ scale: 0 }}
-                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shadow-lg"
-                  >
-                    <X size={12} className="text-white" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-              
-              <div className="text-center space-y-2">
-                <div className="text-2xl">{item.emoji}</div>
-                <p className={`text-sm font-medium transition-colors ${
-                  selectedItems.includes(item.id) 
-                    ? 'text-red-700' 
-                    : 'text-gray-700 group-hover:text-gray-900'
-                }`}>
-                  {item.name}
-                </p>
-              </div>
-            </button>
-          ))}
-        </motion.div>
-
-        {/* Opção de pular */}
-        <div className="text-center mb-6">
-          <button
-            onClick={handleSkip}
-            className="text-sm text-gray-500 hover:text-gray-700 underline transition-colors"
-          >
-            {currentStep === 5 ? 'Não faço esta refeição' : 'Não tenho restrições nesta refeição'}
-          </button>
+      <div className="max-w-4xl mx-auto space-y-6 mt-6">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-500 to-pink-600 bg-clip-text text-transparent mb-2">
+            Questionário Alimentar
+          </h1>
+          <p className="text-gray-600">
+            Nos conte sobre seus hábitos alimentares para criarmos sua dieta personalizada
+          </p>
         </div>
 
-        {/* Botão igual ao treino */}
-        <motion.button
-          onClick={handleNext}
-          disabled={animatingStep}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg transition-all duration-300 flex items-center justify-center space-x-2 ${
-            animatingStep
-              ? 'bg-gray-400 cursor-not-allowed'
-              : 'bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 hover:shadow-xl'
-          }`}
-        >
-          {animatingStep ? (
-            <div className="flex space-x-1">
-              {[0, 1, 2].map((i) => (
-                <motion.div
-                  key={i}
-                  className="w-2 h-2 bg-white rounded-full"
-                  animate={{
-                    scale: [1, 1.5, 1],
-                    opacity: [0.5, 1, 0.5]
-                  }}
-                  transition={{
-                    duration: 1,
-                    repeat: Infinity,
-                    delay: i * 0.2
-                  }}
-                />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Objetivo */}
+          <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
+                🎯 Qual é o seu principal objetivo?
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RadioGroup value={objetivo} onValueChange={setObjetivo} className="space-y-3">
+                {[
+                  'Perder peso',
+                  'Ganhar massa muscular',
+                  'Manter o peso atual',
+                  'Melhorar a saúde geral',
+                  'Aumentar energia e disposição'
+                ].map((option) => (
+                  <div key={option} className="flex items-center space-x-2">
+                    <RadioGroupItem value={option} id={`objetivo-${option}`} />
+                    <Label htmlFor={`objetivo-${option}`} className="font-medium">
+                      {option}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </CardContent>
+          </Card>
+
+          {/* Restrições Alimentares */}
+          <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
+                🚫 Restrições Alimentares
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[
+                { value: 'vegetariano', label: 'Vegetariano', desc: 'Não consumo carne' },
+                { value: 'vegano', label: 'Vegano', desc: 'Não consumo produtos de origem animal' },
+                { value: 'sem-gluten', label: 'Sem Glúten', desc: 'Não consumo glúten' },
+                { value: 'sem-lactose', label: 'Sem Lactose', desc: 'Não consumo lactose' },
+                { value: 'low-carb', label: 'Low Carb', desc: 'Prefiro baixo carboidrato' },
+                { value: 'nenhuma', label: 'Nenhuma restrição', desc: 'Posso comer de tudo' }
+              ].map((item) => (
+                <div key={item.value} className="flex items-start space-x-3 p-3 rounded-lg bg-pink-50/50">
+                  <Checkbox
+                    id={`restricao-${item.value}`}
+                    checked={restricoes.includes(item.value)}
+                    onCheckedChange={(checked) => handleRestricaoChange(item.value, checked as boolean)}
+                  />
+                  <div className="space-y-1">
+                    <Label htmlFor={`restricao-${item.value}`} className="font-medium text-gray-800">
+                      {item.label}
+                    </Label>
+                    <p className="text-sm text-gray-600">{item.desc}</p>
+                  </div>
+                </div>
               ))}
-            </div>
-          ) : (
-            <>
-              <Sparkles size={18} />
-              <span>{currentStep === 5 ? 'Finalizar Anamnese Alimentar' : 'Continuar'}</span>
-              <ArrowRight size={18} />
-            </>
-          )}
-        </motion.button>
-        
-        {/* Informação igual ao treino */}
-        <p className="text-center text-xs text-gray-500 mt-4">
-          🍽️ Etapa {currentStep} de 5 - Você está indo muito bem!
-        </p>
+            </CardContent>
+          </Card>
 
+          {/* Preferências Alimentares */}
+          <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
+                ❤️ Preferências Alimentares
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[
+                { value: 'rica-proteina', label: 'Rica em Proteína', desc: 'Prefiro alimentos ricos em proteína' },
+                { value: 'muitas-fibras', label: 'Rica em Fibras', desc: 'Gosto de alimentos com muitas fibras' },
+                { value: 'comida-caseira', label: 'Comida Caseira', desc: 'Prefiro preparar minhas refeições' },
+                { value: 'praticidade', label: 'Praticidade', desc: 'Prefiro opções rápidas e práticas' },
+                { value: 'organicos', label: 'Alimentos Orgânicos', desc: 'Prefiro alimentos orgânicos' }
+              ].map((item) => (
+                <div key={item.value} className="flex items-start space-x-3 p-3 rounded-lg bg-pink-50/50">
+                  <Checkbox
+                    id={`preferencia-${item.value}`}
+                    checked={preferenciasAlimentares.includes(item.value)}
+                    onCheckedChange={(checked) => handlePreferenciaChange(item.value, checked as boolean)}
+                  />
+                  <div className="space-y-1">
+                    <Label htmlFor={`preferencia-${item.value}`} className="font-medium text-gray-800">
+                      {item.label}
+                    </Label>
+                    <p className="text-sm text-gray-600">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Frequência de Refeições */}
+          <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
+                🍽️ Quantas refeições você faz por dia?
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RadioGroup value={frequenciaRefeicoes} onValueChange={setFrequenciaRefeicoes} className="space-y-3">
+                {[
+                  { value: '3', label: '3 refeições por dia' },
+                  { value: '4', label: '4 refeições por dia' },
+                  { value: '5', label: '5 refeições por dia' },
+                  { value: '6+', label: '6 ou mais refeições por dia' }
+                ].map((option) => (
+                  <div key={option.value} className="flex items-center space-x-2">
+                    <RadioGroupItem value={option.value} id={`freq-${option.value}`} />
+                    <Label htmlFor={`freq-${option.value}`} className="font-medium">
+                      {option.label}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </CardContent>
+          </Card>
+
+          {/* Nível de Atividade */}
+          <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
+                💪 Qual seu nível de atividade física?
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RadioGroup value={nivelAtividade} onValueChange={setNivelAtividade} className="space-y-3">
+                {[
+                  { value: 'sedentario', label: 'Sedentário', desc: 'Pouca ou nenhuma atividade física' },
+                  { value: 'levemente-ativo', label: 'Levemente Ativo', desc: 'Exercício leve 1-3 dias/semana' },
+                  { value: 'moderadamente-ativo', label: 'Moderadamente Ativo', desc: 'Exercício moderado 3-5 dias/semana' },
+                  { value: 'altamente-ativo', label: 'Altamente Ativo', desc: 'Exercício intenso 6-7 dias/semana' }
+                ].map((option) => (
+                  <div key={option.value} className="flex items-start space-x-2 p-3 rounded-lg bg-pink-50/50">
+                    <RadioGroupItem value={option.value} id={`atividade-${option.value}`} className="mt-1" />
+                    <div className="space-y-1">
+                      <Label htmlFor={`atividade-${option.value}`} className="font-medium text-gray-800">
+                        {option.label}
+                      </Label>
+                      <p className="text-sm text-gray-600">{option.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </RadioGroup>
+            </CardContent>
+          </Card>
+
+          {/* Alergias */}
+          <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
+                ⚠️ Você tem alguma alergia alimentar?
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[
+                { value: 'lactose', label: 'Lactose', desc: 'Sou alérgico(a) à lactose' },
+                { value: 'gluten', label: 'Glúten', desc: 'Sou alérgico(a) ao glúten' },
+                { value: 'oleaginosas', label: 'Oleaginosas', desc: 'Alergia a castanhas, amendoim, etc.' },
+                { value: 'frutos-mar', label: 'Frutos do Mar', desc: 'Alergia a camarão, caranguejo, etc.' },
+                { value: 'ovos', label: 'Ovos', desc: 'Sou alérgico(a) a ovos' },
+                { value: 'nenhuma', label: 'Não tenho alergias', desc: 'Não possuo alergias alimentares' }
+              ].map((item) => (
+                <div key={item.value} className="flex items-start space-x-3 p-3 rounded-lg bg-pink-50/50">
+                  <Checkbox
+                    id={`alergia-${item.value}`}
+                    checked={alergias.includes(item.value)}
+                    onCheckedChange={(checked) => handleAlergiaChange(item.value, checked as boolean)}
+                  />
+                  <div className="space-y-1">
+                    <Label htmlFor={`alergia-${item.value}`} className="font-medium text-gray-800">
+                      {item.label}
+                    </Label>
+                    <p className="text-sm text-gray-600">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Suplementos */}
+          <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
+                💊 Você usa algum suplemento?
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[
+                { value: 'whey', label: 'Whey Protein', desc: 'Utilizo whey protein regularmente' },
+                { value: 'creatina', label: 'Creatina', desc: 'Utilizo creatina regularmente' },
+                { value: 'vitaminas', label: 'Vitaminas', desc: 'Tomo complexos vitamínicos' },
+                { value: 'omega3', label: 'Ômega 3', desc: 'Suplemento com ômega 3' },
+                { value: 'bcaa', label: 'BCAA', desc: 'Utilizo aminoácidos essenciais' },
+                { value: 'nenhum', label: 'Não uso suplementos', desc: 'Não utilizo nenhum suplemento' }
+              ].map((item) => (
+                <div key={item.value} className="flex items-start space-x-3 p-3 rounded-lg bg-pink-50/50">
+                  <Checkbox
+                    id={`suplemento-${item.value}`}
+                    checked={suplementos.includes(item.value)}
+                    onCheckedChange={(checked) => handleSuplementoChange(item.value, checked as boolean)}
+                  />
+                  <div className="space-y-1">
+                    <Label htmlFor={`suplemento-${item.value}`} className="font-medium text-gray-800">
+                      {item.label}
+                    </Label>
+                    <p className="text-sm text-gray-600">{item.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Horário de Preferência */}
+          <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
+                🕐 Em qual período você prefere fazer suas principais refeições?
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RadioGroup value={horarioPreferencia} onValueChange={setHorarioPreferencia} className="space-y-3">
+                {[
+                  { value: 'manha-cedo', label: 'Manhã cedo (6h-9h)' },
+                  { value: 'manha-tarde', label: 'Meio da manhã (9h-12h)' },
+                  { value: 'almoco-tradicional', label: 'Almoço tradicional (12h-14h)' },
+                  { value: 'tarde', label: 'Tarde (14h-18h)' },
+                  { value: 'noite', label: 'Noite (18h-21h)' },
+                  { value: 'flexivel', label: 'Horários flexíveis' }
+                ].map((option) => (
+                  <div key={option.value} className="flex items-center space-x-2">
+                    <RadioGroupItem value={option.value} id={`horario-${option.value}`} />
+                    <Label htmlFor={`horario-${option.value}`} className="font-medium">
+                      {option.label}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </CardContent>
+          </Card>
+
+          {/* Orçamento */}
+          <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
+                💰 Qual seu orçamento mensal para alimentação?
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RadioGroup value={orcamento} onValueChange={setOrcamento} className="space-y-3">
+                {[
+                  { value: 'ate-300', label: 'Até R$ 300' },
+                  { value: '300-500', label: 'R$ 300 - R$ 500' },
+                  { value: '500-800', label: 'R$ 500 - R$ 800' },
+                  { value: '800-1200', label: 'R$ 800 - R$ 1.200' },
+                  { value: 'acima-1200', label: 'Acima de R$ 1.200' },
+                  { value: 'sem-limite', label: 'Sem limite específico' }
+                ].map((option) => (
+                  <div key={option.value} className="flex items-center space-x-2">
+                    <RadioGroupItem value={option.value} id={`orcamento-${option.value}`} />
+                    <Label htmlFor={`orcamento-${option.value}`} className="font-medium">
+                      {option.label}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </CardContent>
+          </Card>
+
+          {/* Botão de Envio */}
+          <div className="pt-6">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full fitness-button text-lg py-6"
+            >
+              {isSubmitting ? 'Processando...' : 'Finalizar Questionário 🚀'}
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );

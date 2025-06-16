@@ -1,323 +1,289 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, Target, Calendar, Weight, Ruler } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useUserCompleteData } from '@/hooks/useUserCompleteData';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-interface FormData {
-  nomeCompleto: string;
-  idade: string;
-  peso: string;
-  altura: string;
-}
-
-interface FormErrors {
-  nomeCompleto?: string;
-  idade?: string;
-  peso?: string;
-  altura?: string;
-}
 
 const DadosPessoais = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { updateDadosPessoais } = useUserCompleteData();
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<FormData>({
-    nomeCompleto: '',
-    idade: '',
-    peso: '',
-    altura: ''
+  const [formData, setFormData] = useState({
+    nome_completo: '',
+    data_nascimento: '',
+    altura: '',
+    peso_atual: '',
+    sexo: '',
+    nivel_atividade: '',
+    objetivo_principal: '',
+    restricoes_alimentares: '',
+    historico_medico: ''
   });
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleInputChange = (field: keyof FormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    // Limpa o erro quando o usuário digita
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    
+    // Verificar se já tem dados pessoais
+    checkExistingData();
+  }, [user, navigate]);
+
+  const checkExistingData = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('user_personal_data')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (data && !error) {
+        // Se já tem dados, redirecionar para onboarding para continuar o fluxo
+        console.log('Dados pessoais já existem, redirecionando para onboarding');
+        navigate('/onboarding');
+      }
+    } catch (error) {
+      console.error('Erro ao verificar dados existentes:', error);
     }
   };
 
-  const validateStep = (step: number): boolean => {
-    const newErrors: FormErrors = {};
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     
-    switch (step) {
-      case 1:
-        if (!formData.nomeCompleto.trim()) {
-          newErrors.nomeCompleto = 'Seu nome é importante para personalizarmos sua experiência! 💕';
-        } else if (formData.nomeCompleto.trim().length < 2) {
-          newErrors.nomeCompleto = 'Digite seu nome completo, querida! ✨';
-        }
-        break;
-      case 2:
-        if (!formData.idade) {
-          newErrors.idade = 'Precisamos da sua idade para criar o plano perfeito! 🎂';
-        } else if (parseInt(formData.idade) < 16 || parseInt(formData.idade) > 80) {
-          newErrors.idade = 'Idade deve estar entre 16 e 80 anos! 💪';
-        }
-        break;
-      case 3:
-        if (!formData.peso) {
-          newErrors.peso = 'Seu peso atual nos ajuda a personalizar sua dieta! ⚖️';
-        } else if (parseFloat(formData.peso) < 30 || parseFloat(formData.peso) > 200) {
-          newErrors.peso = 'Digite um peso válido entre 30kg e 200kg! 💕';
-        }
-        break;
-      case 4:
-        if (!formData.altura) {
-          newErrors.altura = 'Sua altura é essencial para calcular suas necessidades! 📏';
-        } else if (parseFloat(formData.altura) < 140 || parseFloat(formData.altura) > 220) {
-          newErrors.altura = 'Digite uma altura válida entre 140cm e 220cm! ✨';
-        }
-        break;
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleNext = async () => {
-    if (!validateStep(currentStep)) {
+    if (!user) {
+      toast.error('Usuário não autenticado');
       return;
     }
 
-    if (currentStep < 4) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      // Finalizar e enviar dados
-      setIsSubmitting(true);
-      try {
-        console.log('Finalizando dados pessoais:', formData);
-        
-        const success = await updateDadosPessoais(
-          formData.nomeCompleto,
-          parseInt(formData.idade),
-          parseFloat(formData.peso),
-          parseFloat(formData.altura)
-        );
+    setIsSubmitting(true);
+    
+    try {
+      // Converter altura e peso para números
+      const dataToSave = {
+        ...formData,
+        user_id: user.id,
+        altura: parseFloat(formData.altura),
+        peso_atual: parseFloat(formData.peso_atual)
+      };
 
-        if (success) {
-          toast.success('Dados pessoais salvos! Redirecionando...');
-          
-          // Aguardar um pouco antes de redirecionar
-          setTimeout(() => {
-            navigate('/loading');
-          }, 1000);
-        }
-      } catch (error) {
-        console.error('Erro no processo final:', error);
-        toast.error('Erro ao finalizar dados pessoais');
-      } finally {
-        setIsSubmitting(false);
+      const { error } = await supabase
+        .from('user_personal_data')
+        .upsert(dataToSave, { 
+          onConflict: 'user_id' 
+        });
+
+      if (error) {
+        console.error('Erro ao salvar dados:', error);
+        toast.error('Erro ao salvar dados pessoais');
+        return;
       }
-    }
-  };
 
-  const handlePrevious = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    } else {
+      console.log('Dados pessoais salvos com sucesso');
+      toast.success('Dados salvos com sucesso!');
+      
+      // Redirecionar para onboarding após salvar os dados
       navigate('/onboarding');
+      
+    } catch (error) {
+      console.error('Erro inesperado:', error);
+      toast.error('Erro inesperado ao salvar dados');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const steps = [
-    {
-      id: 1,
-      icon: <Target size={32} className="text-blue-600" />,
-      title: "Qual é o seu nome?",
-      subtitle: "Queremos te conhecer melhor! 💕",
-      field: "nomeCompleto" as keyof FormData,
-      placeholder: "Digite seu nome completo",
-      type: "text"
-    },
-    {
-      id: 2,
-      icon: <Calendar size={32} className="text-blue-600" />,
-      title: "Quantos anos você tem?",
-      subtitle: "Isso nos ajuda a personalizar seu plano! 🎂",
-      field: "idade" as keyof FormData,
-      placeholder: "Ex: 25",
-      type: "number"
-    },
-    {
-      id: 3,
-      icon: <Weight size={32} className="text-blue-600" />,
-      title: "Qual é o seu peso atual?",
-      subtitle: "Sem julgamentos, apenas para criar sua dieta! ⚖️",
-      field: "peso" as keyof FormData,
-      placeholder: "Ex: 65",
-      type: "number",
-      unit: "kg"
-    },
-    {
-      id: 4,
-      icon: <Ruler size={32} className="text-blue-600" />,
-      title: "Qual é a sua altura?",
-      subtitle: "Última informação para começarmos! 📏",
-      field: "altura" as keyof FormData,
-      placeholder: "Ex: 165",
-      type: "number",
-      unit: "cm"
-    }
-  ];
-
-  const currentStepData = steps[currentStep - 1];
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-xl">
-        
-        {/* Progress bar */}
-        <div className="flex justify-center mb-6 sm:mb-8">
-          <div className="flex space-x-2">
-            {[1, 2, 3, 4].map((step) => (
-              <motion.div
-                key={step}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  step <= currentStep 
-                    ? 'bg-blue-600 w-6' 
-                    : 'bg-slate-300 w-2'
-                }`}
-                animate={{
-                  scale: step === currentStep ? 1.2 : 1
-                }}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Ícone animado */}
-        <motion.div 
-          key={currentStep}
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          className="flex justify-center mb-6"
-        >
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl flex items-center justify-center border-2 border-blue-200">
-            {currentStepData.icon}
-          </div>
-        </motion.div>
-
-        {/* Conteúdo do step */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentStep}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-            className="text-center space-y-6"
-          >
-            {/* Título */}
-            <div className="space-y-2">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-800">
-                {currentStepData.title}
-              </h2>
-              <p className="text-slate-600 text-sm">
-                {currentStepData.subtitle}
-              </p>
-            </div>
-
-            {/* Input */}
-            <div className="space-y-2">
-              <div className="relative">
-                <input
-                  type={currentStepData.type}
-                  value={formData[currentStepData.field]}
-                  onChange={(e) => handleInputChange(currentStepData.field, e.target.value)}
-                  placeholder={currentStepData.placeholder}
-                  className={`w-full px-6 py-4 rounded-2xl text-center text-lg font-medium
-                            bg-blue-50/60 border-2 transition-all duration-300
-                            focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300
-                            ${errors[currentStepData.field] 
-                              ? 'border-red-300 bg-red-50/30' 
-                              : 'border-blue-200/50'
-                            }`}
-                  min={currentStepData.type === 'number' ? '1' : undefined}
-                  disabled={isSubmitting}
-                />
-                {currentStepData.unit && (
-                  <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-500 text-lg">
-                    {currentStepData.unit}
-                  </span>
-                )}
-              </div>
-              
-              {/* Mensagem de erro */}
-              <AnimatePresence>
-                {errors[currentStepData.field] && (
-                  <motion.p
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="text-red-500 text-sm bg-red-50 p-3 rounded-xl border border-red-200"
-                  >
-                    {errors[currentStepData.field]}
-                  </motion.p>
-                )}
-              </AnimatePresence>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Botões de navegação */}
-        <div className="flex justify-between items-center mt-8 space-x-4">
-          <button
-            onClick={handlePrevious}
-            disabled={isSubmitting}
-            className="flex items-center space-x-2 px-6 py-3 rounded-2xl font-medium transition-all
-                     text-slate-600 hover:text-slate-800 hover:bg-slate-100
-                     disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ArrowLeft size={18} />
-            <span>Voltar</span>
-          </button>
-
-          <button
-            onClick={handleNext}
-            disabled={isSubmitting}
-            className="flex items-center space-x-2 px-6 py-3 rounded-2xl font-medium
-                     bg-gradient-to-r from-blue-600 to-blue-800 text-white
-                     hover:from-blue-700 hover:to-blue-900 
-                     transform hover:scale-105 active:scale-95
-                     transition-all duration-300 shadow-lg
-                     disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-          >
-            <span>
-              {isSubmitting 
-                ? 'Salvando...' 
-                : currentStep === 4 
-                  ? 'Finalizar' 
-                  : 'Continuar'
-              }
-            </span>
-            {!isSubmitting && <ArrowRight size={18} />}
-          </button>
-        </div>
-
-        {/* Indicador de etapa */}
-        <div className="text-center mt-6">
-          <p className="text-xs text-slate-400">
-            Etapa {currentStep} de 4
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-sky-50 flex flex-col items-center py-8 px-4">
+      <div className="w-full max-w-2xl">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-500 to-sky-500 bg-clip-text text-transparent mb-2">
+            Seus Dados Pessoais 📋
+          </h1>
+          <p className="text-gray-600">
+            Vamos conhecer você melhor para criar o plano perfeito!
           </p>
         </div>
 
-        {/* Mensagem motivacional */}
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-center text-slate-500 text-sm mt-6"
-        >
-          Estamos quase lá! Essas informações nos ajudam a criar o plano perfeito para você! 💕
-        </motion.p>
+        {/* Formulário */}
+        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Nome Completo */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Nome Completo *
+              </label>
+              <input
+                type="text"
+                name="nome_completo"
+                value={formData.nome_completo}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
+                placeholder="Seu nome completo"
+                required
+              />
+            </div>
+
+            {/* Data de Nascimento */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Data de Nascimento *
+              </label>
+              <input
+                type="date"
+                name="data_nascimento"
+                value={formData.data_nascimento}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
+                required
+              />
+            </div>
+
+            {/* Altura e Peso */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Altura (cm) *
+                </label>
+                <input
+                  type="number"
+                  name="altura"
+                  value={formData.altura}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
+                  placeholder="Ex: 165"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Peso Atual (kg) *
+                </label>
+                <input
+                  type="number"
+                  name="peso_atual"
+                  value={formData.peso_atual}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
+                  placeholder="Ex: 65"
+                  step="0.1"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Sexo */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Sexo *
+              </label>
+              <select
+                name="sexo"
+                value={formData.sexo}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
+                required
+              >
+                <option value="">Selecione seu sexo</option>
+                <option value="feminino">Feminino</option>
+                <option value="masculino">Masculino</option>
+              </select>
+            </div>
+
+            {/* Nível de Atividade */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Nível de Atividade Física *
+              </label>
+              <select
+                name="nivel_atividade"
+                value={formData.nivel_atividade}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
+                required
+              >
+                <option value="">Selecione seu nível</option>
+                <option value="sedentario">Sedentário (pouco ou nenhum exercício)</option>
+                <option value="leve">Levemente ativo (exercício leve 1-3 dias/semana)</option>
+                <option value="moderado">Moderadamente ativo (exercício moderado 3-5 dias/semana)</option>
+                <option value="intenso">Muito ativo (exercício intenso 6-7 dias/semana)</option>
+                <option value="extremo">Extremamente ativo (exercício muito intenso)</option>
+              </select>
+            </div>
+
+            {/* Objetivo Principal */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Objetivo Principal *
+              </label>
+              <select
+                name="objetivo_principal"
+                value={formData.objetivo_principal}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
+                required
+              >
+                <option value="">Selecione seu objetivo</option>
+                <option value="perder_peso">Perder peso</option>
+                <option value="ganhar_massa">Ganhar massa muscular</option>
+                <option value="manter_peso">Manter peso atual</option>
+                <option value="melhorar_condicionamento">Melhorar condicionamento físico</option>
+                <option value="tonificar">Tonificar o corpo</option>
+              </select>
+            </div>
+
+            {/* Restrições Alimentares */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Restrições Alimentares
+              </label>
+              <textarea
+                name="restricoes_alimentares"
+                value={formData.restricoes_alimentares}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all resize-none"
+                placeholder="Ex: Intolerância à lactose, vegetariano, alergia a frutos do mar..."
+                rows={3}
+              />
+            </div>
+
+            {/* Histórico Médico */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Histórico Médico Relevante
+              </label>
+              <textarea
+                name="historico_medico"
+                value={formData.historico_medico}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all resize-none"
+                placeholder="Ex: Diabetes, hipertensão, lesões anteriores, cirurgias..."
+                rows={3}
+              />
+            </div>
+
+            {/* Botão de Submit */}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full bg-gradient-to-r from-pink-500 to-sky-500 hover:from-pink-600 hover:to-sky-600 text-white font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? 'Salvando...' : 'Salvar e Continuar 💪'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );

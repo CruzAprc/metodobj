@@ -87,55 +87,115 @@ const DadosPessoais = () => {
     }
 
     try {
-      console.log('Salvando dados para o usuário:', user.id);
+      console.log('Salvando dados pessoais para o usuário:', user.id);
       console.log('Dados a serem salvos:', formData);
 
-      // Primeiro, verificar se já existe um registro para este usuário
-      const { data: existingData, error: checkError } = await supabase
+      // Salvar na tabela user_personal_data
+      const personalData = {
+        user_id: user.id,
+        nome_completo: formData.nomeCompleto,
+        idade: parseInt(formData.idade),
+        peso: parseFloat(formData.peso),
+        altura: parseFloat(formData.altura),
+        completed_at: new Date().toISOString()
+      };
+
+      // Verificar se já existe um registro
+      const { data: existingPersonalData, error: checkPersonalError } = await supabase
+        .from('user_personal_data')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (checkPersonalError && checkPersonalError.code !== 'PGRST116') {
+        console.error('Erro ao verificar dados pessoais existentes:', checkPersonalError);
+        toast.error('Erro ao verificar dados existentes');
+        return false;
+      }
+
+      let personalResult;
+      if (existingPersonalData) {
+        // Atualizar registro existente
+        personalResult = await supabase
+          .from('user_personal_data')
+          .update({
+            nome_completo: formData.nomeCompleto,
+            idade: parseInt(formData.idade),
+            peso: parseFloat(formData.peso),
+            altura: parseFloat(formData.altura),
+            updated_at: new Date().toISOString(),
+            completed_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id);
+      } else {
+        // Criar novo registro
+        personalResult = await supabase
+          .from('user_personal_data')
+          .insert(personalData);
+      }
+
+      if (personalResult.error) {
+        console.error('Erro ao salvar dados pessoais:', personalResult.error);
+        toast.error('Erro ao salvar dados pessoais: ' + personalResult.error.message);
+        return false;
+      }
+
+      // Atualizar também a tabela teste_app para manter compatibilidade
+      const { data: existingTesteApp, error: checkTesteError } = await supabase
         .from('teste_app')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (checkError && checkError.code !== 'PGRST116') {
-        console.error('Erro ao verificar dados existentes:', checkError);
-        toast.error('Erro ao verificar dados existentes');
-        return false;
-      }
-
-      let result;
-      if (existingData) {
-        // Atualizar registro existente
-        result = await supabase
-          .from('teste_app')
-          .update({
-            nome: formData.nomeCompleto,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id);
+      if (checkTesteError && checkTesteError.code !== 'PGRST116') {
+        console.error('Erro ao verificar teste_app existente:', checkTesteError);
       } else {
-        // Criar novo registro
-        result = await supabase
-          .from('teste_app')
-          .insert({
-            user_id: user.id,
-            nome: formData.nomeCompleto,
-            email: user.email || '',
-            whatsapp: ''
-          });
+        let testeAppResult;
+        if (existingTesteApp) {
+          // Atualizar registro existente
+          testeAppResult = await supabase
+            .from('teste_app')
+            .update({
+              nome: formData.nomeCompleto,
+              updated_at: new Date().toISOString()
+            })
+            .eq('user_id', user.id);
+        } else {
+          // Criar novo registro
+          testeAppResult = await supabase
+            .from('teste_app')
+            .insert({
+              user_id: user.id,
+              nome: formData.nomeCompleto,
+              email: user.email || '',
+              whatsapp: ''
+            });
+        }
+
+        if (testeAppResult.error) {
+          console.warn('Aviso ao salvar em teste_app:', testeAppResult.error);
+          // Não bloqueia o processo se houver erro aqui
+        }
       }
 
-      if (result.error) {
-        console.error('Erro ao salvar dados:', result.error);
-        toast.error('Erro ao salvar dados: ' + result.error.message);
-        return false;
+      // Log do evento
+      try {
+        await supabase.rpc('log_user_event', {
+          p_user_id: user.id,
+          p_event_type: 'personal_data_completed',
+          p_event_data: { data: formData },
+          p_table_reference: 'user_personal_data'
+        });
+      } catch (logError) {
+        console.warn('Erro ao registrar evento:', logError);
+        // Não bloqueia o processo se houver erro no log
       }
 
-      console.log('Dados salvos com sucesso!');
-      toast.success('Dados salvos com sucesso!');
+      console.log('Dados pessoais salvos com sucesso!');
+      toast.success('Dados pessoais salvos com sucesso!');
       return true;
     } catch (error) {
-      console.error('Erro ao salvar dados:', error);
+      console.error('Erro inesperado ao salvar dados pessoais:', error);
       toast.error('Erro inesperado ao salvar dados');
       return false;
     }

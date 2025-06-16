@@ -210,6 +210,75 @@ export type Database = {
         }
         Relationships: []
       }
+      user_complete_data: {
+        Row: {
+          all_data_completed: boolean | null
+          altura: number | null
+          created_at: string
+          dados_pessoais_completed: boolean | null
+          id: string
+          idade: number | null
+          nome_completo: string | null
+          peso: number | null
+          quiz_alimentar_completed: boolean | null
+          quiz_alimentar_completed_at: string | null
+          quiz_alimentar_data: Json | null
+          quiz_treino_completed: boolean | null
+          quiz_treino_completed_at: string | null
+          quiz_treino_data: Json | null
+          universal_id: string
+          updated_at: string
+          user_id: string
+          webhook_response: Json | null
+          webhook_sent: boolean | null
+          webhook_sent_at: string | null
+        }
+        Insert: {
+          all_data_completed?: boolean | null
+          altura?: number | null
+          created_at?: string
+          dados_pessoais_completed?: boolean | null
+          id?: string
+          idade?: number | null
+          nome_completo?: string | null
+          peso?: number | null
+          quiz_alimentar_completed?: boolean | null
+          quiz_alimentar_completed_at?: string | null
+          quiz_alimentar_data?: Json | null
+          quiz_treino_completed?: boolean | null
+          quiz_treino_completed_at?: string | null
+          quiz_treino_data?: Json | null
+          universal_id?: string
+          updated_at?: string
+          user_id: string
+          webhook_response?: Json | null
+          webhook_sent?: boolean | null
+          webhook_sent_at?: string | null
+        }
+        Update: {
+          all_data_completed?: boolean | null
+          altura?: number | null
+          created_at?: string
+          dados_pessoais_completed?: boolean | null
+          id?: string
+          idade?: number | null
+          nome_completo?: string | null
+          peso?: number | null
+          quiz_alimentar_completed?: boolean | null
+          quiz_alimentar_completed_at?: string | null
+          quiz_alimentar_data?: Json | null
+          quiz_treino_completed?: boolean | null
+          quiz_treino_completed_at?: string | null
+          quiz_treino_data?: Json | null
+          universal_id?: string
+          updated_at?: string
+          user_id?: string
+          webhook_response?: Json | null
+          webhook_sent?: boolean | null
+          webhook_sent_at?: string | null
+        }
+        Relationships: []
+      }
       user_daily_progress: {
         Row: {
           created_at: string | null

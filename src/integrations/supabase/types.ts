@@ -120,6 +120,81 @@ export type Database = {
         }
         Relationships: []
       }
+      treino: {
+        Row: {
+          ativo: boolean | null
+          created_at: string
+          descricao: string | null
+          domingo: Json | null
+          id: string
+          nome_plano: string | null
+          quarta_feira: Json | null
+          quinta_feira: Json | null
+          quiz_data: Json | null
+          sabado: Json | null
+          segunda_feira: Json | null
+          sexta_feira: Json | null
+          terca_feira: Json | null
+          treino_a: Json | null
+          treino_b: Json | null
+          treino_c: Json | null
+          treino_d: Json | null
+          treino_e: Json | null
+          universal_id: string
+          updated_at: string
+          user_id: string
+          webhook_received_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string
+          descricao?: string | null
+          domingo?: Json | null
+          id?: string
+          nome_plano?: string | null
+          quarta_feira?: Json | null
+          quinta_feira?: Json | null
+          quiz_data?: Json | null
+          sabado?: Json | null
+          segunda_feira?: Json | null
+          sexta_feira?: Json | null
+          terca_feira?: Json | null
+          treino_a?: Json | null
+          treino_b?: Json | null
+          treino_c?: Json | null
+          treino_d?: Json | null
+          treino_e?: Json | null
+          universal_id?: string
+          updated_at?: string
+          user_id: string
+          webhook_received_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string
+          descricao?: string | null
+          domingo?: Json | null
+          id?: string
+          nome_plano?: string | null
+          quarta_feira?: Json | null
+          quinta_feira?: Json | null
+          quiz_data?: Json | null
+          sabado?: Json | null
+          segunda_feira?: Json | null
+          sexta_feira?: Json | null
+          terca_feira?: Json | null
+          treino_a?: Json | null
+          treino_b?: Json | null
+          treino_c?: Json | null
+          treino_d?: Json | null
+          treino_e?: Json | null
+          universal_id?: string
+          updated_at?: string
+          user_id?: string
+          webhook_received_at?: string | null
+        }
+        Relationships: []
+      }
       user_daily_progress: {
         Row: {
           created_at: string | null

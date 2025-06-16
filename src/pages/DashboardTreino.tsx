@@ -10,11 +10,14 @@ import {
   Target,
   Clock,
   Activity,
-  Shield
+  Shield,
+  CheckCircle,
+  PlayCircle
 } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface QuizData {
   experiencia: string;
@@ -25,9 +28,32 @@ interface QuizData {
   tempo_disponivel: string;
 }
 
+interface TreinoData {
+  id: string;
+  user_id: string;
+  quiz_data: QuizData;
+  segunda_feira: any;
+  terca_feira: any;
+  quarta_feira: any;
+  quinta_feira: any;
+  sexta_feira: any;
+  sabado: any;
+  domingo: any;
+  treino_a: any;
+  treino_b: any;
+  treino_c: any;
+  treino_d: any;
+  treino_e: any;
+  ativo: boolean;
+  nome_plano: string;
+  descricao: string;
+  webhook_received_at: string;
+}
+
 const DashboardTreino = () => {
   const navigate = useNavigate();
   const [workoutData, setWorkoutData] = useState<any>(null);
+  const [treinoData, setTreinoData] = useState<TreinoData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
@@ -42,20 +68,40 @@ const DashboardTreino = () => {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
-        .from('user_quiz_data')
+      // Primeiro, tenta buscar treino personalizado da tabela treino
+      const { data: treinoPersonalizado, error: treinoError } = await supabase
+        .from('treino')
         .select('*')
         .eq('user_id', user.id)
-        .eq('quiz_type', 'treino')
-        .single();
+        .eq('ativo', true)
+        .maybeSingle();
+
+      if (treinoPersonalizado) {
+        console.log('Dashboard Treino: Treino personalizado encontrado:', treinoPersonalizado);
+        setTreinoData(treinoPersonalizado);
+        setWorkoutData({ quiz_data: treinoPersonalizado.quiz_data });
+      } else {
+        // Se não houver treino personalizado, busca dados do quiz
+        const { data: quizData, error: quizError } = await supabase
+          .from('user_quiz_data')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('quiz_type', 'treino')
+          .maybeSingle();
+          
+        if (quizData) {
+          console.log('Dashboard Treino: Dados do quiz carregados:', quizData);
+          setWorkoutData(quizData);
+        }
         
-      if (data) {
-        console.log('Dashboard Treino: Dados carregados:', data);
-        setWorkoutData(data);
+        if (quizError && quizError.code !== 'PGRST116') {
+          console.error('Dashboard Treino: Erro ao carregar dados do quiz:', quizError);
+          setError('Erro ao carregar dados do treino');
+        }
       }
       
-      if (error && error.code !== 'PGRST116') {
-        console.error('Dashboard Treino: Erro ao carregar dados:', error);
+      if (treinoError && treinoError.code !== 'PGRST116') {
+        console.error('Dashboard Treino: Erro ao carregar treino personalizado:', treinoError);
         setError('Erro ao carregar dados do treino');
       }
     } catch (err) {
@@ -104,6 +150,121 @@ const DashboardTreino = () => {
       '90_min': '1h30 ou mais'
     };
     return textos[tempo as keyof typeof textos] || tempo;
+  };
+
+  const getDiaNome = (dia: string) => {
+    const nomes = {
+      'segunda_feira': 'Segunda-feira',
+      'terca_feira': 'Terça-feira',
+      'quarta_feira': 'Quarta-feira',
+      'quinta_feira': 'Quinta-feira',
+      'sexta_feira': 'Sexta-feira',
+      'sabado': 'Sábado',
+      'domingo': 'Domingo'
+    };
+    return nomes[dia as keyof typeof nomes] || dia;
+  };
+
+  const renderTreinoPersonalizado = () => {
+    if (!treinoData) return null;
+
+    const diasTreino = ['segunda_feira', 'terca_feira', 'quarta_feira', 'quinta_feira', 'sexta_feira', 'sabado', 'domingo'];
+    const diasComTreino = diasTreino.filter(dia => treinoData[dia as keyof TreinoData]);
+
+    return (
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="bg-white rounded-2xl p-6 shadow-lg border border-blue-100"
+      >
+        <div className="flex items-center space-x-3 mb-6">
+          <CheckCircle className="text-green-600" size={24} />
+          <div>
+            <h3 className="text-xl font-bold text-gray-800">Seu Plano Personalizado</h3>
+            {treinoData.nome_plano && (
+              <p className="text-sm text-gray-600">{treinoData.nome_plano}</p>
+            )}
+          </div>
+        </div>
+
+        {treinoData.descricao && (
+          <div className="bg-blue-50 p-4 rounded-xl mb-6">
+            <p className="text-gray-700">{treinoData.descricao}</p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {diasComTreino.map((dia) => {
+            const treinoDia = treinoData[dia as keyof TreinoData];
+            return (
+              <div key={dia} className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl">
+                <div className="flex items-center space-x-2 mb-3">
+                  <PlayCircle className="text-blue-600" size={18} />
+                  <h4 className="font-semibold text-gray-800">{getDiaNome(dia)}</h4>
+                </div>
+                
+                {treinoDia && typeof treinoDia === 'object' && treinoDia.exercicios ? (
+                  <div className="space-y-2">
+                    {treinoDia.exercicios.slice(0, 3).map((exercicio: any, index: number) => (
+                      <div key={index} className="text-sm text-gray-600">
+                        • {exercicio.nome || exercicio.exercicio || 'Exercício'}
+                      </div>
+                    ))}
+                    {treinoDia.exercicios.length > 3 && (
+                      <div className="text-xs text-gray-500">
+                        +{treinoDia.exercicios.length - 3} exercícios
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-sm text-gray-600">
+                    Treino personalizado disponível
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Treinos ABCDE se disponíveis */}
+        {(treinoData.treino_a || treinoData.treino_b || treinoData.treino_c || treinoData.treino_d || treinoData.treino_e) && (
+          <div className="mt-6">
+            <h4 className="text-lg font-semibold text-gray-800 mb-4">Divisão de Treinos</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {['treino_a', 'treino_b', 'treino_c', 'treino_d', 'treino_e'].map((treino) => {
+                const treinoInfo = treinoData[treino as keyof TreinoData];
+                if (!treinoInfo) return null;
+                
+                return (
+                  <div key={treino} className="bg-purple-50 p-4 rounded-xl">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Dumbbell className="text-purple-600" size={16} />
+                      <h5 className="font-semibold text-gray-800">
+                        Treino {treino.split('_')[1].toUpperCase()}
+                      </h5>
+                    </div>
+                    {treinoInfo && typeof treinoInfo === 'object' && treinoInfo.exercicios ? (
+                      <div className="text-sm text-gray-600">
+                        {treinoInfo.exercicios.length} exercícios
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-600">
+                        Treino disponível
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-4 text-xs text-gray-500">
+          Plano criado em: {new Date(treinoData.webhook_received_at).toLocaleDateString('pt-BR')}
+        </div>
+      </motion.div>
+    );
   };
 
   if (loading) {
@@ -236,34 +397,36 @@ const DashboardTreino = () => {
               )}
             </motion.div>
 
-            {/* Cronograma Semanal */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-white rounded-2xl p-6 shadow-lg border border-blue-100"
-            >
-              <div className="flex items-center space-x-3 mb-6">
-                <Calendar className="text-blue-600" size={24} />
-                <h3 className="text-xl font-bold text-gray-800">Cronograma Semanal</h3>
-              </div>
-              
-              <div className="text-center py-8">
-                <Dumbbell className="text-blue-400 mx-auto mb-4" size={48} />
-                <h4 className="text-lg font-bold text-gray-600 mb-2">Plano Personalizado em Preparação</h4>
-                <p className="text-gray-500 mb-4">
-                  Com base no seu perfil, o Basa está criando seu plano de treino ideal!
-                </p>
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl max-w-md mx-auto">
-                  <p className="text-sm text-gray-600">
-                    💪 Treino personalizado para {getObjetivoTexto(workoutData.quiz_data.objetivo).toLowerCase()}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Quiz concluído • Dados enviados com sucesso
-                  </p>
+            {/* Treino Personalizado ou Cronograma Semanal */}
+            {treinoData ? renderTreinoPersonalizado() : (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="bg-white rounded-2xl p-6 shadow-lg border border-blue-100"
+              >
+                <div className="flex items-center space-x-3 mb-6">
+                  <Calendar className="text-blue-600" size={24} />
+                  <h3 className="text-xl font-bold text-gray-800">Cronograma Semanal</h3>
                 </div>
-              </div>
-            </motion.div>
+                
+                <div className="text-center py-8">
+                  <Dumbbell className="text-blue-400 mx-auto mb-4" size={48} />
+                  <h4 className="text-lg font-bold text-gray-600 mb-2">Plano Personalizado em Preparação</h4>
+                  <p className="text-gray-500 mb-4">
+                    Com base no seu perfil, o Basa está criando seu plano de treino ideal!
+                  </p>
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl max-w-md mx-auto">
+                    <p className="text-sm text-gray-600">
+                      💪 Treino personalizado para {getObjetivoTexto(workoutData.quiz_data.objetivo).toLowerCase()}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Quiz concluído • Aguardando plano personalizado
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
           </>
         ) : (
           <div className="text-center py-12">

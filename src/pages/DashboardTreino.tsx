@@ -29,10 +29,9 @@ const DashboardTreino = () => {
     if (!user) return;
     
     const { data, error } = await supabase
-      .from('user_quiz_data')
+      .from('teste_treino')
       .select('*')
       .eq('user_id', user.id)
-      .eq('quiz_type', 'treino')
       .single();
       
     if (data) {
@@ -120,10 +119,10 @@ const DashboardTreino = () => {
               </p>
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl max-w-md mx-auto">
                 <p className="text-sm text-gray-600">
-                  💪 O Basa está criando exercícios específicos para seus objetivos!
+                  💪 O Basa está criando exercícios específicos para seus objetivos: <strong>{workoutData.objetivo}</strong>
                 </p>
                 <p className="text-xs text-gray-500 mt-2">
-                  Quiz concluído com sucesso
+                  Frequência: {workoutData.frequencia} | Experiência: {workoutData.experiencia}
                 </p>
               </div>
             </div>

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, Target, Calendar, Weight, Ruler } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface FormData {
   nomeCompleto: string;
@@ -81,126 +82,61 @@ const DadosPessoais = () => {
 
   const saveToDatabase = async (): Promise<boolean> => {
     if (!user) {
+      toast.error('Usuário não encontrado. Faça login novamente.');
       return false;
     }
 
     try {
-      console.log('Salvando dados pessoais para o usuário:', user.id);
+      console.log('Salvando dados para o usuário:', user.id);
       console.log('Dados a serem salvos:', formData);
 
-      // Salvar na tabela user_personal_data
-      const personalData = {
-        user_id: user.id,
-        nome_completo: formData.nomeCompleto,
-        idade: parseInt(formData.idade),
-        peso: parseFloat(formData.peso),
-        altura: parseFloat(formData.altura),
-        completed_at: new Date().toISOString()
-      };
-
-      // Verificar se já existe um registro
-      const { data: existingPersonalData, error: checkPersonalError } = await supabase
-        .from('user_personal_data')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (checkPersonalError && checkPersonalError.code !== 'PGRST116') {
-        console.error('Erro ao verificar dados pessoais existentes:', checkPersonalError);
-        return false;
-      }
-
-      let personalResult;
-      if (existingPersonalData) {
-        // Atualizar registro existente
-        personalResult = await supabase
-          .from('user_personal_data')
-          .update({
-            nome_completo: formData.nomeCompleto,
-            idade: parseInt(formData.idade),
-            peso: parseFloat(formData.peso),
-            altura: parseFloat(formData.altura),
-            updated_at: new Date().toISOString(),
-            completed_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id);
-      } else {
-        // Criar novo registro
-        personalResult = await supabase
-          .from('user_personal_data')
-          .insert(personalData);
-      }
-
-      if (personalResult.error) {
-        console.error('Erro ao salvar dados pessoais:', personalResult.error);
-        return false;
-      }
-
-      // Atualizar também a tabela teste_app para manter compatibilidade e calcular dias corretos
-      const { data: existingTesteApp, error: checkTesteError } = await supabase
+      // Primeiro, verificar se já existe um registro para este usuário
+      const { data: existingData, error: checkError } = await supabase
         .from('teste_app')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (checkTesteError && checkTesteError.code !== 'PGRST116') {
-        console.error('Erro ao verificar teste_app existente:', checkTesteError);
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Erro ao verificar dados existentes:', checkError);
+        toast.error('Erro ao verificar dados existentes');
+        return false;
+      }
+
+      let result;
+      if (existingData) {
+        // Atualizar registro existente
+        result = await supabase
+          .from('teste_app')
+          .update({
+            nome: formData.nomeCompleto,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id);
       } else {
-        let testeAppResult;
-        const agora = new Date().toISOString();
-        
-        if (existingTesteApp) {
-          // Atualizar registro existente - manter data_registro original
-          testeAppResult = await supabase
-            .from('teste_app')
-            .update({
-              nome: formData.nomeCompleto,
-              updated_at: agora
-            })
-            .eq('user_id', user.id);
-        } else {
-          // Criar novo registro
-          testeAppResult = await supabase
-            .from('teste_app')
-            .insert({
-              user_id: user.id,
-              nome: formData.nomeCompleto,
-              email: user.email || '',
-              whatsapp: '',
-              data_registro: agora
-            });
-        }
-
-        if (testeAppResult.error) {
-          console.warn('Aviso ao salvar em teste_app:', testeAppResult.error);
-          // Não bloqueia o processo se houver erro aqui
-        }
+        // Criar novo registro
+        result = await supabase
+          .from('teste_app')
+          .insert({
+            user_id: user.id,
+            nome: formData.nomeCompleto,
+            email: user.email || '',
+            whatsapp: ''
+          });
       }
 
-      // Log do evento - converter FormData para objeto JSON compatível
-      try {
-        const eventData = {
-          nomeCompleto: formData.nomeCompleto,
-          idade: formData.idade,
-          peso: formData.peso,
-          altura: formData.altura
-        };
-
-        await supabase.rpc('log_user_event', {
-          p_user_id: user.id,
-          p_event_type: 'personal_data_completed',
-          p_event_data: eventData,
-          p_table_reference: 'user_personal_data'
-        });
-      } catch (logError) {
-        console.warn('Erro ao registrar evento:', logError);
-        // Não bloqueia o processo se houver erro no log
+      if (result.error) {
+        console.error('Erro ao salvar dados:', result.error);
+        toast.error('Erro ao salvar dados: ' + result.error.message);
+        return false;
       }
 
-      console.log('Dados pessoais salvos com sucesso!');
+      console.log('Dados salvos com sucesso!');
+      toast.success('Dados salvos com sucesso!');
       return true;
     } catch (error) {
-      console.error('Erro inesperado ao salvar dados pessoais:', error);
+      console.error('Erro ao salvar dados:', error);
+      toast.error('Erro inesperado ao salvar dados');
       return false;
     }
   };
@@ -223,11 +159,16 @@ const DadosPessoais = () => {
           // Salvar no localStorage para usar em outras partes da aplicação
           localStorage.setItem('dadosPessoais', JSON.stringify(formData));
           
-          // Redirecionar para loading (que vai para quiz-alimentar)
-          navigate('/loading');
+          toast.success('Dados pessoais salvos! Redirecionando...');
+          
+          // Aguardar um pouco antes de redirecionar
+          setTimeout(() => {
+            navigate('/loading');
+          }, 1000);
         }
       } catch (error) {
         console.error('Erro no processo final:', error);
+        toast.error('Erro ao finalizar dados pessoais');
       } finally {
         setIsSubmitting(false);
       }

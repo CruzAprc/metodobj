@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -24,13 +23,12 @@ const DashboardDieta = () => {
   const navigate = useNavigate();
   const [userData, setUserData] = useState<any>(null);
   const [dietData, setDietData] = useState<any>(null);
-  const [realDietData, setRealDietData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const { user } = useAuth();
 
-  // Mock data para demonstração (mantido como fallback)
+  // Mock data para demonstração
   const mockDietData = {
     cafeDaManha: {
       nome: "Café da Manhã Energético",
@@ -92,7 +90,6 @@ const DashboardDieta = () => {
     if (user) {
       loadUserData();
       loadDietData();
-      loadRealDietData();
     }
   }, [user]);
 
@@ -114,37 +111,13 @@ const DashboardDieta = () => {
     if (!user) return;
     
     const { data, error } = await supabase
-      .from('user_quiz_data')
+      .from('teste_dieta')
       .select('*')
       .eq('user_id', user.id)
-      .eq('quiz_type', 'alimentar')
       .single();
       
     if (data) {
       setDietData(data);
-    }
-  };
-
-  const loadRealDietData = async () => {
-    if (!user) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('dieta')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('ativa', true)
-        .order('created_at', { ascending: false })
-        .maybeSingle();
-        
-      if (data) {
-        console.log('Dados da dieta carregados:', data);
-        setRealDietData(data);
-      } else {
-        console.log('Nenhuma dieta ativa encontrada');
-      }
-    } catch (error) {
-      console.error('Erro ao carregar dados da dieta:', error);
     }
   };
 
@@ -155,7 +128,6 @@ const DashboardDieta = () => {
     
     try {
       await new Promise(resolve => setTimeout(resolve, 2000));
-      await loadRealDietData();
       setLastUpdate(new Date());
     } catch (err) {
       setError("Erro ao carregar dados da dieta");
@@ -209,23 +181,7 @@ const DashboardDieta = () => {
   ];
 
   const calcularCaloriasTotais = () => {
-    // Se temos dados reais da dieta, usar eles
-    if (realDietData?.calorias_totais) {
-      return realDietData.calorias_totais;
-    }
-    
-    // Senão, usar mock data
     return Object.values(mockDietData).reduce((total, refeicao) => total + (refeicao?.calorias || 0), 0);
-  };
-
-  const getDietDataToShow = () => {
-    // Se temos dados reais da dieta, usar o campo refeicoes
-    if (realDietData?.refeicoes && Object.keys(realDietData.refeicoes).length > 0) {
-      return realDietData.refeicoes;
-    }
-    
-    // Senão, usar mock data
-    return mockDietData;
   };
 
   if (loading) {
@@ -264,8 +220,6 @@ const DashboardDieta = () => {
     );
   }
 
-  const currentDietData = getDietDataToShow();
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100">
       
@@ -292,16 +246,9 @@ const DashboardDieta = () => {
           >
             <span className="text-sm">💪 Ver Treinos</span>
           </button>
-          <button
-            onClick={simulateNewDietData}
-            className="flex items-center gap-2 bg-white px-4 py-2 rounded-xl border border-pink-200 hover:bg-pink-50 transition-all"
-          >
-            <RefreshCw size={16} />
-            <span className="text-sm">Atualizar</span>
-          </button>
         </div>
 
-        {dietData || realDietData ? (
+        {userData?.quiz_alimentar_concluido ? (
           <>
             {/* Resumo diário com tema rosa */}
             <motion.div 
@@ -311,14 +258,8 @@ const DashboardDieta = () => {
             >
               <div className="flex items-center space-x-3 mb-4">
                 <Calendar className="text-pink-500" size={24} />
-                <h2 className="text-xl font-bold text-pink-800">
-                  {realDietData?.nome_dieta || 'Plano Alimentar Personalizado'}
-                </h2>
+                <h2 className="text-xl font-bold text-pink-800">Resumo do Dia</h2>
               </div>
-              
-              {realDietData?.descricao && (
-                <p className="text-pink-600 mb-4">{realDietData.descricao}</p>
-              )}
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-4 bg-gradient-to-br from-pink-50 to-rose-100 rounded-xl">
@@ -335,9 +276,7 @@ const DashboardDieta = () => {
                 </div>
                 <div className="text-center p-4 bg-gradient-to-br from-rose-100 to-pink-100 rounded-xl">
                   <CheckCircle className="text-rose-600 mx-auto mb-1" size={24} />
-                  <p className="text-sm text-rose-700">
-                    {realDietData ? 'Plano Ativo' : 'Mock Data'}
-                  </p>
+                  <p className="text-sm text-rose-700">Plano Ativo</p>
                 </div>
               </div>
             </motion.div>
@@ -345,7 +284,7 @@ const DashboardDieta = () => {
             {/* Grid de refeições */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {refeicoes.map((tipoRefeicao, index) => {
-                const refeicaoData = currentDietData[tipoRefeicao.id];
+                const refeicaoData = mockDietData[tipoRefeicao.id];
                 
                 return (
                   <motion.div
@@ -384,46 +323,36 @@ const DashboardDieta = () => {
                         </div>
                         
                         {/* Macros */}
-                        {refeicaoData.macros && (
-                          <div className="grid grid-cols-3 gap-2 text-xs">
-                            <div className="text-center p-2 bg-white/60 rounded-lg">
-                              <p className="font-medium text-pink-700">Proteína</p>
-                              <p className={tipoRefeicao.corTexto}>{refeicaoData.macros.proteina}g</p>
-                            </div>
-                            <div className="text-center p-2 bg-white/60 rounded-lg">
-                              <p className="font-medium text-pink-700">Carbo</p>
-                              <p className={tipoRefeicao.corTexto}>{refeicaoData.macros.carboidrato}g</p>
-                            </div>
-                            <div className="text-center p-2 bg-white/60 rounded-lg">
-                              <p className="font-medium text-pink-700">Gordura</p>
-                              <p className={tipoRefeicao.corTexto}>{refeicaoData.macros.gordura}g</p>
-                            </div>
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          <div className="text-center p-2 bg-white/60 rounded-lg">
+                            <p className="font-medium text-pink-700">Proteína</p>
+                            <p className={tipoRefeicao.corTexto}>{refeicaoData.macros.proteina}g</p>
                           </div>
-                        )}
+                          <div className="text-center p-2 bg-white/60 rounded-lg">
+                            <p className="font-medium text-pink-700">Carbo</p>
+                            <p className={tipoRefeicao.corTexto}>{refeicaoData.macros.carboidrato}g</p>
+                          </div>
+                          <div className="text-center p-2 bg-white/60 rounded-lg">
+                            <p className="font-medium text-pink-700">Gordura</p>
+                            <p className={tipoRefeicao.corTexto}>{refeicaoData.macros.gordura}g</p>
+                          </div>
+                        </div>
 
                         {/* Lista de alimentos */}
-                        {refeicaoData.alimentos && (
-                          <div className="space-y-2">
-                            <p className="text-sm font-medium text-pink-700">Alimentos:</p>
-                            <div className="space-y-1 max-h-32 overflow-y-auto">
-                              {refeicaoData.alimentos.map((alimento, idx) => (
-                                <div key={idx} className="text-xs bg-white/40 p-2 rounded-lg">
-                                  <div className="flex justify-between">
-                                    <span className="font-medium text-pink-800">{alimento.nome}</span>
-                                    <span className={tipoRefeicao.corTexto}>{alimento.calorias} kcal</span>
-                                  </div>
-                                  <p className="text-pink-600">{alimento.quantidade}</p>
+                        <div className="space-y-2">
+                          <p className="text-sm font-medium text-pink-700">Alimentos:</p>
+                          <div className="space-y-1 max-h-32 overflow-y-auto">
+                            {refeicaoData.alimentos.map((alimento, idx) => (
+                              <div key={idx} className="text-xs bg-white/40 p-2 rounded-lg">
+                                <div className="flex justify-between">
+                                  <span className="font-medium text-pink-800">{alimento.nome}</span>
+                                  <span className={tipoRefeicao.corTexto}>{alimento.calorias} kcal</span>
                                 </div>
-                              ))}
-                            </div>
+                                <p className="text-pink-600">{alimento.quantidade}</p>
+                              </div>
+                            ))}
                           </div>
-                        )}
-                      </div>
-                    )}
-
-                    {!refeicaoData && (
-                      <div className="text-center py-4">
-                        <p className="text-sm text-pink-600">Refeição não configurada</p>
+                        </div>
                       </div>
                     )}
                   </motion.div>
@@ -439,16 +368,8 @@ const DashboardDieta = () => {
               className="mt-8 text-center"
             >
               <p className="text-sm text-pink-500">
-                💡 {realDietData 
-                  ? 'Sua dieta personalizada está ativa!' 
-                  : 'Complete o quiz alimentar para ver suas refeições personalizadas'
-                }
+                💡 Sua dieta é atualizada automaticamente baseada nas suas preferências
               </p>
-              {realDietData && (
-                <p className="text-xs text-pink-400 mt-2">
-                  Última atualização: {new Date(realDietData.updated_at).toLocaleDateString('pt-BR')}
-                </p>
-              )}
             </motion.div>
           </>
         ) : (

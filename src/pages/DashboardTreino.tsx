@@ -30,6 +30,18 @@ interface QuizData {
 // Use the actual Supabase table type
 type TreinoData = Tables<'treino'>;
 
+// Type guard to check if data matches QuizData structure
+const isQuizData = (data: any): data is QuizData => {
+  return data &&
+    typeof data === 'object' &&
+    typeof data.experiencia === 'string' &&
+    typeof data.frequencia === 'string' &&
+    typeof data.objetivo === 'string' &&
+    Array.isArray(data.limitacoes) &&
+    Array.isArray(data.preferencias) &&
+    typeof data.tempo_disponivel === 'string';
+};
+
 const DashboardTreino = () => {
   const navigate = useNavigate();
   const [workoutData, setWorkoutData] = useState<any>(null);
@@ -60,8 +72,8 @@ const DashboardTreino = () => {
         console.log('Dashboard Treino: Treino personalizado encontrado:', treinoPersonalizado);
         setTreinoData(treinoPersonalizado);
         // Extract quiz_data if it exists and has the right structure
-        if (treinoPersonalizado.quiz_data && typeof treinoPersonalizado.quiz_data === 'object') {
-          setWorkoutData({ quiz_data: treinoPersonalizado.quiz_data as QuizData });
+        if (treinoPersonalizado.quiz_data && isQuizData(treinoPersonalizado.quiz_data)) {
+          setWorkoutData({ quiz_data: treinoPersonalizado.quiz_data });
         }
       } else {
         // Se não houver treino personalizado, busca dados do quiz

@@ -130,7 +130,9 @@ const QuizTreino = () => {
         console.log('Quiz Treino: Resultado da verificação:', {
           data: existingQuiz,
           error: error,
-          errorCode: error?.code
+          errorCode: error?.code,
+          hasCompletedAt: !!existingQuiz?.completed_at,
+          hasQuizData: !!existingQuiz?.quiz_data
         });
 
         if (error && error.code !== 'PGRST116') {
@@ -139,26 +141,36 @@ const QuizTreino = () => {
           return;
         }
 
-        // APENAS redireciona se o quiz foi REALMENTE completado (tem completed_at)
+        // Verifica se realmente existe um quiz completado
         if (existingQuiz && existingQuiz.completed_at) {
-          console.log('Quiz Treino: Quiz já completado! Redirecionando para dashboard...');
+          console.log('Quiz Treino: Quiz REALMENTE completado! Redirecionando para dashboard...', {
+            completedAt: existingQuiz.completed_at,
+            quizData: existingQuiz.quiz_data
+          });
           navigate('/dashboard');
           return;
-        } 
-        
-        // Se existem dados parciais, carrega para continuar o preenchimento
-        if (existingQuiz && existingQuiz.quiz_data) {
-          console.log('Quiz Treino: Dados parciais encontrados, carregando...');
-          const data = existingQuiz.quiz_data as any;
-          if (data && typeof data === 'object') {
-            setQuizData({
-              experiencia: data.experiencia || '',
-              frequencia: data.frequencia || '',
-              objetivo: data.objetivo || '',
-              limitacoes: Array.isArray(data.limitacoes) ? data.limitacoes : [],
-              preferencias: Array.isArray(data.preferencias) ? data.preferencias : [],
-              tempo_disponivel: data.tempo_disponivel || ''
-            });
+        }
+
+        // Se não há quiz ou não está completo, permite preenchimento
+        if (!existingQuiz) {
+          console.log('Quiz Treino: Nenhum quiz encontrado, permitindo preenchimento');
+        } else if (!existingQuiz.completed_at) {
+          console.log('Quiz Treino: Quiz não completado, permitindo continuação');
+          
+          // Se existem dados parciais, carrega para continuar o preenchimento
+          if (existingQuiz.quiz_data) {
+            console.log('Quiz Treino: Dados parciais encontrados, carregando...');
+            const data = existingQuiz.quiz_data as any;
+            if (data && typeof data === 'object') {
+              setQuizData({
+                experiencia: data.experiencia || '',
+                frequencia: data.frequencia || '',
+                objetivo: data.objetivo || '',
+                limitacoes: Array.isArray(data.limitacoes) ? data.limitacoes : [],
+                preferencias: Array.isArray(data.preferencias) ? data.preferencias : [],
+                tempo_disponivel: data.tempo_disponivel || ''
+              });
+            }
           }
         }
 

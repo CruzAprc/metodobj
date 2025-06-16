@@ -255,7 +255,17 @@ const QuizAlimentar = () => {
         // Quiz concluído - salvar no banco
         await saveToDatabase(newQuizData);
         localStorage.setItem('quizAlimentarConcluido', 'true');
-        navigate('/loading-treino');
+        
+        // Verificar se já completou o quiz de treino
+        const quizTreinoConcluido = localStorage.getItem('quizTreinoConcluido');
+        
+        if (quizTreinoConcluido) {
+          // Se ambos os quizzes estão concluídos, ir direto para o dashboard
+          navigate('/dashboard');
+        } else {
+          // Se ainda não completou o quiz de treino, ir para ele
+          navigate('/quiz-treino/1');
+        }
       }
       setAnimatingStep(false);
     }, 300);
@@ -279,7 +289,17 @@ const QuizAlimentar = () => {
         // Quiz concluído - salvar no banco
         await saveToDatabase(newQuizData);
         localStorage.setItem('quizAlimentarConcluido', 'true');
-        navigate('/loading-treino');
+        
+        // Verificar se já completou o quiz de treino
+        const quizTreinoConcluido = localStorage.getItem('quizTreinoConcluido');
+        
+        if (quizTreinoConcluido) {
+          // Se ambos os quizzes estão concluídos, ir direto para o dashboard
+          navigate('/dashboard');
+        } else {
+          // Se ainda não completou o quiz de treino, ir para ele
+          navigate('/quiz-treino/1');
+        }
       }
       setAnimatingStep(false);
     }, 300);

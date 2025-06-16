@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -244,6 +245,8 @@ const QuizTreino = () => {
     } else {
       await saveToDatabase(answers);
       localStorage.setItem('quizTreinoConcluido', 'true');
+      
+      // Após completar o quiz de treino, ir direto para o dashboard
       navigate('/dashboard');
     }
   };

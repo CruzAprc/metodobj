@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -153,15 +154,11 @@ const DadosPessoais = () => {
         const agora = new Date().toISOString();
         
         if (existingTesteApp) {
-          // Atualizar registro existente - calcular dias corretamente
-          const dataRegistro = new Date(existingTesteApp.data_registro);
-          const diasNoApp = Math.floor((new Date().getTime() - dataRegistro.getTime()) / (1000 * 60 * 60 * 24));
-          
+          // Atualizar registro existente - manter data_registro original
           testeAppResult = await supabase
             .from('teste_app')
             .update({
               nome: formData.nomeCompleto,
-              dias_no_app: diasNoApp,
               updated_at: agora
             })
             .eq('user_id', user.id);
@@ -174,8 +171,7 @@ const DadosPessoais = () => {
               nome: formData.nomeCompleto,
               email: user.email || '',
               whatsapp: '',
-              data_registro: agora,
-              dias_no_app: 0 // Primeiro dia
+              data_registro: agora
             });
         }
 
@@ -235,9 +231,19 @@ const DadosPessoais = () => {
           
           toast.success('Dados pessoais salvos! Redirecionando...');
           
+          // Verificar se já completou os quizzes
+          const quizAlimentarConcluido = localStorage.getItem('quizAlimentarConcluido');
+          const quizTreinoConcluido = localStorage.getItem('quizTreinoConcluido');
+          
           // Aguardar um pouco antes de redirecionar
           setTimeout(() => {
-            navigate('/loading');
+            if (quizAlimentarConcluido && quizTreinoConcluido) {
+              // Se ambos os quizzes já foram concluídos, ir direto para o dashboard
+              navigate('/dashboard');
+            } else {
+              // Se não completou os quizzes, ir para o quiz alimentar
+              navigate('/quiz-alimentar/1');
+            }
           }, 1000);
         }
       } catch (error) {

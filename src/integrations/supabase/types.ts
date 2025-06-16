@@ -9,13 +9,267 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      evaluation_photos: {
+        Row: {
+          ai_analysis: Json | null
+          created_at: string | null
+          evaluation_period: string
+          id: string
+          photo_type: string | null
+          photo_url: string
+          universal_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_analysis?: Json | null
+          created_at?: string | null
+          evaluation_period: string
+          id?: string
+          photo_type?: string | null
+          photo_url: string
+          universal_id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_analysis?: Json | null
+          created_at?: string | null
+          evaluation_period?: string
+          id?: string
+          photo_type?: string | null
+          photo_url?: string
+          universal_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      teste_app: {
+        Row: {
+          created_at: string | null
+          data_registro: string | null
+          email: string | null
+          id: string
+          nome: string | null
+          universal_id: string
+          updated_at: string | null
+          user_id: string
+          whatsapp: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data_registro?: string | null
+          email?: string | null
+          id?: string
+          nome?: string | null
+          universal_id?: string
+          updated_at?: string | null
+          user_id: string
+          whatsapp?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data_registro?: string | null
+          email?: string | null
+          id?: string
+          nome?: string | null
+          universal_id?: string
+          updated_at?: string | null
+          user_id?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
+      user_daily_progress: {
+        Row: {
+          created_at: string | null
+          date: string
+          dieta_seguida: boolean | null
+          id: string
+          treino_realizado: boolean | null
+          universal_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          dieta_seguida?: boolean | null
+          id?: string
+          treino_realizado?: boolean | null
+          universal_id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          dieta_seguida?: boolean | null
+          id?: string
+          treino_realizado?: boolean | null
+          universal_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_evaluation_access: {
+        Row: {
+          created_at: string | null
+          days_required: number | null
+          id: string
+          is_unlocked: boolean | null
+          universal_id: string
+          unlock_date: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          days_required?: number | null
+          id?: string
+          is_unlocked?: boolean | null
+          universal_id?: string
+          unlock_date?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          days_required?: number | null
+          id?: string
+          is_unlocked?: boolean | null
+          universal_id?: string
+          unlock_date?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_events: {
+        Row: {
+          created_at: string | null
+          event_data: Json | null
+          event_type: string
+          id: string
+          record_id: string | null
+          table_reference: string | null
+          universal_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          record_id?: string | null
+          table_reference?: string | null
+          universal_id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          record_id?: string | null
+          table_reference?: string | null
+          universal_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_personal_data: {
+        Row: {
+          altura: number | null
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          idade: number | null
+          nome_completo: string | null
+          peso: number | null
+          universal_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          altura?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          idade?: number | null
+          nome_completo?: string | null
+          peso?: number | null
+          universal_id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          altura?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          idade?: number | null
+          nome_completo?: string | null
+          peso?: number | null
+          universal_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_quiz_data: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          quiz_data: Json
+          quiz_type: string
+          universal_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          quiz_data: Json
+          quiz_type: string
+          universal_id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          quiz_data?: Json
+          quiz_type?: string
+          universal_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      log_user_event: {
+        Args: {
+          p_user_id: string
+          p_event_type: string
+          p_event_data?: Json
+          p_table_reference?: string
+          p_record_id?: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

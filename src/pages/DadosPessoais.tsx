@@ -42,9 +42,19 @@ const DadosPessoais = () => {
         .maybeSingle();
 
       if (data && !error) {
-        // Se já tem dados, redirecionar para onboarding para continuar o fluxo
-        console.log('Dados pessoais já existem, redirecionando para onboarding');
-        navigate('/onboarding');
+        // Se já tem dados, preencher o formulário com os dados existentes
+        console.log('Dados pessoais já existem, preenchendo formulário');
+        setFormData({
+          nome_completo: data.nome_completo || '',
+          data_nascimento: data.data_nascimento || '',
+          altura: data.altura?.toString() || '',
+          peso_atual: data.peso_atual?.toString() || '',
+          sexo: data.sexo || '',
+          nivel_atividade: data.nivel_atividade || '',
+          objetivo_principal: data.objetivo_principal || '',
+          restricoes_alimentares: data.restricoes_alimentares || '',
+          historico_medico: data.historico_medico || ''
+        });
       }
     } catch (error) {
       console.error('Erro ao verificar dados existentes:', error);
@@ -85,8 +95,8 @@ const DadosPessoais = () => {
       console.log('Dados pessoais salvos com sucesso');
       toast.success('Dados salvos com sucesso!');
       
-      // Redirecionar para onboarding após salvar os dados
-      navigate('/onboarding');
+      // Redirecionar para o próximo passo do fluxo (quiz alimentar)
+      navigate('/quiz-alimentar/1');
       
     } catch (error) {
       console.error('Erro inesperado:', error);

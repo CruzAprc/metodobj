@@ -11,11 +11,16 @@ export type Database = {
     Tables: {
       dieta: {
         Row: {
+          almoco: Json | null
           ativa: boolean | null
+          cafe_da_manha: Json | null
           calorias_totais: number | null
+          ceia: Json | null
           created_at: string
           descricao: string | null
           id: string
+          jantar: Json | null
+          lanche: Json | null
           nome_dieta: string
           refeicoes: Json
           universal_id: string
@@ -23,11 +28,16 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          almoco?: Json | null
           ativa?: boolean | null
+          cafe_da_manha?: Json | null
           calorias_totais?: number | null
+          ceia?: Json | null
           created_at?: string
           descricao?: string | null
           id?: string
+          jantar?: Json | null
+          lanche?: Json | null
           nome_dieta: string
           refeicoes?: Json
           universal_id?: string
@@ -35,11 +45,16 @@ export type Database = {
           user_id: string
         }
         Update: {
+          almoco?: Json | null
           ativa?: boolean | null
+          cafe_da_manha?: Json | null
           calorias_totais?: number | null
+          ceia?: Json | null
           created_at?: string
           descricao?: string | null
           id?: string
+          jantar?: Json | null
+          lanche?: Json | null
           nome_dieta?: string
           refeicoes?: Json
           universal_id?: string

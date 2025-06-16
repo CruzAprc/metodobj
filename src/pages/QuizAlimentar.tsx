@@ -6,10 +6,9 @@ import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface QuizData {
   objetivo: string;
@@ -63,6 +62,11 @@ const QuizAlimentar = () => {
     
     if (!user) {
       console.error('Usuário não logado');
+      return;
+    }
+
+    if (!objetivo || !frequenciaRefeicoes || !nivelAtividade || !horarioPreferencia || !orcamento) {
+      console.error('Todos os campos obrigatórios devem ser preenchidos');
       return;
     }
 
@@ -183,13 +187,22 @@ const QuizAlimentar = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Input
-                value={objetivo}
-                onChange={(e) => setObjetivo(e.target.value)}
-                placeholder="Ex: Perder peso, ganhar massa muscular, manter o peso..."
-                className="fitness-input"
-                required
-              />
+              <RadioGroup value={objetivo} onValueChange={setObjetivo} className="space-y-3">
+                {[
+                  'Perder peso',
+                  'Ganhar massa muscular',
+                  'Manter o peso atual',
+                  'Melhorar a saúde geral',
+                  'Aumentar energia e disposição'
+                ].map((option) => (
+                  <div key={option} className="flex items-center space-x-2">
+                    <RadioGroupItem value={option} id={`objetivo-${option}`} />
+                    <Label htmlFor={`objetivo-${option}`} className="font-medium">
+                      {option}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
             </CardContent>
           </Card>
 
@@ -204,7 +217,10 @@ const QuizAlimentar = () => {
               {[
                 { value: 'vegetariano', label: 'Vegetariano', desc: 'Não consumo carne' },
                 { value: 'vegano', label: 'Vegano', desc: 'Não consumo produtos de origem animal' },
-                { value: 'sem-gluten', label: 'Sem Glúten', desc: 'Não consumo glúten' }
+                { value: 'sem-gluten', label: 'Sem Glúten', desc: 'Não consumo glúten' },
+                { value: 'sem-lactose', label: 'Sem Lactose', desc: 'Não consumo lactose' },
+                { value: 'low-carb', label: 'Low Carb', desc: 'Prefiro baixo carboidrato' },
+                { value: 'nenhuma', label: 'Nenhuma restrição', desc: 'Posso comer de tudo' }
               ].map((item) => (
                 <div key={item.value} className="flex items-start space-x-3 p-3 rounded-lg bg-pink-50/50">
                   <Checkbox
@@ -232,8 +248,11 @@ const QuizAlimentar = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               {[
-                { value: 'baixo-carboidrato', label: 'Baixo Carboidrato', desc: 'Prefiro alimentos com baixo teor de carboidratos' },
-                { value: 'rica-proteina', label: 'Rica em Proteína', desc: 'Prefiro alimentos ricos em proteína' }
+                { value: 'rica-proteina', label: 'Rica em Proteína', desc: 'Prefiro alimentos ricos em proteína' },
+                { value: 'muitas-fibras', label: 'Rica em Fibras', desc: 'Gosto de alimentos com muitas fibras' },
+                { value: 'comida-caseira', label: 'Comida Caseira', desc: 'Prefiro preparar minhas refeições' },
+                { value: 'praticidade', label: 'Praticidade', desc: 'Prefiro opções rápidas e práticas' },
+                { value: 'organicos', label: 'Alimentos Orgânicos', desc: 'Prefiro alimentos orgânicos' }
               ].map((item) => (
                 <div key={item.value} className="flex items-start space-x-3 p-3 rounded-lg bg-pink-50/50">
                   <Checkbox
@@ -256,20 +275,25 @@ const QuizAlimentar = () => {
           <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
-                🍽️ Frequência de Refeições
+                🍽️ Quantas refeições você faz por dia?
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Select value={frequenciaRefeicoes} onValueChange={setFrequenciaRefeicoes} required>
-                <SelectTrigger className="fitness-input">
-                  <SelectValue placeholder="Selecione quantas refeições por dia" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="3">3 vezes ao dia</SelectItem>
-                  <SelectItem value="4">4 vezes ao dia</SelectItem>
-                  <SelectItem value="5+">5 ou mais vezes ao dia</SelectItem>
-                </SelectContent>
-              </Select>
+              <RadioGroup value={frequenciaRefeicoes} onValueChange={setFrequenciaRefeicoes} className="space-y-3">
+                {[
+                  { value: '3', label: '3 refeições por dia' },
+                  { value: '4', label: '4 refeições por dia' },
+                  { value: '5', label: '5 refeições por dia' },
+                  { value: '6+', label: '6 ou mais refeições por dia' }
+                ].map((option) => (
+                  <div key={option.value} className="flex items-center space-x-2">
+                    <RadioGroupItem value={option.value} id={`freq-${option.value}`} />
+                    <Label htmlFor={`freq-${option.value}`} className="font-medium">
+                      {option.label}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
             </CardContent>
           </Card>
 
@@ -277,21 +301,28 @@ const QuizAlimentar = () => {
           <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
-                💪 Nível de Atividade Física
+                💪 Qual seu nível de atividade física?
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Select value={nivelAtividade} onValueChange={setNivelAtividade} required>
-                <SelectTrigger className="fitness-input">
-                  <SelectValue placeholder="Selecione seu nível de atividade" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sedentario">Sedentário (pouca ou nenhuma atividade)</SelectItem>
-                  <SelectItem value="levemente-ativo">Levemente Ativo (exercício leve 1-3 dias/semana)</SelectItem>
-                  <SelectItem value="moderadamente-ativo">Moderadamente Ativo (exercício moderado 3-5 dias/semana)</SelectItem>
-                  <SelectItem value="altamente-ativo">Altamente Ativo (exercício intenso 6-7 dias/semana)</SelectItem>
-                </SelectContent>
-              </Select>
+              <RadioGroup value={nivelAtividade} onValueChange={setNivelAtividade} className="space-y-3">
+                {[
+                  { value: 'sedentario', label: 'Sedentário', desc: 'Pouca ou nenhuma atividade física' },
+                  { value: 'levemente-ativo', label: 'Levemente Ativo', desc: 'Exercício leve 1-3 dias/semana' },
+                  { value: 'moderadamente-ativo', label: 'Moderadamente Ativo', desc: 'Exercício moderado 3-5 dias/semana' },
+                  { value: 'altamente-ativo', label: 'Altamente Ativo', desc: 'Exercício intenso 6-7 dias/semana' }
+                ].map((option) => (
+                  <div key={option.value} className="flex items-start space-x-2 p-3 rounded-lg bg-pink-50/50">
+                    <RadioGroupItem value={option.value} id={`atividade-${option.value}`} className="mt-1" />
+                    <div className="space-y-1">
+                      <Label htmlFor={`atividade-${option.value}`} className="font-medium text-gray-800">
+                        {option.label}
+                      </Label>
+                      <p className="text-sm text-gray-600">{option.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </RadioGroup>
             </CardContent>
           </Card>
 
@@ -299,13 +330,17 @@ const QuizAlimentar = () => {
           <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
-                ⚠️ Alergias Alimentares
+                ⚠️ Você tem alguma alergia alimentar?
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {[
                 { value: 'lactose', label: 'Lactose', desc: 'Sou alérgico(a) à lactose' },
-                { value: 'gluten', label: 'Glúten', desc: 'Sou alérgico(a) ao glúten' }
+                { value: 'gluten', label: 'Glúten', desc: 'Sou alérgico(a) ao glúten' },
+                { value: 'oleaginosas', label: 'Oleaginosas', desc: 'Alergia a castanhas, amendoim, etc.' },
+                { value: 'frutos-mar', label: 'Frutos do Mar', desc: 'Alergia a camarão, caranguejo, etc.' },
+                { value: 'ovos', label: 'Ovos', desc: 'Sou alérgico(a) a ovos' },
+                { value: 'nenhuma', label: 'Não tenho alergias', desc: 'Não possuo alergias alimentares' }
               ].map((item) => (
                 <div key={item.value} className="flex items-start space-x-3 p-3 rounded-lg bg-pink-50/50">
                   <Checkbox
@@ -328,13 +363,17 @@ const QuizAlimentar = () => {
           <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
-                💊 Suplementos
+                💊 Você usa algum suplemento?
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {[
                 { value: 'whey', label: 'Whey Protein', desc: 'Utilizo whey protein regularmente' },
-                { value: 'creatina', label: 'Creatina', desc: 'Utilizo creatina regularmente' }
+                { value: 'creatina', label: 'Creatina', desc: 'Utilizo creatina regularmente' },
+                { value: 'vitaminas', label: 'Vitaminas', desc: 'Tomo complexos vitamínicos' },
+                { value: 'omega3', label: 'Ômega 3', desc: 'Suplemento com ômega 3' },
+                { value: 'bcaa', label: 'BCAA', desc: 'Utilizo aminoácidos essenciais' },
+                { value: 'nenhum', label: 'Não uso suplementos', desc: 'Não utilizo nenhum suplemento' }
               ].map((item) => (
                 <div key={item.value} className="flex items-start space-x-3 p-3 rounded-lg bg-pink-50/50">
                   <Checkbox
@@ -357,17 +396,27 @@ const QuizAlimentar = () => {
           <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
-                🕐 Horário de Preferência
+                🕐 Em qual período você prefere fazer suas principais refeições?
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Input
-                value={horarioPreferencia}
-                onChange={(e) => setHorarioPreferencia(e.target.value)}
-                placeholder="Ex: Café da manhã às 7h, almoço às 12h..."
-                className="fitness-input"
-                required
-              />
+              <RadioGroup value={horarioPreferencia} onValueChange={setHorarioPreferencia} className="space-y-3">
+                {[
+                  { value: 'manha-cedo', label: 'Manhã cedo (6h-9h)' },
+                  { value: 'manha-tarde', label: 'Meio da manhã (9h-12h)' },
+                  { value: 'almoco-tradicional', label: 'Almoço tradicional (12h-14h)' },
+                  { value: 'tarde', label: 'Tarde (14h-18h)' },
+                  { value: 'noite', label: 'Noite (18h-21h)' },
+                  { value: 'flexivel', label: 'Horários flexíveis' }
+                ].map((option) => (
+                  <div key={option.value} className="flex items-center space-x-2">
+                    <RadioGroupItem value={option.value} id={`horario-${option.value}`} />
+                    <Label htmlFor={`horario-${option.value}`} className="font-medium">
+                      {option.label}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
             </CardContent>
           </Card>
 
@@ -375,17 +424,27 @@ const QuizAlimentar = () => {
           <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
-                💰 Orçamento para Alimentação
+                💰 Qual seu orçamento mensal para alimentação?
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Input
-                value={orcamento}
-                onChange={(e) => setOrcamento(e.target.value)}
-                placeholder="Ex: R$ 500 por mês"
-                className="fitness-input"
-                required
-              />
+              <RadioGroup value={orcamento} onValueChange={setOrcamento} className="space-y-3">
+                {[
+                  { value: 'ate-300', label: 'Até R$ 300' },
+                  { value: '300-500', label: 'R$ 300 - R$ 500' },
+                  { value: '500-800', label: 'R$ 500 - R$ 800' },
+                  { value: '800-1200', label: 'R$ 800 - R$ 1.200' },
+                  { value: 'acima-1200', label: 'Acima de R$ 1.200' },
+                  { value: 'sem-limite', label: 'Sem limite específico' }
+                ].map((option) => (
+                  <div key={option.value} className="flex items-center space-x-2">
+                    <RadioGroupItem value={option.value} id={`orcamento-${option.value}`} />
+                    <Label htmlFor={`orcamento-${option.value}`} className="font-medium">
+                      {option.label}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
             </CardContent>
           </Card>
 

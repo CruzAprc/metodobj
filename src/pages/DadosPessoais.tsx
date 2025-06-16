@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -178,12 +177,19 @@ const DadosPessoais = () => {
         }
       }
 
-      // Log do evento
+      // Log do evento - converter FormData para objeto JSON compatível
       try {
+        const eventData = {
+          nomeCompleto: formData.nomeCompleto,
+          idade: formData.idade,
+          peso: formData.peso,
+          altura: formData.altura
+        };
+
         await supabase.rpc('log_user_event', {
           p_user_id: user.id,
           p_event_type: 'personal_data_completed',
-          p_event_data: { data: formData },
+          p_event_data: eventData,
           p_table_reference: 'user_personal_data'
         });
       } catch (logError) {

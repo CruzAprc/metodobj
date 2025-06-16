@@ -34,6 +34,7 @@ const App = () => (
             <Route path="/dados-pessoais" element={<DadosPessoais />} />
             <Route path="/loading" element={<Loading />} />
             <Route path="/loading-treino" element={<LoadingTreino />} />
+            <Route path="/quiz-alimentar" element={<QuizAlimentar />} />
             <Route path="/quiz-alimentar/:etapa" element={<QuizAlimentar />} />
             <Route path="/quiz-treino/:pergunta" element={<QuizTreino />} />
             <Route path="/dashboard" element={<Dashboard />} />

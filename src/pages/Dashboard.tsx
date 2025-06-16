@@ -476,7 +476,7 @@ const AppJujuDashboard = () => {
   }, {
     icon: <Camera size={iconSize} />,
     label: 'Avaliação',
-    onClick: () => evaluationUnlocked ? navigate('/avaliacao') : setCurrentTab('avaliacao')
+    onClick: () => navigate('/avaliacao')
   }, {
     icon: <User size={iconSize} />,
     label: 'Perfil',

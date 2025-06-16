@@ -1,11 +1,9 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
 import { ArrowLeft } from 'lucide-react';
-import { trackEvent } from "@/integrations/analytics/client";
 import { useEffect } from 'react';
 
 interface QuizData {
@@ -36,7 +34,7 @@ const QuizAlimentar = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    trackEvent('quiz_alimentar_view');
+    console.log('Quiz alimentar visualizado');
   }, []);
 
   const handleRestricaoChange = (e: React.ChangeEvent<HTMLInputElement>) => {

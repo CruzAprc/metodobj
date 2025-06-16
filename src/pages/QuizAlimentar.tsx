@@ -85,6 +85,7 @@ const QuizAlimentar = () => {
   const { etapa } = useParams<{ etapa: string }>();
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCheckingExisting, setIsCheckingExisting] = useState(true);
   const [quizData, setQuizData] = useState<QuizData>({
     objetivo: '',
     restricoes: [],
@@ -99,10 +100,17 @@ const QuizAlimentar = () => {
   // Verificar se o usuário já preencheu o quiz alimentar
   useEffect(() => {
     const checkExistingQuizData = async () => {
-      if (!user) return;
+      if (!user) {
+        console.log('Quiz Alimentar: Usuário não logado');
+        setIsCheckingExisting(false);
+        return;
+      }
 
       try {
-        console.log('Verificando se usuário já preencheu quiz alimentar...');
+        console.log('Quiz Alimentar: Verificando se usuário já preencheu quiz...', {
+          userId: user.id,
+          email: user.email
+        });
         
         const { data: existingQuiz, error } = await supabase
           .from('user_quiz_data')
@@ -111,25 +119,47 @@ const QuizAlimentar = () => {
           .eq('quiz_type', 'alimentar')
           .maybeSingle();
 
+        console.log('Quiz Alimentar: Resultado da verificação:', {
+          data: existingQuiz,
+          error: error,
+          errorCode: error?.code
+        });
+
         if (error && error.code !== 'PGRST116') {
-          console.error('Erro ao verificar quiz existente:', error);
+          console.error('Quiz Alimentar: Erro ao verificar quiz existente:', error);
+          setIsCheckingExisting(false);
           return;
         }
 
         if (existingQuiz) {
-          console.log('Quiz alimentar já preenchido, redirecionando para dashboard...');
+          console.log('Quiz Alimentar: Quiz já preenchido! Dados:', existingQuiz);
+          console.log('Quiz Alimentar: Redirecionando para dashboard...');
           navigate('/dashboard');
           return;
         }
 
-        console.log('Quiz alimentar não encontrado, usuário pode preencher');
+        console.log('Quiz Alimentar: Quiz não encontrado, usuário pode preencher');
+        setIsCheckingExisting(false);
       } catch (error) {
-        console.error('Erro inesperado ao verificar quiz:', error);
+        console.error('Quiz Alimentar: Erro inesperado ao verificar quiz:', error);
+        setIsCheckingExisting(false);
       }
     };
 
     checkExistingQuizData();
   }, [user, navigate]);
+
+  // Mostrar loading enquanto verifica dados existentes
+  if (isCheckingExisting) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Verificando seus dados...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleOptionSelect = (opcaoId: string) => {
     if (!currentStep) return;
@@ -154,7 +184,7 @@ const QuizAlimentar = () => {
     if (!user) return false;
 
     try {
-      console.log('Salvando dados do quiz alimentar:', quizData);
+      console.log('Quiz Alimentar: Salvando dados:', quizData);
 
       const { data: existingQuiz, error: checkError } = await supabase
         .from('user_quiz_data')
@@ -164,12 +194,13 @@ const QuizAlimentar = () => {
         .maybeSingle();
 
       if (checkError && checkError.code !== 'PGRST116') {
-        console.error('Erro ao verificar quiz existente:', checkError);
+        console.error('Quiz Alimentar: Erro ao verificar quiz existente:', checkError);
         return false;
       }
 
       let result;
       if (existingQuiz) {
+        console.log('Quiz Alimentar: Atualizando quiz existente');
         result = await supabase
           .from('user_quiz_data')
           .update({
@@ -180,6 +211,7 @@ const QuizAlimentar = () => {
           .eq('user_id', user.id)
           .eq('quiz_type', 'alimentar');
       } else {
+        console.log('Quiz Alimentar: Criando novo quiz');
         result = await supabase
           .from('user_quiz_data')
           .insert({
@@ -191,7 +223,7 @@ const QuizAlimentar = () => {
       }
 
       if (result.error) {
-        console.error('Erro ao salvar quiz:', result.error);
+        console.error('Quiz Alimentar: Erro ao salvar quiz:', result.error);
         return false;
       }
 
@@ -203,13 +235,13 @@ const QuizAlimentar = () => {
           p_table_reference: 'user_quiz_data'
         });
       } catch (logError) {
-        console.warn('Erro ao registrar evento:', logError);
+        console.warn('Quiz Alimentar: Erro ao registrar evento:', logError);
       }
 
-      console.log('Quiz alimentar salvo com sucesso!');
+      console.log('Quiz Alimentar: Quiz salvo com sucesso!');
       return true;
     } catch (error) {
-      console.error('Erro inesperado ao salvar quiz:', error);
+      console.error('Quiz Alimentar: Erro inesperado ao salvar quiz:', error);
       return false;
     }
   };
@@ -234,7 +266,7 @@ const QuizAlimentar = () => {
           navigate('/quiz-treino/1');
         }
       } catch (error) {
-        console.error('Erro no processo final:', error);
+        console.error('Quiz Alimentar: Erro no processo final:', error);
       } finally {
         setIsSubmitting(false);
       }

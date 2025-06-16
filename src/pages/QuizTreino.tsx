@@ -93,6 +93,7 @@ const QuizTreino = () => {
   const { pergunta } = useParams<{ pergunta: string }>();
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCheckingExisting, setIsCheckingExisting] = useState(true);
   const [quizData, setQuizData] = useState<QuizData>({
     experiencia: '',
     frequencia: '',
@@ -108,10 +109,17 @@ const QuizTreino = () => {
   // Verificar se o usuário já preencheu o quiz de treino
   useEffect(() => {
     const checkExistingQuizData = async () => {
-      if (!user) return;
+      if (!user) {
+        console.log('Quiz Treino: Usuário não logado');
+        setIsCheckingExisting(false);
+        return;
+      }
 
       try {
-        console.log('Verificando se usuário já preencheu quiz de treino...');
+        console.log('Quiz Treino: Verificando se usuário já preencheu quiz...', {
+          userId: user.id,
+          email: user.email
+        });
         
         const { data: existingQuiz, error } = await supabase
           .from('user_quiz_data')
@@ -120,25 +128,47 @@ const QuizTreino = () => {
           .eq('quiz_type', 'treino')
           .maybeSingle();
 
+        console.log('Quiz Treino: Resultado da verificação:', {
+          data: existingQuiz,
+          error: error,
+          errorCode: error?.code
+        });
+
         if (error && error.code !== 'PGRST116') {
-          console.error('Erro ao verificar quiz existente:', error);
+          console.error('Quiz Treino: Erro ao verificar quiz existente:', error);
+          setIsCheckingExisting(false);
           return;
         }
 
         if (existingQuiz) {
-          console.log('Quiz de treino já preenchido, redirecionando para dashboard...');
+          console.log('Quiz Treino: Quiz já preenchido! Dados:', existingQuiz);
+          console.log('Quiz Treino: Redirecionando para dashboard...');
           navigate('/dashboard');
           return;
         }
 
-        console.log('Quiz de treino não encontrado, usuário pode preencher');
+        console.log('Quiz Treino: Quiz não encontrado, usuário pode preencher');
+        setIsCheckingExisting(false);
       } catch (error) {
-        console.error('Erro inesperado ao verificar quiz:', error);
+        console.error('Quiz Treino: Erro inesperado ao verificar quiz:', error);
+        setIsCheckingExisting(false);
       }
     };
 
     checkExistingQuizData();
   }, [user, navigate]);
+
+  // Mostrar loading enquanto verifica dados existentes
+  if (isCheckingExisting) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Verificando seus dados...</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleOptionSelect = (opcaoId: string) => {
     if (!currentStep) return;
@@ -163,7 +193,7 @@ const QuizTreino = () => {
     if (!user) return false;
 
     try {
-      console.log('Salvando dados do quiz de treino:', quizData);
+      console.log('Quiz Treino: Salvando dados:', quizData);
 
       const { data: existingQuiz, error: checkError } = await supabase
         .from('user_quiz_data')
@@ -173,12 +203,13 @@ const QuizTreino = () => {
         .maybeSingle();
 
       if (checkError && checkError.code !== 'PGRST116') {
-        console.error('Erro ao verificar quiz existente:', checkError);
+        console.error('Quiz Treino: Erro ao verificar quiz existente:', checkError);
         return false;
       }
 
       let result;
       if (existingQuiz) {
+        console.log('Quiz Treino: Atualizando quiz existente');
         result = await supabase
           .from('user_quiz_data')
           .update({
@@ -189,6 +220,7 @@ const QuizTreino = () => {
           .eq('user_id', user.id)
           .eq('quiz_type', 'treino');
       } else {
+        console.log('Quiz Treino: Criando novo quiz');
         result = await supabase
           .from('user_quiz_data')
           .insert({
@@ -200,7 +232,7 @@ const QuizTreino = () => {
       }
 
       if (result.error) {
-        console.error('Erro ao salvar quiz:', result.error);
+        console.error('Quiz Treino: Erro ao salvar quiz:', result.error);
         return false;
       }
 
@@ -212,13 +244,13 @@ const QuizTreino = () => {
           p_table_reference: 'user_quiz_data'
         });
       } catch (logError) {
-        console.warn('Erro ao registrar evento:', logError);
+        console.warn('Quiz Treino: Erro ao registrar evento:', logError);
       }
 
-      console.log('Quiz de treino salvo com sucesso!');
+      console.log('Quiz Treino: Quiz salvo com sucesso!');
       return true;
     } catch (error) {
-      console.error('Erro inesperado ao salvar quiz:', error);
+      console.error('Quiz Treino: Erro inesperado ao salvar quiz:', error);
       return false;
     }
   };
@@ -243,7 +275,7 @@ const QuizTreino = () => {
           navigate('/dashboard');
         }
       } catch (error) {
-        console.error('Erro no processo final:', error);
+        console.error('Quiz Treino: Erro no processo final:', error);
       } finally {
         setIsSubmitting(false);
       }

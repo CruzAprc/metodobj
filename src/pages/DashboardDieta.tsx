@@ -111,9 +111,10 @@ const DashboardDieta = () => {
     if (!user) return;
     
     const { data, error } = await supabase
-      .from('teste_dieta')
+      .from('user_quiz_data')
       .select('*')
       .eq('user_id', user.id)
+      .eq('quiz_type', 'alimentar')
       .single();
       
     if (data) {
@@ -248,7 +249,7 @@ const DashboardDieta = () => {
           </button>
         </div>
 
-        {userData?.quiz_alimentar_concluido ? (
+        {dietData ? (
           <>
             {/* Resumo diário com tema rosa */}
             <motion.div 

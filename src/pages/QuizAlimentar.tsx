@@ -174,40 +174,61 @@ const QuizAlimentar = () => {
     if (!user) return;
 
     try {
-      const dietData = {
-        user_id: user.id,
-        cafe_da_manha: { naoGosta: finalData.etapa1 || [] },
-        almoco: { naoGosta: finalData.etapa2 || [] },
-        lanche: { naoGosta: finalData.etapa3 || [] },
-        jantar: { naoGosta: finalData.etapa4 || [] },
-        ceia: { naoGosta: finalData.etapa5 || [] }
-      };
+      console.log('Saving diet quiz data to database:', finalData);
 
       // Verificar se já existe um registro
       const { data: existingData } = await supabase
-        .from('teste_dieta')
+        .from('user_quiz_data')
         .select('id')
         .eq('user_id', user.id)
+        .eq('quiz_type', 'alimentar')
         .single();
+
+      const quizData = {
+        etapa1: finalData.etapa1 || [],
+        etapa2: finalData.etapa2 || [],
+        etapa3: finalData.etapa3 || [],
+        etapa4: finalData.etapa4 || [],
+        etapa5: finalData.etapa5 || []
+      };
 
       if (existingData) {
         // Atualizar registro existente
         await supabase
-          .from('teste_dieta')
-          .update(dietData)
-          .eq('user_id', user.id);
+          .from('user_quiz_data')
+          .update({
+            quiz_data: quizData,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id)
+          .eq('quiz_type', 'alimentar');
       } else {
         // Criar novo registro
         await supabase
-          .from('teste_dieta')
-          .insert(dietData);
+          .from('user_quiz_data')
+          .insert({
+            user_id: user.id,
+            quiz_type: 'alimentar',
+            quiz_data: quizData
+          });
       }
 
       // Atualizar status do quiz na tabela teste_app
       await supabase
         .from('teste_app')
-        .update({ quiz_alimentar_concluido: true })
+        .update({ 
+          quiz_alimentar_concluido: true,
+          updated_at: new Date().toISOString()
+        })
         .eq('user_id', user.id);
+
+      // Registrar evento
+      await supabase.rpc('log_user_event', {
+        p_user_id: user.id,
+        p_event_type: 'quiz_completed',
+        p_event_data: { quiz_type: 'alimentar', data: quizData },
+        p_table_reference: 'user_quiz_data'
+      });
 
       console.log('Dados salvos no banco com sucesso!');
     } catch (error) {

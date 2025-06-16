@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -17,7 +16,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tables } from "@/integrations/supabase/types";
 
 interface QuizData {
   experiencia: string;
@@ -28,27 +27,8 @@ interface QuizData {
   tempo_disponivel: string;
 }
 
-interface TreinoData {
-  id: string;
-  user_id: string;
-  quiz_data: QuizData;
-  segunda_feira: any;
-  terca_feira: any;
-  quarta_feira: any;
-  quinta_feira: any;
-  sexta_feira: any;
-  sabado: any;
-  domingo: any;
-  treino_a: any;
-  treino_b: any;
-  treino_c: any;
-  treino_d: any;
-  treino_e: any;
-  ativo: boolean;
-  nome_plano: string;
-  descricao: string;
-  webhook_received_at: string;
-}
+// Use the actual Supabase table type
+type TreinoData = Tables<'treino'>;
 
 const DashboardTreino = () => {
   const navigate = useNavigate();
@@ -79,7 +59,10 @@ const DashboardTreino = () => {
       if (treinoPersonalizado) {
         console.log('Dashboard Treino: Treino personalizado encontrado:', treinoPersonalizado);
         setTreinoData(treinoPersonalizado);
-        setWorkoutData({ quiz_data: treinoPersonalizado.quiz_data });
+        // Extract quiz_data if it exists and has the right structure
+        if (treinoPersonalizado.quiz_data && typeof treinoPersonalizado.quiz_data === 'object') {
+          setWorkoutData({ quiz_data: treinoPersonalizado.quiz_data as QuizData });
+        }
       } else {
         // Se não houver treino personalizado, busca dados do quiz
         const { data: quizData, error: quizError } = await supabase
@@ -169,7 +152,10 @@ const DashboardTreino = () => {
     if (!treinoData) return null;
 
     const diasTreino = ['segunda_feira', 'terca_feira', 'quarta_feira', 'quinta_feira', 'sexta_feira', 'sabado', 'domingo'];
-    const diasComTreino = diasTreino.filter(dia => treinoData[dia as keyof TreinoData]);
+    const diasComTreino = diasTreino.filter(dia => {
+      const treinoDia = treinoData[dia as keyof TreinoData];
+      return treinoDia && treinoDia !== null;
+    });
 
     return (
       <motion.div 
@@ -204,7 +190,7 @@ const DashboardTreino = () => {
                   <h4 className="font-semibold text-gray-800">{getDiaNome(dia)}</h4>
                 </div>
                 
-                {treinoDia && typeof treinoDia === 'object' && treinoDia.exercicios ? (
+                {treinoDia && typeof treinoDia === 'object' && 'exercicios' in treinoDia && Array.isArray(treinoDia.exercicios) ? (
                   <div className="space-y-2">
                     {treinoDia.exercicios.slice(0, 3).map((exercicio: any, index: number) => (
                       <div key={index} className="text-sm text-gray-600">
@@ -232,8 +218,8 @@ const DashboardTreino = () => {
           <div className="mt-6">
             <h4 className="text-lg font-semibold text-gray-800 mb-4">Divisão de Treinos</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {['treino_a', 'treino_b', 'treino_c', 'treino_d', 'treino_e'].map((treino) => {
-                const treinoInfo = treinoData[treino as keyof TreinoData];
+              {(['treino_a', 'treino_b', 'treino_c', 'treino_d', 'treino_e'] as const).map((treino) => {
+                const treinoInfo = treinoData[treino];
                 if (!treinoInfo) return null;
                 
                 return (
@@ -244,7 +230,7 @@ const DashboardTreino = () => {
                         Treino {treino.split('_')[1].toUpperCase()}
                       </h5>
                     </div>
-                    {treinoInfo && typeof treinoInfo === 'object' && treinoInfo.exercicios ? (
+                    {treinoInfo && typeof treinoInfo === 'object' && 'exercicios' in treinoInfo && Array.isArray(treinoInfo.exercicios) ? (
                       <div className="text-sm text-gray-600">
                         {treinoInfo.exercicios.length} exercícios
                       </div>
@@ -261,7 +247,7 @@ const DashboardTreino = () => {
         )}
 
         <div className="mt-4 text-xs text-gray-500">
-          Plano criado em: {new Date(treinoData.webhook_received_at).toLocaleDateString('pt-BR')}
+          Plano criado em: {new Date(treinoData.webhook_received_at || treinoData.created_at).toLocaleDateString('pt-BR')}
         </div>
       </motion.div>
     );

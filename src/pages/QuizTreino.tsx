@@ -145,7 +145,7 @@ const QuizTreino = () => {
           return;
         } else if (existingQuiz && existingQuiz.quiz_data) {
           console.log('Quiz Treino: Dados parciais encontrados, carregando...');
-          // Validar e carregar dados existentes
+          // Validar e carregar dados existentes com type assertion
           const data = existingQuiz.quiz_data as any;
           if (data && typeof data === 'object') {
             setQuizData({
@@ -169,56 +169,6 @@ const QuizTreino = () => {
 
     checkQuizCompletion();
   }, [user, navigate]);
-
-  // Carregar dados existentes do quiz se houver
-  useEffect(() => {
-    const loadExistingQuizData = async () => {
-      if (!user) {
-        console.log('Quiz Treino: Usuário não logado');
-        setIsCheckingExisting(false);
-        return;
-      }
-
-      try {
-        console.log('Quiz Treino: Carregando dados existentes do quiz...', {
-          userId: user.id,
-          email: user.email
-        });
-        
-        const { data: existingQuiz, error } = await supabase
-          .from('user_quiz_data')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('quiz_type', 'treino')
-          .maybeSingle();
-
-        console.log('Quiz Treino: Resultado da verificação:', {
-          data: existingQuiz,
-          error: error,
-          errorCode: error?.code
-        });
-
-        if (error && error.code !== 'PGRST116') {
-          console.error('Quiz Treino: Erro ao verificar quiz existente:', error);
-          setIsCheckingExisting(false);
-          return;
-        }
-
-        if (existingQuiz && existingQuiz.quiz_data) {
-          console.log('Quiz Treino: Dados existentes encontrados, carregando...', existingQuiz.quiz_data);
-          setQuizData(existingQuiz.quiz_data);
-        }
-
-        console.log('Quiz Treino: Pronto para uso');
-        setIsCheckingExisting(false);
-      } catch (error) {
-        console.error('Quiz Treino: Erro inesperado ao carregar quiz:', error);
-        setIsCheckingExisting(false);
-      }
-    };
-
-    loadExistingQuizData();
-  }, [user]);
 
   // Mostrar loading enquanto verifica dados existentes
   if (isCheckingExisting) {

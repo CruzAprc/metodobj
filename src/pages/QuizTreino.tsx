@@ -105,9 +105,9 @@ const QuizTreino = () => {
   const currentPergunta = parseInt(pergunta || '1');
   const currentStep = quizSteps.find(step => step.pergunta === currentPergunta);
 
-  // Verificar se o usuário já preencheu o quiz de treino
+  // Carregar dados existentes do quiz se houver
   useEffect(() => {
-    const checkExistingQuizData = async () => {
+    const loadExistingQuizData = async () => {
       if (!user) {
         console.log('Quiz Treino: Usuário não logado');
         setIsCheckingExisting(false);
@@ -115,7 +115,7 @@ const QuizTreino = () => {
       }
 
       try {
-        console.log('Quiz Treino: Verificando se usuário já preencheu quiz...', {
+        console.log('Quiz Treino: Carregando dados existentes do quiz...', {
           userId: user.id,
           email: user.email
         });
@@ -139,23 +139,21 @@ const QuizTreino = () => {
           return;
         }
 
-        if (existingQuiz) {
-          console.log('Quiz Treino: Quiz já preenchido! Dados:', existingQuiz);
-          console.log('Quiz Treino: Redirecionando para dashboard...');
-          navigate('/dashboard');
-          return;
+        if (existingQuiz && existingQuiz.quiz_data) {
+          console.log('Quiz Treino: Dados existentes encontrados, carregando...', existingQuiz.quiz_data);
+          setQuizData(existingQuiz.quiz_data);
         }
 
-        console.log('Quiz Treino: Quiz não encontrado, usuário pode preencher');
+        console.log('Quiz Treino: Pronto para uso');
         setIsCheckingExisting(false);
       } catch (error) {
-        console.error('Quiz Treino: Erro inesperado ao verificar quiz:', error);
+        console.error('Quiz Treino: Erro inesperado ao carregar quiz:', error);
         setIsCheckingExisting(false);
       }
     };
 
-    checkExistingQuizData();
-  }, [user, navigate]);
+    loadExistingQuizData();
+  }, [user]);
 
   // Mostrar loading enquanto verifica dados existentes
   if (isCheckingExisting) {
@@ -163,7 +161,7 @@ const QuizTreino = () => {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Verificando seus dados...</p>
+          <p className="text-gray-600">Carregando quiz...</p>
         </div>
       </div>
     );

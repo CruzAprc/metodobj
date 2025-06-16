@@ -4,22 +4,48 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useForm } from 'react-hook-form';
+
+interface FormData {
+  nome_completo: string;
+  data_nascimento: string;
+  altura: string;
+  peso_atual: string;
+  sexo: string;
+}
 
 const DadosPessoais = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [formData, setFormData] = useState({
-    nome_completo: '',
-    data_nascimento: '',
-    altura: '',
-    peso_atual: '',
-    sexo: '',
-    nivel_atividade: '',
-    objetivo_principal: '',
-    restricoes_alimentares: '',
-    historico_medico: ''
-  });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const form = useForm<FormData>({
+    defaultValues: {
+      nome_completo: '',
+      data_nascimento: '',
+      altura: '',
+      peso_atual: '',
+      sexo: '',
+    },
+  });
 
   useEffect(() => {
     if (!user) {
@@ -27,7 +53,6 @@ const DadosPessoais = () => {
       return;
     }
     
-    // Verificar se já tem dados pessoais
     checkExistingData();
   }, [user, navigate]);
 
@@ -42,20 +67,14 @@ const DadosPessoais = () => {
         .maybeSingle();
 
       if (data && !error) {
-        // Se já tem dados, preencher o formulário com os dados existentes
         console.log('Dados pessoais já existem, preenchendo formulário');
-        // Usando type assertion para lidar com as novas colunas
         const personalData = data as any;
-        setFormData({
+        form.reset({
           nome_completo: personalData.nome_completo || '',
           data_nascimento: personalData.data_nascimento || '',
           altura: personalData.altura?.toString() || '',
           peso_atual: personalData.peso_atual?.toString() || '',
           sexo: personalData.sexo || '',
-          nivel_atividade: personalData.nivel_atividade || '',
-          objetivo_principal: personalData.objetivo_principal || '',
-          restricoes_alimentares: personalData.restricoes_alimentares || '',
-          historico_medico: personalData.historico_medico || ''
         });
       }
     } catch (error) {
@@ -63,9 +82,7 @@ const DadosPessoais = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const onSubmit = async (data: FormData) => {
     if (!user) {
       toast.error('Usuário não autenticado');
       return;
@@ -74,12 +91,11 @@ const DadosPessoais = () => {
     setIsSubmitting(true);
     
     try {
-      // Converter altura e peso para números
       const dataToSave = {
-        ...formData,
+        ...data,
         user_id: user.id,
-        altura: parseFloat(formData.altura),
-        peso_atual: parseFloat(formData.peso_atual)
+        altura: parseFloat(data.altura),
+        peso_atual: parseFloat(data.peso_atual)
       };
 
       const { error } = await supabase
@@ -97,7 +113,6 @@ const DadosPessoais = () => {
       console.log('Dados pessoais salvos com sucesso');
       toast.success('Dados salvos com sucesso!');
       
-      // Redirecionar para o próximo passo do fluxo (quiz alimentar)
       navigate('/quiz-alimentar/1');
       
     } catch (error) {
@@ -106,13 +121,6 @@ const DadosPessoais = () => {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
   };
 
   return (
@@ -130,171 +138,136 @@ const DadosPessoais = () => {
 
         {/* Formulário */}
         <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Nome Completo */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Nome Completo *
-              </label>
-              <input
-                type="text"
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Nome Completo */}
+              <FormField
+                control={form.control}
                 name="nome_completo"
-                value={formData.nome_completo}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
-                placeholder="Seu nome completo"
-                required
+                rules={{ required: "Nome completo é obrigatório" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-semibold text-gray-700">
+                      Nome Completo *
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Seu nome completo"
+                        className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            {/* Data de Nascimento */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Data de Nascimento *
-              </label>
-              <input
-                type="date"
+              {/* Data de Nascimento */}
+              <FormField
+                control={form.control}
                 name="data_nascimento"
-                value={formData.data_nascimento}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
-                required
+                rules={{ required: "Data de nascimento é obrigatória" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-semibold text-gray-700">
+                      Data de Nascimento *
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            {/* Altura e Peso */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Altura (cm) *
-                </label>
-                <input
-                  type="number"
+              {/* Altura e Peso */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
                   name="altura"
-                  value={formData.altura}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
-                  placeholder="Ex: 165"
-                  required
+                  rules={{ required: "Altura é obrigatória" }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-semibold text-gray-700">
+                        Altura (cm) *
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="Ex: 165"
+                          className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Peso Atual (kg) *
-                </label>
-                <input
-                  type="number"
+                <FormField
+                  control={form.control}
                   name="peso_atual"
-                  value={formData.peso_atual}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
-                  placeholder="Ex: 65"
-                  step="0.1"
-                  required
+                  rules={{ required: "Peso atual é obrigatório" }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-semibold text-gray-700">
+                        Peso Atual (kg) *
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="Ex: 65"
+                          step="0.1"
+                          className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
-            </div>
 
-            {/* Sexo */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Sexo *
-              </label>
-              <select
+              {/* Sexo */}
+              <FormField
+                control={form.control}
                 name="sexo"
-                value={formData.sexo}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
-                required
-              >
-                <option value="">Selecione seu sexo</option>
-                <option value="feminino">Feminino</option>
-                <option value="masculino">Masculino</option>
-              </select>
-            </div>
-
-            {/* Nível de Atividade */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Nível de Atividade Física *
-              </label>
-              <select
-                name="nivel_atividade"
-                value={formData.nivel_atividade}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
-                required
-              >
-                <option value="">Selecione seu nível</option>
-                <option value="sedentario">Sedentário (pouco ou nenhum exercício)</option>
-                <option value="leve">Levemente ativo (exercício leve 1-3 dias/semana)</option>
-                <option value="moderado">Moderadamente ativo (exercício moderado 3-5 dias/semana)</option>
-                <option value="intenso">Muito ativo (exercício intenso 6-7 dias/semana)</option>
-                <option value="extremo">Extremamente ativo (exercício muito intenso)</option>
-              </select>
-            </div>
-
-            {/* Objetivo Principal */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Objetivo Principal *
-              </label>
-              <select
-                name="objetivo_principal"
-                value={formData.objetivo_principal}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
-                required
-              >
-                <option value="">Selecione seu objetivo</option>
-                <option value="perder_peso">Perder peso</option>
-                <option value="ganhar_massa">Ganhar massa muscular</option>
-                <option value="manter_peso">Manter peso atual</option>
-                <option value="melhorar_condicionamento">Melhorar condicionamento físico</option>
-                <option value="tonificar">Tonificar o corpo</option>
-              </select>
-            </div>
-
-            {/* Restrições Alimentares */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Restrições Alimentares
-              </label>
-              <textarea
-                name="restricoes_alimentares"
-                value={formData.restricoes_alimentares}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all resize-none"
-                placeholder="Ex: Intolerância à lactose, vegetariano, alergia a frutos do mar..."
-                rows={3}
+                rules={{ required: "Sexo é obrigatório" }}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-semibold text-gray-700">
+                      Sexo *
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all">
+                          <SelectValue placeholder="Selecione seu sexo" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="feminino">Feminino</SelectItem>
+                        <SelectItem value="masculino">Masculino</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
 
-            {/* Histórico Médico */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Histórico Médico Relevante
-              </label>
-              <textarea
-                name="historico_medico"
-                value={formData.historico_medico}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all resize-none"
-                placeholder="Ex: Diabetes, hipertensão, lesões anteriores, cirurgias..."
-                rows={3}
-              />
-            </div>
-
-            {/* Botão de Submit */}
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-pink-500 to-sky-500 hover:from-pink-600 hover:to-sky-600 text-white font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? 'Salvando...' : 'Salvar e Continuar 💪'}
-            </button>
-          </form>
+              {/* Botão de Submit */}
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-gradient-to-r from-pink-500 to-sky-500 hover:from-pink-600 hover:to-sky-600 text-white font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed h-auto"
+              >
+                {isSubmitting ? 'Salvando...' : 'Salvar e Continuar 💪'}
+              </Button>
+            </form>
+          </Form>
         </div>
       </div>
     </div>

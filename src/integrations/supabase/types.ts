@@ -11,16 +11,11 @@ export type Database = {
     Tables: {
       dieta: {
         Row: {
-          almoco: Json | null
           ativa: boolean | null
-          cafe_da_manha: Json | null
           calorias_totais: number | null
-          ceia: Json | null
           created_at: string
           descricao: string | null
           id: string
-          jantar: Json | null
-          lanche: Json | null
           nome_dieta: string
           refeicoes: Json
           universal_id: string
@@ -28,16 +23,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          almoco?: Json | null
           ativa?: boolean | null
-          cafe_da_manha?: Json | null
           calorias_totais?: number | null
-          ceia?: Json | null
           created_at?: string
           descricao?: string | null
           id?: string
-          jantar?: Json | null
-          lanche?: Json | null
           nome_dieta: string
           refeicoes?: Json
           universal_id?: string
@@ -45,16 +35,11 @@ export type Database = {
           user_id: string
         }
         Update: {
-          almoco?: Json | null
           ativa?: boolean | null
-          cafe_da_manha?: Json | null
           calorias_totais?: number | null
-          ceia?: Json | null
           created_at?: string
           descricao?: string | null
           id?: string
-          jantar?: Json | null
-          lanche?: Json | null
           nome_dieta?: string
           refeicoes?: Json
           universal_id?: string
@@ -132,81 +117,6 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           whatsapp?: string | null
-        }
-        Relationships: []
-      }
-      treino: {
-        Row: {
-          ativo: boolean | null
-          created_at: string
-          descricao: string | null
-          domingo: Json | null
-          id: string
-          nome_plano: string | null
-          quarta_feira: Json | null
-          quinta_feira: Json | null
-          quiz_data: Json | null
-          sabado: Json | null
-          segunda_feira: Json | null
-          sexta_feira: Json | null
-          terca_feira: Json | null
-          treino_a: Json | null
-          treino_b: Json | null
-          treino_c: Json | null
-          treino_d: Json | null
-          treino_e: Json | null
-          universal_id: string
-          updated_at: string
-          user_id: string
-          webhook_received_at: string | null
-        }
-        Insert: {
-          ativo?: boolean | null
-          created_at?: string
-          descricao?: string | null
-          domingo?: Json | null
-          id?: string
-          nome_plano?: string | null
-          quarta_feira?: Json | null
-          quinta_feira?: Json | null
-          quiz_data?: Json | null
-          sabado?: Json | null
-          segunda_feira?: Json | null
-          sexta_feira?: Json | null
-          terca_feira?: Json | null
-          treino_a?: Json | null
-          treino_b?: Json | null
-          treino_c?: Json | null
-          treino_d?: Json | null
-          treino_e?: Json | null
-          universal_id?: string
-          updated_at?: string
-          user_id: string
-          webhook_received_at?: string | null
-        }
-        Update: {
-          ativo?: boolean | null
-          created_at?: string
-          descricao?: string | null
-          domingo?: Json | null
-          id?: string
-          nome_plano?: string | null
-          quarta_feira?: Json | null
-          quinta_feira?: Json | null
-          quiz_data?: Json | null
-          sabado?: Json | null
-          segunda_feira?: Json | null
-          sexta_feira?: Json | null
-          terca_feira?: Json | null
-          treino_a?: Json | null
-          treino_b?: Json | null
-          treino_c?: Json | null
-          treino_d?: Json | null
-          treino_e?: Json | null
-          universal_id?: string
-          updated_at?: string
-          user_id?: string
-          webhook_received_at?: string | null
         }
         Relationships: []
       }

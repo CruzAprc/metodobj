@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -17,7 +18,7 @@ interface QuizData {
 const quizSteps = [
   {
     pergunta: 1,
-    titulo: 'Qual sua experiência com musculação?',
+    titulo: 'Qual sua experiência com exercícios?',
     opcoes: [
       { id: 'iniciante', texto: 'Iniciante (nunca treinei)', emoji: '🆕' },
       { id: 'basico', texto: 'Básico (menos de 6 meses)', emoji: '📚' },
@@ -41,10 +42,10 @@ const quizSteps = [
     pergunta: 3,
     titulo: 'Qual seu principal objetivo no treino?',
     opcoes: [
+      { id: 'perder_gordura', texto: 'Perder gordura', emoji: '🔥' },
       { id: 'ganhar_massa', texto: 'Ganhar massa muscular', emoji: '💪' },
       { id: 'definir', texto: 'Definição muscular', emoji: '✨' },
-      { id: 'forca', texto: 'Ganhar força', emoji: '🏋️' },
-      { id: 'hipertrofia', texto: 'Hipertrofia', emoji: '💥' }
+      { id: 'condicionamento', texto: 'Melhorar condicionamento', emoji: '❤️' }
     ],
     campo: 'objetivo' as keyof QuizData
   },
@@ -63,12 +64,13 @@ const quizSteps = [
   },
   {
     pergunta: 5,
-    titulo: 'Que tipo de treino de musculação você prefere?',
+    titulo: 'Que tipo de treino você prefere?',
     opcoes: [
-      { id: 'musculacao_tradicional', texto: 'Musculação tradicional', emoji: '🏋️' },
-      { id: 'powerlifting', texto: 'Powerlifting', emoji: '💪' },
-      { id: 'bodybuilding', texto: 'Bodybuilding', emoji: '🏆' },
-      { id: 'hiit_muscular', texto: 'HIIT com pesos', emoji: '🔥' }
+      { id: 'musculacao', texto: 'Musculação', emoji: '🏋️' },
+      { id: 'funcional', texto: 'Treino funcional', emoji: '🤸' },
+      { id: 'cardio', texto: 'Exercícios cardio', emoji: '🏃' },
+      { id: 'misto', texto: 'Treino misto', emoji: '🔄' },
+      { id: 'casa', texto: 'Treino em casa', emoji: '🏠' }
     ],
     campo: 'preferencias' as keyof QuizData,
     multipla: true
@@ -187,39 +189,6 @@ const QuizTreino = () => {
     }
   };
 
-  const sendToWebhook = async (data: QuizData): Promise<boolean> => {
-    try {
-      console.log('Quiz Treino: Enviando dados para webhook:', data);
-      
-      const webhookData = {
-        user_id: user?.id,
-        email: user?.email,
-        quiz_type: 'treino',
-        quiz_data: data,
-        timestamp: new Date().toISOString()
-      };
-
-      const response = await fetch('https://webhook.sv-02.botfai.com.br/webhook/1613f464-324c-494d-945a-efedd0a0dbd5', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(webhookData),
-      });
-
-      if (response.ok) {
-        console.log('Quiz Treino: Dados enviados para webhook com sucesso');
-        return true;
-      } else {
-        console.error('Quiz Treino: Erro ao enviar para webhook:', response.status);
-        return false;
-      }
-    } catch (error) {
-      console.error('Quiz Treino: Erro ao enviar para webhook:', error);
-      return false;
-    }
-  };
-
   const saveQuizData = async (): Promise<boolean> => {
     if (!user) return false;
 
@@ -266,9 +235,6 @@ const QuizTreino = () => {
         console.error('Quiz Treino: Erro ao salvar quiz:', result.error);
         return false;
       }
-
-      // Enviar dados para o webhook após salvar com sucesso
-      await sendToWebhook(quizData);
 
       try {
         await supabase.rpc('log_user_event', {
@@ -459,7 +425,7 @@ const QuizTreino = () => {
         {/* Indicador de etapa */}
         <div className="text-center mt-6">
           <p className="text-xs text-slate-400">
-            Pergunta {currentPergunta} de {quizSteps.length} - Quiz Musculação
+            Pergunta {currentPergunta} de {quizSteps.length} - Quiz Treino
           </p>
         </div>
       </div>

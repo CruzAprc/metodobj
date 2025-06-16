@@ -13,10 +13,10 @@ const Login = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Redirect if already logged in - SEMPRE para onboarding
+  // Redirect if already logged in
   useEffect(() => {
     if (user && !loading) {
-      console.log('Usuário já logado, redirecionando para onboarding...');
+      console.log('Usuário já logado, redirecionando...');
       navigate('/onboarding');
     }
   }, [user, loading, navigate]);
@@ -50,8 +50,7 @@ const Login = () => {
       } else {
         console.log('Login realizado com sucesso');
         toast.success('Login realizado com sucesso!');
-        // Redirecionar SEMPRE para onboarding após login bem-sucedido
-        navigate('/onboarding');
+        // O redirecionamento será feito pelo useEffect quando o user state for atualizado
       }
     } catch (error: any) {
       console.error('Erro inesperado no login:', error);

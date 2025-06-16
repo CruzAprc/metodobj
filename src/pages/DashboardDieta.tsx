@@ -168,7 +168,6 @@ const DashboardDieta = () => {
   const refeicoes = [
     {
       id: 'cafeDaManha',
-      dbField: 'cafe_da_manha',
       nome: 'Café da Manhã',
       emoji: '☀️',
       icon: <Coffee className="text-pink-500" size={24} />,
@@ -177,7 +176,6 @@ const DashboardDieta = () => {
     },
     {
       id: 'almoco',
-      dbField: 'almoco',
       nome: 'Almoço',
       emoji: '🍽️',
       icon: <Utensils className="text-pink-600" size={24} />,
@@ -186,7 +184,6 @@ const DashboardDieta = () => {
     },
     {
       id: 'lanche',
-      dbField: 'lanche',
       nome: 'Lanche',
       emoji: '🥪',
       icon: <Sandwich className="text-rose-500" size={24} />,
@@ -195,7 +192,6 @@ const DashboardDieta = () => {
     },
     {
       id: 'jantar',
-      dbField: 'jantar',
       nome: 'Jantar',
       emoji: '🌙',
       icon: <Moon className="text-pink-500" size={24} />,
@@ -204,7 +200,6 @@ const DashboardDieta = () => {
     },
     {
       id: 'ceia',
-      dbField: 'ceia',
       nome: 'Ceia',
       emoji: '🌟',
       icon: <Moon className="text-rose-400" size={24} />,
@@ -224,29 +219,9 @@ const DashboardDieta = () => {
   };
 
   const getDietDataToShow = () => {
-    // Se temos dados reais da dieta, usar as colunas específicas
-    if (realDietData) {
-      const dietDataFromColumns = {
-        cafeDaManha: realDietData.cafe_da_manha,
-        almoco: realDietData.almoco,
-        lanche: realDietData.lanche,
-        jantar: realDietData.jantar,
-        ceia: realDietData.ceia
-      };
-      
-      // Verificar se há dados nas colunas específicas
-      const hasDataInColumns = Object.values(dietDataFromColumns).some(meal => 
-        meal && typeof meal === 'object' && Object.keys(meal).length > 0
-      );
-      
-      if (hasDataInColumns) {
-        return dietDataFromColumns;
-      }
-      
-      // Fallback para a coluna refeicoes se ainda existir
-      if (realDietData.refeicoes && Object.keys(realDietData.refeicoes).length > 0) {
-        return realDietData.refeicoes;
-      }
+    // Se temos dados reais da dieta, usar o campo refeicoes
+    if (realDietData?.refeicoes && Object.keys(realDietData.refeicoes).length > 0) {
+      return realDietData.refeicoes;
     }
     
     // Senão, usar mock data

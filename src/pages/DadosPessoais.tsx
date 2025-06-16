@@ -223,8 +223,8 @@ const DadosPessoais = () => {
           // Salvar no localStorage para usar em outras partes da aplicação
           localStorage.setItem('dadosPessoais', JSON.stringify(formData));
           
-          // Redirecionar para loading (que vai para quiz-alimentar)
-          navigate('/loading');
+          // Redirecionar para onboarding para seguir a lógica de verificação
+          navigate('/onboarding');
         }
       } catch (error) {
         console.error('Erro no processo final:', error);

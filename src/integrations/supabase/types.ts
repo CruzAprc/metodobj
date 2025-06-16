@@ -12,23 +12,23 @@ export type Database = {
       anuncio_ads: {
         Row: {
           ad_id: string
-          influencer_id: number
+          influencer_id: number | null
           midia_type: string | null
-          plataforma_anuncio: string
+          plataforma_anuncio: string | null
           url_anuncio: string | null
         }
         Insert: {
           ad_id: string
-          influencer_id: number
+          influencer_id?: number | null
           midia_type?: string | null
-          plataforma_anuncio: string
+          plataforma_anuncio?: string | null
           url_anuncio?: string | null
         }
         Update: {
           ad_id?: string
-          influencer_id?: number
+          influencer_id?: number | null
           midia_type?: string | null
-          plataforma_anuncio?: string
+          plataforma_anuncio?: string | null
           url_anuncio?: string | null
         }
         Relationships: [
@@ -522,13 +522,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "anuncio_ads"
             referencedColumns: ["ad_id"]
-          },
-          {
-            foreignKeyName: "lead_payments_numero_telefone_fkey"
-            columns: ["numero_telefone"]
-            isOneToOne: false
-            referencedRelation: "leads"
-            referencedColumns: ["numero_telefone"]
           },
         ]
       }

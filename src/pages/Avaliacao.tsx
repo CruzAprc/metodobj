@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import Header from '../components/Header';
+import OptimizedImage from '../components/OptimizedImage';
 import { Camera, Calendar, TrendingUp, Lock, CheckCircle, Upload, X } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { compressImage, preloadImage, getCachedImage, setCachedImage } from '@/utils/imageUtils';
 
 interface EvaluationAccess {
   id: string;
@@ -37,12 +39,26 @@ const Avaliacao = () => {
   const [uploading, setUploading] = useState(false);
   const [activeTab, setActiveTab] = useState<'photos' | 'analysis'>('photos');
   const [daysUsingApp, setDaysUsingApp] = useState(0);
+  const [preloadedImages, setPreloadedImages] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (user) {
       loadEvaluationData();
     }
   }, [user]);
+
+  // Preload das imagens quando carregadas
+  useEffect(() => {
+    if (currentPhotos.length > 0) {
+      currentPhotos.forEach(photo => {
+        if (!preloadedImages.has(photo.id)) {
+          preloadImage(photo.photo_url).then(() => {
+            setPreloadedImages(prev => new Set([...prev, photo.id]));
+          }).catch(console.error);
+        }
+      });
+    }
+  }, [currentPhotos, preloadedImages]);
 
   const loadEvaluationData = async () => {
     if (!user) return;
@@ -106,50 +122,45 @@ const Avaliacao = () => {
 
     setUploading(true);
     try {
-      // Upload da foto para o storage (implementar depois)
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      // Comprimir imagem antes do upload
+      const compressedImage = await compressImage(file, 0.8, 1024);
       
-      // Por enquanto, usar data URL para demonstração
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const photoUrl = e.target?.result as string;
-        const currentMonth = new Date().toISOString().slice(0, 7) + '-01';
+      // Cache da imagem comprimida
+      const cacheKey = `${user.id}-${photoType}-${Date.now()}`;
+      setCachedImage(cacheKey, compressedImage);
 
-        // Verificar se já existe foto deste tipo para este mês
-        const existingPhoto = currentPhotos.find(p => p.photo_type === photoType);
+      const currentMonth = new Date().toISOString().slice(0, 7) + '-01';
+      const existingPhoto = currentPhotos.find(p => p.photo_type === photoType);
 
-        if (existingPhoto) {
-          // Atualizar foto existente
-          const { error } = await supabase
-            .from('evaluation_photos')
-            .update({ photo_url: photoUrl, updated_at: new Date().toISOString() })
-            .eq('id', existingPhoto.id);
+      if (existingPhoto) {
+        const { error } = await supabase
+          .from('evaluation_photos')
+          .update({ 
+            photo_url: compressedImage, 
+            updated_at: new Date().toISOString() 
+          })
+          .eq('id', existingPhoto.id);
 
-          if (error) throw error;
-        } else {
-          // Inserir nova foto
-          const { error } = await supabase
-            .from('evaluation_photos')
-            .insert({
-              user_id: user.id,
-              photo_url: photoUrl,
-              photo_type: photoType,
-              evaluation_period: currentMonth
-            });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('evaluation_photos')
+          .insert({
+            user_id: user.id,
+            photo_url: compressedImage,
+            photo_type: photoType,
+            evaluation_period: currentMonth
+          });
 
-          if (error) throw error;
-        }
+        if (error) throw error;
+      }
 
-        // Recarregar fotos
-        await loadEvaluationData();
-        
-        toast({
-          title: "Sucesso",
-          description: `Foto ${photoType} enviada com sucesso!`
-        });
-      };
-      reader.readAsDataURL(file);
+      await loadEvaluationData();
+      
+      toast({
+        title: "Sucesso",
+        description: `Foto ${photoType} enviada com sucesso!`
+      });
     } catch (error) {
       console.error('Erro ao fazer upload:', error);
       toast({
@@ -324,10 +335,10 @@ const Avaliacao = () => {
                   
                   {existingPhoto ? (
                     <div className="relative">
-                      <img 
-                        src={existingPhoto.photo_url} 
-                        alt={`Foto ${typeLabels[type]}`} 
-                        className="w-full h-64 object-cover rounded-2xl"
+                      <OptimizedImage
+                        src={existingPhoto.photo_url}
+                        alt={`Foto ${typeLabels[type]}`}
+                        className="w-full h-64"
                       />
                       <button 
                         onClick={() => deletePhoto(existingPhoto.id)}
@@ -376,10 +387,10 @@ const Avaliacao = () => {
                       <p className="text-center font-medium text-gray-700 mb-2 capitalize">
                         {photo.photo_type}
                       </p>
-                      <img 
-                        src={photo.photo_url} 
-                        alt={photo.photo_type} 
-                        className="w-full h-48 object-cover rounded-xl" 
+                      <OptimizedImage
+                        src={photo.photo_url}
+                        alt={photo.photo_type}
+                        className="w-full h-48"
                       />
                     </div>
                   ))}

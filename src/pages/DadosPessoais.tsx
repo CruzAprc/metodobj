@@ -60,25 +60,33 @@ const DadosPessoais = () => {
     if (!user) return;
     
     try {
+      console.log('Verificando dados existentes para user:', user.id);
+      
       const { data, error } = await supabase
         .from('user_personal_data')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (data && !error) {
-        console.log('Dados pessoais já existem, preenchendo formulário');
-        const personalData = data as any;
+      if (error) {
+        console.error('Erro ao buscar dados:', error);
+        return;
+      }
+
+      if (data) {
+        console.log('Dados encontrados:', data);
         form.reset({
-          nome_completo: personalData.nome_completo || '',
-          data_nascimento: personalData.data_nascimento || '',
-          altura: personalData.altura?.toString() || '',
-          peso_atual: personalData.peso_atual?.toString() || '',
-          sexo: personalData.sexo || '',
+          nome_completo: data.nome_completo || '',
+          data_nascimento: data.data_nascimento || '',
+          altura: data.altura?.toString() || '',
+          peso_atual: data.peso_atual?.toString() || '',
+          sexo: data.sexo || '',
         });
+      } else {
+        console.log('Nenhum dado encontrado');
       }
     } catch (error) {
-      console.error('Erro ao verificar dados existentes:', error);
+      console.error('Erro inesperado ao verificar dados existentes:', error);
     }
   };
 
@@ -88,31 +96,87 @@ const DadosPessoais = () => {
       return;
     }
 
+    console.log('Iniciando submit com dados:', data);
     setIsSubmitting(true);
     
     try {
-      const dataToSave = {
-        ...data,
-        user_id: user.id,
-        altura: parseFloat(data.altura),
-        peso_atual: parseFloat(data.peso_atual)
-      };
-
-      const { error } = await supabase
-        .from('user_personal_data')
-        .upsert(dataToSave, { 
-          onConflict: 'user_id' 
-        });
-
-      if (error) {
-        console.error('Erro ao salvar dados:', error);
-        toast.error('Erro ao salvar dados pessoais');
+      // Validar dados antes de enviar
+      if (!data.nome_completo.trim()) {
+        toast.error('Nome completo é obrigatório');
+        setIsSubmitting(false);
         return;
       }
 
-      console.log('Dados pessoais salvos com sucesso');
+      if (!data.data_nascimento) {
+        toast.error('Data de nascimento é obrigatória');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!data.altura || isNaN(parseFloat(data.altura))) {
+        toast.error('Altura deve ser um número válido');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!data.peso_atual || isNaN(parseFloat(data.peso_atual))) {
+        toast.error('Peso deve ser um número válido');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (!data.sexo) {
+        toast.error('Sexo é obrigatório');
+        setIsSubmitting(false);
+        return;
+      }
+
+      const dataToSave = {
+        user_id: user.id,
+        nome_completo: data.nome_completo.trim(),
+        data_nascimento: data.data_nascimento,
+        altura: parseFloat(data.altura),
+        peso_atual: parseFloat(data.peso_atual),
+        sexo: data.sexo,
+        updated_at: new Date().toISOString()
+      };
+
+      console.log('Dados para salvar:', dataToSave);
+
+      // Primeiro, tentar verificar se já existe um registro
+      const { data: existingData } = await supabase
+        .from('user_personal_data')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      let result;
+      
+      if (existingData) {
+        // Atualizar registro existente
+        console.log('Atualizando registro existente');
+        result = await supabase
+          .from('user_personal_data')
+          .update(dataToSave)
+          .eq('user_id', user.id);
+      } else {
+        // Inserir novo registro
+        console.log('Inserindo novo registro');
+        result = await supabase
+          .from('user_personal_data')
+          .insert([dataToSave]);
+      }
+
+      if (result.error) {
+        console.error('Erro na operação do banco:', result.error);
+        toast.error('Erro ao salvar dados pessoais: ' + result.error.message);
+        return;
+      }
+
+      console.log('Dados salvos com sucesso');
       toast.success('Dados salvos com sucesso!');
       
+      // Navegar para a próxima página
       navigate('/quiz-alimentar/1');
       
     } catch (error) {
@@ -199,6 +263,8 @@ const DadosPessoais = () => {
                         <Input
                           type="number"
                           placeholder="Ex: 165"
+                          min="100"
+                          max="250"
                           className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
                           {...field}
                         />
@@ -221,6 +287,8 @@ const DadosPessoais = () => {
                         <Input
                           type="number"
                           placeholder="Ex: 65"
+                          min="30"
+                          max="300"
                           step="0.1"
                           className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
                           {...field}

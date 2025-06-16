@@ -386,10 +386,17 @@ export type Database = {
           altura: number | null
           completed_at: string | null
           created_at: string | null
+          data_nascimento: string | null
+          historico_medico: string | null
           id: string
           idade: number | null
+          nivel_atividade: string | null
           nome_completo: string | null
+          objetivo_principal: string | null
           peso: number | null
+          peso_atual: number | null
+          restricoes_alimentares: string | null
+          sexo: string | null
           universal_id: string
           updated_at: string | null
           user_id: string
@@ -398,10 +405,17 @@ export type Database = {
           altura?: number | null
           completed_at?: string | null
           created_at?: string | null
+          data_nascimento?: string | null
+          historico_medico?: string | null
           id?: string
           idade?: number | null
+          nivel_atividade?: string | null
           nome_completo?: string | null
+          objetivo_principal?: string | null
           peso?: number | null
+          peso_atual?: number | null
+          restricoes_alimentares?: string | null
+          sexo?: string | null
           universal_id?: string
           updated_at?: string | null
           user_id: string
@@ -410,10 +424,17 @@ export type Database = {
           altura?: number | null
           completed_at?: string | null
           created_at?: string | null
+          data_nascimento?: string | null
+          historico_medico?: string | null
           id?: string
           idade?: number | null
+          nivel_atividade?: string | null
           nome_completo?: string | null
+          objetivo_principal?: string | null
           peso?: number | null
+          peso_atual?: number | null
+          restricoes_alimentares?: string | null
+          sexo?: string | null
           universal_id?: string
           updated_at?: string | null
           user_id?: string

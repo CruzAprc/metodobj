@@ -44,16 +44,18 @@ const DadosPessoais = () => {
       if (data && !error) {
         // Se já tem dados, preencher o formulário com os dados existentes
         console.log('Dados pessoais já existem, preenchendo formulário');
+        // Usando type assertion para lidar com as novas colunas
+        const personalData = data as any;
         setFormData({
-          nome_completo: data.nome_completo || '',
-          data_nascimento: data.data_nascimento || '',
-          altura: data.altura?.toString() || '',
-          peso_atual: data.peso_atual?.toString() || '',
-          sexo: data.sexo || '',
-          nivel_atividade: data.nivel_atividade || '',
-          objetivo_principal: data.objetivo_principal || '',
-          restricoes_alimentares: data.restricoes_alimentares || '',
-          historico_medico: data.historico_medico || ''
+          nome_completo: personalData.nome_completo || '',
+          data_nascimento: personalData.data_nascimento || '',
+          altura: personalData.altura?.toString() || '',
+          peso_atual: personalData.peso_atual?.toString() || '',
+          sexo: personalData.sexo || '',
+          nivel_atividade: personalData.nivel_atividade || '',
+          objetivo_principal: personalData.objetivo_principal || '',
+          restricoes_alimentares: personalData.restricoes_alimentares || '',
+          historico_medico: personalData.historico_medico || ''
         });
       }
     } catch (error) {

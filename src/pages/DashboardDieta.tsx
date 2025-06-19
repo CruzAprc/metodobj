@@ -158,13 +158,13 @@ const DashboardDieta = () => {
           calorias_totais: dietaAtiva.calorias_totais,
           created_at: dietaAtiva.created_at,
           updated_at: dietaAtiva.updated_at,
-          // Mapear as refeições das colunas específicas da tabela
+          // Mapear as refeições das colunas específicas da tabela - convertendo Json para string
           refeicoes: {
-            cafeDaManha: formatMealData(dietaAtiva.cafe_da_manha, 'Café da Manhã', '07:00'),
-            almoco: formatMealData(dietaAtiva.almoco, 'Almoço', '12:30'),
-            lanche: formatMealData(dietaAtiva.lanche, 'Lanche da Tarde', '16:00'),
-            jantar: formatMealData(dietaAtiva.jantar, 'Jantar', '19:30'),
-            ceia: formatMealData(dietaAtiva.ceia, 'Ceia', '21:30')
+            cafeDaManha: formatMealData(convertJsonToString(dietaAtiva.cafe_da_manha), 'Café da Manhã', '07:00'),
+            almoco: formatMealData(convertJsonToString(dietaAtiva.almoco), 'Almoço', '12:30'),
+            lanche: formatMealData(convertJsonToString(dietaAtiva.lanche), 'Lanche da Tarde', '16:00'),
+            jantar: formatMealData(convertJsonToString(dietaAtiva.jantar), 'Jantar', '19:30'),
+            ceia: formatMealData(convertJsonToString(dietaAtiva.ceia), 'Ceia', '21:30')
           }
         };
         
@@ -181,6 +181,24 @@ const DashboardDieta = () => {
     }
   };
 
+  // Função auxiliar para converter Json para string
+  const convertJsonToString = (jsonData: any): string => {
+    if (!jsonData) return '';
+    
+    // Se já é uma string, retorna como está
+    if (typeof jsonData === 'string') {
+      return jsonData;
+    }
+    
+    // Se é um objeto/array, converte para string JSON
+    if (typeof jsonData === 'object') {
+      return JSON.stringify(jsonData, null, 2);
+    }
+    
+    // Para outros tipos, converte para string
+    return String(jsonData);
+  };
+
   // Função para formatar os dados da refeição a partir do texto
   const formatMealData = (mealText: string, mealName: string, defaultTime: string) => {
     if (!mealText || typeof mealText !== 'string' || mealText.trim() === '') return null;
@@ -188,6 +206,25 @@ const DashboardDieta = () => {
     console.log(`📝 Formatando dados da refeição ${mealName}:`, mealText);
     
     try {
+      // Primeiro, tentar parsear como JSON se for um objeto estruturado
+      let mealData;
+      try {
+        mealData = JSON.parse(mealText);
+        // Se conseguiu parsear como JSON, usar os dados estruturados
+        if (typeof mealData === 'object' && mealData !== null) {
+          return {
+            nome: mealName,
+            horario: mealData.horario || defaultTime,
+            calorias: mealData.calorias || 0,
+            macros: mealData.macros || { proteina: 0, carboidrato: 0, gordura: 0 },
+            alimentos: mealData.alimentos || []
+          };
+        }
+      } catch (jsonError) {
+        // Se não conseguiu parsear como JSON, continuar com parsing de texto
+        console.log(`📝 Não é JSON, processando como texto para ${mealName}`);
+      }
+      
       // Extrair informações do texto estruturado
       const lines = mealText.split('\n').filter(line => line.trim() !== '');
       

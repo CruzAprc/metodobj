@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -62,21 +63,22 @@ const DashboardTreino = () => {
     try {
       console.log('Dashboard Treino: Iniciando carregamento de dados para usuário:', user.id);
       
-      // Buscar treino personalizado da tabela treino
+      // Buscar treino personalizado da tabela treino - corrigindo a consulta
       const { data: treinoPersonalizado, error: treinoError } = await supabase
         .from('treino')
         .select('*')
         .eq('user_id', user.id)
         .eq('ativo', true)
         .order('created_at', { ascending: false })
-        .maybeSingle();
+        .limit(1)
+        .single();
 
       console.log('Dashboard Treino: Consulta treino personalizado - dados:', treinoPersonalizado);
       console.log('Dashboard Treino: Consulta treino personalizado - erro:', treinoError);
 
       if (treinoError && treinoError.code !== 'PGRST116') {
         console.error('Dashboard Treino: Erro ao carregar treino personalizado:', treinoError);
-        setError('Erro ao carregar dados do treino');
+        // Não definir erro ainda, vamos tentar buscar dados do quiz
       } else if (treinoPersonalizado) {
         console.log('Dashboard Treino: Treino personalizado encontrado:', treinoPersonalizado);
         setTreinoData(treinoPersonalizado);
@@ -85,10 +87,12 @@ const DashboardTreino = () => {
         if (treinoPersonalizado.quiz_data && isQuizData(treinoPersonalizado.quiz_data)) {
           setWorkoutData({ quiz_data: treinoPersonalizado.quiz_data });
         }
-      } else {
-        console.log('Dashboard Treino: Nenhum treino personalizado encontrado, buscando dados do quiz');
+      }
+
+      // Se não houver treino personalizado OU se houve erro, busca dados do quiz
+      if (!treinoPersonalizado || treinoError) {
+        console.log('Dashboard Treino: Buscando dados do quiz como fallback');
         
-        // Se não houver treino personalizado, busca dados do quiz
         const { data: quizData, error: quizError } = await supabase
           .from('user_quiz_data')
           .select('*')
@@ -255,70 +259,75 @@ const DashboardTreino = () => {
           </div>
         )}
 
-        {diasComTreino.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {diasComTreino.map((dia) => {
-              const treinoDiaRaw = treinoData[dia as keyof TreinoData];
-              const treinoDia = formatTreinoData(treinoDiaRaw);
-              
-              return (
-                <div key={dia} className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl">
-                  <div className="flex items-center space-x-2 mb-3">
-                    <PlayCircle className="text-blue-600" size={18} />
-                    <h4 className="font-semibold text-gray-800">{getDiaNome(dia)}</h4>
+        {/* Treinos por Dia da Semana */}
+        <div className="mb-6">
+          <h4 className="text-lg font-semibold text-gray-800 mb-4">Cronograma Semanal</h4>
+          
+          {diasComTreino.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {diasComTreino.map((dia) => {
+                const treinoDiaRaw = treinoData[dia as keyof TreinoData];
+                const treinoDia = formatTreinoData(treinoDiaRaw);
+                
+                return (
+                  <div key={dia} className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <PlayCircle className="text-blue-600" size={18} />
+                      <h4 className="font-semibold text-gray-800">{getDiaNome(dia)}</h4>
+                    </div>
+                    
+                    {treinoDia && treinoDia.exercicios && Array.isArray(treinoDia.exercicios) ? (
+                      <div className="space-y-2">
+                        {treinoDia.foco && (
+                          <div className="text-xs text-blue-600 font-medium mb-2">
+                            {treinoDia.foco}
+                          </div>
+                        )}
+                        {treinoDia.exercicios.slice(0, 3).map((exercicio: any, index: number) => (
+                          <div key={index} className="text-sm text-gray-600">
+                            • {exercicio.nome || exercicio.exercicio || 'Exercício'}
+                            {exercicio.series && exercicio.repeticoes && (
+                              <span className="text-xs text-gray-500 ml-1">
+                                ({exercicio.series}x{exercicio.repeticoes})
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                        {treinoDia.exercicios.length > 3 && (
+                          <div className="text-xs text-gray-500">
+                            +{treinoDia.exercicios.length - 3} exercícios
+                          </div>
+                        )}
+                        {treinoDia.duracao && (
+                          <div className="text-xs text-gray-500 mt-2">
+                            ⏱️ {treinoDia.duracao}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-600">
+                        {treinoDia ? 'Treino personalizado disponível' : 'Dados do treino em processamento'}
+                      </div>
+                    )}
                   </div>
-                  
-                  {treinoDia && treinoDia.exercicios && Array.isArray(treinoDia.exercicios) ? (
-                    <div className="space-y-2">
-                      {treinoDia.foco && (
-                        <div className="text-xs text-blue-600 font-medium mb-2">
-                          {treinoDia.foco}
-                        </div>
-                      )}
-                      {treinoDia.exercicios.slice(0, 3).map((exercicio: any, index: number) => (
-                        <div key={index} className="text-sm text-gray-600">
-                          • {exercicio.nome || exercicio.exercicio || 'Exercício'}
-                          {exercicio.series && exercicio.repeticoes && (
-                            <span className="text-xs text-gray-500 ml-1">
-                              ({exercicio.series}x{exercicio.repeticoes})
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                      {treinoDia.exercicios.length > 3 && (
-                        <div className="text-xs text-gray-500">
-                          +{treinoDia.exercicios.length - 3} exercícios
-                        </div>
-                      )}
-                      {treinoDia.duracao && (
-                        <div className="text-xs text-gray-500 mt-2">
-                          ⏱️ {treinoDia.duracao}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="text-sm text-gray-600">
-                      Treino personalizado disponível
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <Dumbbell className="text-blue-400 mx-auto mb-4" size={48} />
-            <h4 className="text-lg font-bold text-gray-600 mb-2">Treinos por Dia da Semana</h4>
-            <p className="text-gray-500 mb-4">
-              Nenhum treino específico encontrado para os dias da semana.
-            </p>
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl max-w-md mx-auto">
-              <p className="text-sm text-gray-600">
-                💪 Plano de treino em preparação
-              </p>
+                );
+              })}
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="text-center py-8">
+              <Dumbbell className="text-blue-400 mx-auto mb-4" size={48} />
+              <h4 className="text-lg font-bold text-gray-600 mb-2">Treinos por Dia da Semana</h4>
+              <p className="text-gray-500 mb-4">
+                Nenhum treino específico encontrado para os dias da semana.
+              </p>
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl max-w-md mx-auto">
+                <p className="text-sm text-gray-600">
+                  💪 Plano de treino em preparação
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Treinos ABCDE se disponíveis */}
         {(treinoData.treino_a || treinoData.treino_b || treinoData.treino_c || treinoData.treino_d || treinoData.treino_e) && (
@@ -522,7 +531,7 @@ const DashboardTreino = () => {
                   </p>
                   <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl max-w-md mx-auto">
                     <p className="text-sm text-gray-600">
-                      💪 Treino personalizado para {/* getObjetivoTexto(workoutData.quiz_data.objetivo).toLowerCase() */}
+                      💪 Treino personalizado para {getObjetivoTexto(workoutData.quiz_data.objetivo).toLowerCase()}
                     </p>
                     <p className="text-xs text-gray-500 mt-2">
                       Quiz concluído • Aguardando plano personalizado

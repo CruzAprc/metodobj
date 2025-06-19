@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -131,13 +130,14 @@ const DashboardDieta = () => {
     try {
       console.log('🔍 Carregando dados da tabela dieta para usuário:', user.id);
       
+      // Mudança: removendo .single() e buscando a dieta ativa mais recente
       const { data, error } = await supabase
         .from('dieta')
         .select('*')
         .eq('user_id', user.id)
         .eq('ativa', true)
         .order('created_at', { ascending: false })
-        .maybeSingle();
+        .limit(1);
         
       if (error) {
         console.error('❌ Erro ao carregar dados da dieta:', error);
@@ -145,31 +145,32 @@ const DashboardDieta = () => {
         return;
       }
         
-      if (data) {
-        console.log('✅ Dados da dieta encontrados:', data);
-        console.log('🆔 Universal ID da dieta:', data.universal_id);
-        console.log('🥐 Café da manhã:', data.cafe_da_manha);
-        console.log('🍽️ Almoço:', data.almoco);
-        console.log('🥪 Lanche:', data.lanche);
-        console.log('🌙 Jantar:', data.jantar);
-        console.log('⭐ Ceia:', data.ceia);
+      if (data && data.length > 0) {
+        const dietaAtiva = data[0]; // Pega a primeira (mais recente)
+        console.log('✅ Dados da dieta encontrados:', dietaAtiva);
+        console.log('🆔 Universal ID da dieta:', dietaAtiva.universal_id);
         
-        // Processar os dados da dieta real
+        // Processar os dados da dieta real seguindo o formato do UI
         const processedDietData = {
-          id: data.id,
-          universal_id: data.universal_id,
-          nome_dieta: data.nome_dieta,
-          descricao: data.descricao,
-          calorias_totais: data.calorias_totais,
-          created_at: data.created_at,
-          updated_at: data.updated_at,
-          // Mapear as refeições das colunas específicas da tabela
+          id: dietaAtiva.id,
+          universal_id: dietaAtiva.universal_id,
+          nome_dieta: dietaAtiva.nome_dieta || 'Plano Alimentar Personalizado',
+          descricao: dietaAtiva.descricao,
+          calorias_totais: dietaAtiva.calorias_totais,
+          created_at: dietaAtiva.created_at,
+          updated_at: dietaAtiva.updated_at,
+          // Mapear as refeições das colunas específicas da tabela seguindo o formato do UI
           refeicoes: {
-            cafeDaManha: data.cafe_da_manha && Object.keys(data.cafe_da_manha).length > 0 ? data.cafe_da_manha : null,
-            almoco: data.almoco && Object.keys(data.almoco).length > 0 ? data.almoco : null,
-            lanche: data.lanche && Object.keys(data.lanche).length > 0 ? data.lanche : null,
-            jantar: data.jantar && Object.keys(data.jantar).length > 0 ? data.jantar : null,
-            ceia: data.ceia && Object.keys(data.ceia).length > 0 ? data.ceia : null
+            cafeDaManha: dietaAtiva.cafe_da_manha && Object.keys(dietaAtiva.cafe_da_manha).length > 0 ? 
+              formatMealData(dietaAtiva.cafe_da_manha, 'Café da Manhã') : null,
+            almoco: dietaAtiva.almoco && Object.keys(dietaAtiva.almoco).length > 0 ? 
+              formatMealData(dietaAtiva.almoco, 'Almoço') : null,
+            lanche: dietaAtiva.lanche && Object.keys(dietaAtiva.lanche).length > 0 ? 
+              formatMealData(dietaAtiva.lanche, 'Lanche') : null,
+            jantar: dietaAtiva.jantar && Object.keys(dietaAtiva.jantar).length > 0 ? 
+              formatMealData(dietaAtiva.jantar, 'Jantar') : null,
+            ceia: dietaAtiva.ceia && Object.keys(dietaAtiva.ceia).length > 0 ? 
+              formatMealData(dietaAtiva.ceia, 'Ceia') : null
           }
         };
         
@@ -184,6 +185,19 @@ const DashboardDieta = () => {
       console.error('💥 Erro inesperado ao carregar dados da dieta:', error);
       setError(`Erro inesperado: ${error.message}`);
     }
+  };
+
+  // Função para formatar os dados da refeição seguindo o padrão do UI
+  const formatMealData = (mealData: any, mealName: string) => {
+    if (!mealData || typeof mealData !== 'object') return null;
+    
+    return {
+      nome: mealData.nome || mealName,
+      horario: mealData.horario || '--:--',
+      calorias: mealData.calorias || 0,
+      macros: mealData.macros || { proteina: 0, carboidrato: 0, gordura: 0 },
+      alimentos: mealData.alimentos || []
+    };
   };
 
   // Simular carregamento de dieta atualizada
@@ -480,7 +494,7 @@ const DashboardDieta = () => {
                     )}
 
                     {/* Lista de alimentos */}
-                    {refeicaoData.alimentos && (
+                    {refeicaoData.alimentos && refeicaoData.alimentos.length > 0 && (
                       <div className="space-y-2">
                         <p className="text-sm font-medium text-pink-700">Alimentos:</p>
                         <div className="space-y-1 max-h-32 overflow-y-auto">

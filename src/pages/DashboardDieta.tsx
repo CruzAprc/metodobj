@@ -129,6 +129,8 @@ const DashboardDieta = () => {
     if (!user) return;
     
     try {
+      console.log('Carregando dados reais da dieta para usuário:', user.id);
+      
       const { data, error } = await supabase
         .from('dieta')
         .select('*')
@@ -137,14 +139,40 @@ const DashboardDieta = () => {
         .order('created_at', { ascending: false })
         .maybeSingle();
         
+      if (error) {
+        console.error('Erro ao carregar dados da dieta:', error);
+        return;
+      }
+        
       if (data) {
-        console.log('Dados da dieta carregados:', data);
-        setRealDietData(data);
+        console.log('Dados da dieta encontrados:', data);
+        
+        // Processar os dados para o formato necessário
+        const processedDietData = {
+          id: data.id,
+          nome_dieta: data.nome_dieta,
+          descricao: data.descricao,
+          calorias_totais: data.calorias_totais,
+          created_at: data.created_at,
+          updated_at: data.updated_at,
+          // Processar cada refeição das colunas específicas
+          refeicoes: {
+            cafeDaManha: data.cafe_da_manha && Object.keys(data.cafe_da_manha).length > 0 ? data.cafe_da_manha : null,
+            almoco: data.almoco && Object.keys(data.almoco).length > 0 ? data.almoco : null,
+            lanche: data.lanche && Object.keys(data.lanche).length > 0 ? data.lanche : null,
+            jantar: data.jantar && Object.keys(data.jantar).length > 0 ? data.jantar : null,
+            ceia: data.ceia && Object.keys(data.ceia).length > 0 ? data.ceia : null
+          }
+        };
+        
+        console.log('Dados processados da dieta:', processedDietData);
+        setRealDietData(processedDietData);
       } else {
-        console.log('Nenhuma dieta ativa encontrada');
+        console.log('Nenhuma dieta ativa encontrada para o usuário');
+        setRealDietData(null);
       }
     } catch (error) {
-      console.error('Erro ao carregar dados da dieta:', error);
+      console.error('Erro inesperado ao carregar dados da dieta:', error);
     }
   };
 
@@ -214,9 +242,20 @@ const DashboardDieta = () => {
   ];
 
   const calcularCaloriasTotais = () => {
-    // Se temos dados reais da dieta, usar eles
+    // Se temos dados reais da dieta com calorias totais, usar elas
     if (realDietData?.calorias_totais) {
       return realDietData.calorias_totais;
+    }
+    
+    // Se temos dados reais das refeições, calcular
+    if (realDietData?.refeicoes) {
+      let total = 0;
+      Object.values(realDietData.refeicoes).forEach((refeicao: any) => {
+        if (refeicao && refeicao.calorias) {
+          total += refeicao.calorias;
+        }
+      });
+      if (total > 0) return total;
     }
     
     // Senão, usar mock data
@@ -224,33 +263,34 @@ const DashboardDieta = () => {
   };
 
   const getDietDataToShow = () => {
-    // Se temos dados reais da dieta, usar as colunas específicas
-    if (realDietData) {
-      const dietDataFromColumns = {
-        cafeDaManha: realDietData.cafe_da_manha,
-        almoco: realDietData.almoco,
-        lanche: realDietData.lanche,
-        jantar: realDietData.jantar,
-        ceia: realDietData.ceia
-      };
-      
-      // Verificar se há dados nas colunas específicas
-      const hasDataInColumns = Object.values(dietDataFromColumns).some(meal => 
+    // Se temos dados reais da dieta, usar eles
+    if (realDietData?.refeicoes) {
+      // Verificar se há dados nas refeições
+      const hasRealData = Object.values(realDietData.refeicoes).some((meal: any) => 
         meal && typeof meal === 'object' && Object.keys(meal).length > 0
       );
       
-      if (hasDataInColumns) {
-        return dietDataFromColumns;
-      }
-      
-      // Fallback para a coluna refeicoes se ainda existir
-      if (realDietData.refeicoes && Object.keys(realDietData.refeicoes).length > 0) {
+      if (hasRealData) {
         return realDietData.refeicoes;
       }
     }
     
     // Senão, usar mock data
     return mockDietData;
+  };
+
+  const getDietTitle = () => {
+    if (realDietData?.nome_dieta) {
+      return realDietData.nome_dieta;
+    }
+    return 'Plano Alimentar Personalizado';
+  };
+
+  const getDietDescription = () => {
+    if (realDietData?.descricao) {
+      return realDietData.descricao;
+    }
+    return null;
   };
 
   if (loading) {
@@ -337,12 +377,12 @@ const DashboardDieta = () => {
               <div className="flex items-center space-x-3 mb-4">
                 <Calendar className="text-pink-500" size={24} />
                 <h2 className="text-xl font-bold text-pink-800">
-                  {realDietData?.nome_dieta || 'Plano Alimentar Personalizado'}
+                  {getDietTitle()}
                 </h2>
               </div>
               
-              {realDietData?.descricao && (
-                <p className="text-pink-600 mb-4">{realDietData.descricao}</p>
+              {getDietDescription() && (
+                <p className="text-pink-600 mb-4">{getDietDescription()}</p>
               )}
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

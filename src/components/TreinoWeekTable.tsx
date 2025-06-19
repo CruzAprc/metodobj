@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tables } from "@/integrations/supabase/types";
+import { Dumbbell, Clock, Target, PlayCircle } from 'lucide-react';
 
 type TreinoData = Tables<'treino'>;
 
@@ -12,13 +12,13 @@ interface TreinoWeekTableProps {
 
 const TreinoWeekTable = ({ treinoData }: TreinoWeekTableProps) => {
   const diasSemana = [
-    { key: 'segunda_feira', nome: 'Segunda-feira' },
-    { key: 'terca_feira', nome: 'Terça-feira' },
-    { key: 'quarta_feira', nome: 'Quarta-feira' },
-    { key: 'quinta_feira', nome: 'Quinta-feira' },
-    { key: 'sexta_feira', nome: 'Sexta-feira' },
-    { key: 'sabado', nome: 'Sábado' },
-    { key: 'domingo', nome: 'Domingo' }
+    { key: 'segunda_feira', nome: 'Segunda-feira', color: 'bg-blue-500' },
+    { key: 'terca_feira', nome: 'Terça-feira', color: 'bg-green-500' },
+    { key: 'quarta_feira', nome: 'Quarta-feira', color: 'bg-purple-500' },
+    { key: 'quinta_feira', nome: 'Quinta-feira', color: 'bg-orange-500' },
+    { key: 'sexta_feira', nome: 'Sexta-feira', color: 'bg-pink-500' },
+    { key: 'sabado', nome: 'Sábado', color: 'bg-indigo-500' },
+    { key: 'domingo', nome: 'Domingo', color: 'bg-red-500' }
   ];
 
   const formatTreinoData = (treinoRaw: any): any => {
@@ -43,7 +43,6 @@ const TreinoWeekTable = ({ treinoData }: TreinoWeekTableProps) => {
         return parsed;
       } catch (error) {
         console.log('TreinoWeekTable: Erro ao parsear JSON, tratando como texto simples:', error);
-        // Se não conseguir parsear como JSON, tenta extrair informações do texto
         return {
           foco: treinoRaw.includes('Foco:') ? treinoRaw.split('Foco:')[1]?.split('\n')[0]?.trim() : null,
           descricao: treinoRaw,
@@ -57,136 +56,224 @@ const TreinoWeekTable = ({ treinoData }: TreinoWeekTableProps) => {
 
   const renderExercicios = (exercicios: any[]) => {
     if (!Array.isArray(exercicios) || exercicios.length === 0) {
-      return <span className="text-gray-500 text-sm">Sem exercícios definidos</span>;
+      return (
+        <div className="text-center py-4">
+          <Dumbbell className="mx-auto text-gray-400 mb-2" size={24} />
+          <p className="text-sm text-gray-500">Nenhum exercício definido</p>
+        </div>
+      );
     }
     
-    return exercicios.slice(0, 3).map((exercicio, index) => (
-      <div key={index} className="mb-2 p-2 bg-gray-50 rounded">
-        <div className="font-medium text-sm">
-          {exercicio.nome || exercicio.exercicio || `Exercício ${index + 1}`}
-        </div>
-        {exercicio.series && exercicio.repeticoes && (
-          <div className="text-xs text-gray-600">
-            {exercicio.series} séries x {exercicio.repeticoes} repetições
+    return (
+      <div className="space-y-3">
+        {exercicios.slice(0, 4).map((exercicio, index) => (
+          <div key={index} className="bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <h4 className="font-medium text-gray-800 text-sm">
+                  {exercicio.nome || exercicio.exercicio || `Exercício ${index + 1}`}
+                </h4>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {exercicio.series && exercicio.repeticoes && (
+                    <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
+                      {exercicio.series}x{exercicio.repeticoes}
+                    </span>
+                  )}
+                  {exercicio.carga && (
+                    <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
+                      {exercicio.carga}
+                    </span>
+                  )}
+                  {exercicio.descanso && (
+                    <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded-full text-xs font-medium">
+                      {exercicio.descanso}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
-        )}
-        {exercicio.carga && (
-          <div className="text-xs text-gray-600">
-            Carga: {exercicio.carga}
+        ))}
+        {exercicios.length > 4 && (
+          <div className="text-center py-2">
+            <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-medium">
+              +{exercicios.length - 4} exercícios adicionais
+            </span>
           </div>
         )}
       </div>
-    ));
+    );
   };
 
-  const renderTreinoContent = (treinoDia: any) => {
-    if (!treinoDia) {
-      return <span className="text-gray-500">Sem treino</span>;
-    }
+  const renderTreinoCard = (dia: any, treinoDia: any) => {
+    const hasWorkout = treinoDia && (
+      (treinoDia.exercicios && Array.isArray(treinoDia.exercicios) && treinoDia.exercicios.length > 0) ||
+      (treinoDia.descricao && treinoDia.descricao.trim().length > 0)
+    );
 
-    // Se tem exercícios estruturados
-    if (treinoDia.exercicios && Array.isArray(treinoDia.exercicios) && treinoDia.exercicios.length > 0) {
-      return (
-        <div>
-          {renderExercicios(treinoDia.exercicios)}
-          {treinoDia.exercicios.length > 3 && (
-            <div className="text-xs text-gray-500 mt-1">
-              +{treinoDia.exercicios.length - 3} exercícios
+    return (
+      <Card key={dia.key} className="h-full hover:shadow-lg transition-all duration-300 border-l-4" style={{ borderLeftColor: dia.color.replace('bg-', '').replace('-500', '') }}>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-bold text-gray-800 flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${dia.color}`}></div>
+              {dia.nome}
+            </CardTitle>
+            {hasWorkout && (
+              <PlayCircle className="text-green-500" size={20} />
+            )}
+          </div>
+          
+          {/* Foco do Treino */}
+          {treinoDia?.foco && (
+            <div className="flex items-center gap-2 mt-2">
+              <Target className="text-blue-500" size={16} />
+              <span className="text-sm font-medium text-blue-700 bg-blue-50 px-2 py-1 rounded-lg">
+                {treinoDia.foco}
+              </span>
             </div>
           )}
-        </div>
-      );
-    }
 
-    // Se tem descrição de texto
-    if (treinoDia.descricao && typeof treinoDia.descricao === 'string') {
-      return (
-        <div className="text-sm text-gray-700 max-w-xs">
-          {treinoDia.descricao.length > 100 
-            ? `${treinoDia.descricao.substring(0, 100)}...`
-            : treinoDia.descricao
-          }
-        </div>
-      );
-    }
-
-    // Se é um objeto com propriedades
-    if (typeof treinoDia === 'object') {
-      return (
-        <div className="text-sm text-gray-700">
-          <div>Treino personalizado disponível</div>
-          {treinoDia.foco && (
-            <div className="text-xs text-blue-600 mt-1">
-              Foco: {treinoDia.foco}
+          {/* Duração */}
+          {treinoDia?.duracao && (
+            <div className="flex items-center gap-2 mt-1">
+              <Clock className="text-orange-500" size={16} />
+              <span className="text-sm text-gray-600">{treinoDia.duracao}</span>
             </div>
           )}
-        </div>
-      );
-    }
+        </CardHeader>
 
-    return <span className="text-gray-500">Dados disponíveis</span>;
+        <CardContent className="pt-0">
+          {hasWorkout ? (
+            <>
+              {/* Exercícios */}
+              {treinoDia.exercicios && Array.isArray(treinoDia.exercicios) && treinoDia.exercicios.length > 0 ? (
+                renderExercicios(treinoDia.exercicios)
+              ) : treinoDia.descricao ? (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    {treinoDia.descricao.length > 150 
+                      ? `${treinoDia.descricao.substring(0, 150)}...`
+                      : treinoDia.descricao
+                    }
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <p className="text-sm text-blue-700 font-medium">
+                    Treino personalizado disponível
+                  </p>
+                </div>
+              )}
+
+              {/* Observações */}
+              {treinoDia.observacoes && (
+                <div className="mt-3 bg-yellow-50 p-3 rounded-lg border-l-4 border-yellow-400">
+                  <p className="text-xs text-yellow-800">
+                    <span className="font-medium">Obs:</span> {treinoDia.observacoes}
+                  </p>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-8 bg-gray-50 rounded-lg">
+              <Dumbbell className="text-gray-300 mx-auto mb-3" size={32} />
+              <p className="text-gray-500 text-sm font-medium">Descanso</p>
+              <p className="text-gray-400 text-xs mt-1">Sem treino programado</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
   };
 
   console.log('TreinoWeekTable: Dados completos do treino:', treinoData);
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Cronograma Semanal de Treinos</CardTitle>
-        {treinoData.nome_plano && (
-          <p className="text-sm text-gray-600">{treinoData.nome_plano}</p>
-        )}
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Dia da Semana</TableHead>
-                <TableHead>Foco</TableHead>
-                <TableHead>Exercícios/Conteúdo</TableHead>
-                <TableHead>Duração</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {diasSemana.map((dia) => {
-                const treinoDiaRaw = treinoData[dia.key as keyof TreinoData];
-                console.log(`TreinoWeekTable: ${dia.nome} - dados brutos:`, treinoDiaRaw);
-                
-                const treinoDia = formatTreinoData(treinoDiaRaw);
-                console.log(`TreinoWeekTable: ${dia.nome} - dados formatados:`, treinoDia);
-                
-                return (
-                  <TableRow key={dia.key}>
-                    <TableCell className="font-medium">{dia.nome}</TableCell>
-                    <TableCell>
-                      {treinoDia?.foco || 'Não definido'}
-                    </TableCell>
-                    <TableCell className="max-w-xs">
-                      {renderTreinoContent(treinoDia)}
-                    </TableCell>
-                    <TableCell>
-                      {treinoDia?.duracao || 'Não definido'}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
+    <div className="w-full space-y-6">
+      {/* Header do Plano */}
+      <Card className="border-l-4 border-l-blue-500">
+        <CardHeader>
+          <div className="flex items-center gap-3">
+            <div className="bg-blue-500 p-2 rounded-lg">
+              <Dumbbell className="text-white" size={24} />
+            </div>
+            <div>
+              <CardTitle className="text-2xl font-bold text-gray-800">
+                {treinoData.nome_plano || 'Cronograma Semanal de Treinos'}
+              </CardTitle>
+              <p className="text-sm text-gray-600 mt-1">
+                Criado em: {new Date(treinoData.webhook_received_at || treinoData.created_at).toLocaleDateString('pt-BR')}
+              </p>
+            </div>
+          </div>
+        </CardHeader>
         
         {treinoData.descricao && (
-          <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-            <h4 className="font-medium text-sm mb-2">Observações:</h4>
-            <p className="text-sm text-gray-700">{treinoData.descricao}</p>
-          </div>
+          <CardContent className="pt-0">
+            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+              <h4 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
+                <Target size={16} />
+                Observações do Plano:
+              </h4>
+              <p className="text-sm text-blue-700 leading-relaxed">{treinoData.descricao}</p>
+            </div>
+          </CardContent>
         )}
-        
-        <div className="mt-2 text-xs text-gray-500">
-          Plano criado em: {new Date(treinoData.webhook_received_at || treinoData.created_at).toLocaleDateString('pt-BR')}
-        </div>
-      </CardContent>
-    </Card>
+      </Card>
+
+      {/* Grid de Treinos da Semana */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {diasSemana.map((dia) => {
+          const treinoDiaRaw = treinoData[dia.key as keyof TreinoData];
+          console.log(`TreinoWeekTable: ${dia.nome} - dados brutos:`, treinoDiaRaw);
+          
+          const treinoDia = formatTreinoData(treinoDiaRaw);
+          console.log(`TreinoWeekTable: ${dia.nome} - dados formatados:`, treinoDia);
+          
+          return renderTreinoCard(dia, treinoDia);
+        })}
+      </div>
+
+      {/* Estatísticas do Plano */}
+      <Card className="bg-gradient-to-r from-blue-50 to-purple-50">
+        <CardContent className="p-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div>
+              <div className="text-2xl font-bold text-blue-600">
+                {diasSemana.filter(dia => {
+                  const treinoDia = formatTreinoData(treinoData[dia.key as keyof TreinoData]);
+                  return treinoDia && ((treinoDia.exercicios && treinoDia.exercicios.length > 0) || treinoDia.descricao);
+                }).length}
+              </div>
+              <div className="text-sm text-gray-600">Dias de Treino</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-green-600">
+                {diasSemana.reduce((total, dia) => {
+                  const treinoDia = formatTreinoData(treinoData[dia.key as keyof TreinoData]);
+                  return total + (treinoDia?.exercicios?.length || 0);
+                }, 0)}
+              </div>
+              <div className="text-sm text-gray-600">Total Exercícios</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-purple-600">
+                {7 - diasSemana.filter(dia => {
+                  const treinoDia = formatTreinoData(treinoData[dia.key as keyof TreinoData]);
+                  return treinoDia && ((treinoDia.exercicios && treinoDia.exercicios.length > 0) || treinoDia.descricao);
+                }).length}
+              </div>
+              <div className="text-sm text-gray-600">Dias de Descanso</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-orange-600">100%</div>
+              <div className="text-sm text-gray-600">Personalizado</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

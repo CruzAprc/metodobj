@@ -60,17 +60,22 @@ const DashboardTreino = () => {
     if (!user) return;
     
     try {
-      // Primeiro, tenta buscar treino personalizado da tabela treino
+      // Buscar treino personalizado da tabela treino
       const { data: treinoPersonalizado, error: treinoError } = await supabase
         .from('treino')
         .select('*')
         .eq('user_id', user.id)
         .eq('ativo', true)
+        .order('created_at', { ascending: false })
         .maybeSingle();
 
-      if (treinoPersonalizado) {
+      if (treinoError && treinoError.code !== 'PGRST116') {
+        console.error('Dashboard Treino: Erro ao carregar treino personalizado:', treinoError);
+        setError('Erro ao carregar dados do treino');
+      } else if (treinoPersonalizado) {
         console.log('Dashboard Treino: Treino personalizado encontrado:', treinoPersonalizado);
         setTreinoData(treinoPersonalizado);
+        
         // Extract quiz_data if it exists and has the right structure
         if (treinoPersonalizado.quiz_data && isQuizData(treinoPersonalizado.quiz_data)) {
           setWorkoutData({ quiz_data: treinoPersonalizado.quiz_data });
@@ -94,17 +99,54 @@ const DashboardTreino = () => {
           setError('Erro ao carregar dados do treino');
         }
       }
-      
-      if (treinoError && treinoError.code !== 'PGRST116') {
-        console.error('Dashboard Treino: Erro ao carregar treino personalizado:', treinoError);
-        setError('Erro ao carregar dados do treino');
-      }
     } catch (err) {
       console.error('Dashboard Treino: Erro inesperado:', err);
       setError('Erro inesperado ao carregar dados');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Função auxiliar para converter Json para objeto
+  const convertJsonToObject = (jsonData: any): any => {
+    if (!jsonData) return null;
+    
+    // Se já é um objeto, retorna como está
+    if (typeof jsonData === 'object' && jsonData !== null) {
+      return jsonData;
+    }
+    
+    // Se é uma string, tenta parsear como JSON
+    if (typeof jsonData === 'string') {
+      try {
+        return JSON.parse(jsonData);
+      } catch (error) {
+        console.log('Erro ao parsear JSON:', error);
+        return null;
+      }
+    }
+    
+    return null;
+  };
+
+  // Função para formatar dados do treino
+  const formatTreinoData = (treinoRaw: any): any => {
+    if (!treinoRaw) return null;
+    
+    const treino = convertJsonToObject(treinoRaw);
+    if (!treino) return null;
+    
+    // Se tem estrutura de exercícios
+    if (treino.exercicios && Array.isArray(treino.exercicios)) {
+      return {
+        exercicios: treino.exercicios,
+        foco: treino.foco || '',
+        duracao: treino.duracao || '',
+        observacoes: treino.observacoes || ''
+      };
+    }
+    
+    return treino;
   };
 
   const getExperienciaTexto = (experiencia: string) => {
@@ -165,7 +207,8 @@ const DashboardTreino = () => {
 
     const diasTreino = ['segunda_feira', 'terca_feira', 'quarta_feira', 'quinta_feira', 'sexta_feira', 'sabado', 'domingo'];
     const diasComTreino = diasTreino.filter(dia => {
-      const treinoDia = treinoData[dia as keyof TreinoData];
+      const treinoDiaRaw = treinoData[dia as keyof TreinoData];
+      const treinoDia = formatTreinoData(treinoDiaRaw);
       return treinoDia && treinoDia !== null;
     });
 
@@ -194,7 +237,9 @@ const DashboardTreino = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {diasComTreino.map((dia) => {
-            const treinoDia = treinoData[dia as keyof TreinoData];
+            const treinoDiaRaw = treinoData[dia as keyof TreinoData];
+            const treinoDia = formatTreinoData(treinoDiaRaw);
+            
             return (
               <div key={dia} className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl">
                 <div className="flex items-center space-x-2 mb-3">
@@ -202,16 +247,31 @@ const DashboardTreino = () => {
                   <h4 className="font-semibold text-gray-800">{getDiaNome(dia)}</h4>
                 </div>
                 
-                {treinoDia && typeof treinoDia === 'object' && 'exercicios' in treinoDia && Array.isArray(treinoDia.exercicios) ? (
+                {treinoDia && treinoDia.exercicios && Array.isArray(treinoDia.exercicios) ? (
                   <div className="space-y-2">
+                    {treinoDia.foco && (
+                      <div className="text-xs text-blue-600 font-medium mb-2">
+                        {treinoDia.foco}
+                      </div>
+                    )}
                     {treinoDia.exercicios.slice(0, 3).map((exercicio: any, index: number) => (
                       <div key={index} className="text-sm text-gray-600">
                         • {exercicio.nome || exercicio.exercicio || 'Exercício'}
+                        {exercicio.series && exercicio.repeticoes && (
+                          <span className="text-xs text-gray-500 ml-1">
+                            ({exercicio.series}x{exercicio.repeticoes})
+                          </span>
+                        )}
                       </div>
                     ))}
                     {treinoDia.exercicios.length > 3 && (
                       <div className="text-xs text-gray-500">
                         +{treinoDia.exercicios.length - 3} exercícios
+                      </div>
+                    )}
+                    {treinoDia.duracao && (
+                      <div className="text-xs text-gray-500 mt-2">
+                        ⏱️ {treinoDia.duracao}
                       </div>
                     )}
                   </div>
@@ -231,7 +291,8 @@ const DashboardTreino = () => {
             <h4 className="text-lg font-semibold text-gray-800 mb-4">Divisão de Treinos</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {(['treino_a', 'treino_b', 'treino_c', 'treino_d', 'treino_e'] as const).map((treino) => {
-                const treinoInfo = treinoData[treino];
+                const treinoInfoRaw = treinoData[treino];
+                const treinoInfo = formatTreinoData(treinoInfoRaw);
                 if (!treinoInfo) return null;
                 
                 return (
@@ -242,9 +303,19 @@ const DashboardTreino = () => {
                         Treino {treino.split('_')[1].toUpperCase()}
                       </h5>
                     </div>
-                    {treinoInfo && typeof treinoInfo === 'object' && 'exercicios' in treinoInfo && Array.isArray(treinoInfo.exercicios) ? (
+                    {treinoInfo.foco && (
+                      <div className="text-xs text-purple-600 font-medium mb-2">
+                        {treinoInfo.foco}
+                      </div>
+                    )}
+                    {treinoInfo.exercicios && Array.isArray(treinoInfo.exercicios) ? (
                       <div className="text-sm text-gray-600">
                         {treinoInfo.exercicios.length} exercícios
+                        {treinoInfo.duracao && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            ⏱️ {treinoInfo.duracao}
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="text-sm text-gray-600">

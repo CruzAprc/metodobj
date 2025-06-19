@@ -22,20 +22,33 @@ const TreinoWeekTable = ({ treinoData }: TreinoWeekTableProps) => {
   ];
 
   const formatTreinoData = (treinoRaw: any): any => {
-    if (!treinoRaw) return null;
+    console.log('TreinoWeekTable: Dados brutos recebidos:', treinoRaw);
+    
+    if (!treinoRaw) {
+      console.log('TreinoWeekTable: Dados vazios ou null');
+      return null;
+    }
     
     // Se já é um objeto, retorna como está
     if (typeof treinoRaw === 'object' && treinoRaw !== null) {
+      console.log('TreinoWeekTable: Dados já são objeto:', treinoRaw);
       return treinoRaw;
     }
     
     // Se é uma string, tenta parsear como JSON
     if (typeof treinoRaw === 'string') {
       try {
-        return JSON.parse(treinoRaw);
+        const parsed = JSON.parse(treinoRaw);
+        console.log('TreinoWeekTable: JSON parseado com sucesso:', parsed);
+        return parsed;
       } catch (error) {
-        console.log('Erro ao parsear JSON:', error);
-        return null;
+        console.log('TreinoWeekTable: Erro ao parsear JSON, tratando como texto simples:', error);
+        // Se não conseguir parsear como JSON, tenta extrair informações do texto
+        return {
+          foco: treinoRaw.includes('Foco:') ? treinoRaw.split('Foco:')[1]?.split('\n')[0]?.trim() : null,
+          descricao: treinoRaw,
+          exercicios: []
+        };
       }
     }
     
@@ -43,12 +56,14 @@ const TreinoWeekTable = ({ treinoData }: TreinoWeekTableProps) => {
   };
 
   const renderExercicios = (exercicios: any[]) => {
-    if (!Array.isArray(exercicios)) return 'Dados não disponíveis';
+    if (!Array.isArray(exercicios) || exercicios.length === 0) {
+      return <span className="text-gray-500 text-sm">Sem exercícios definidos</span>;
+    }
     
-    return exercicios.map((exercicio, index) => (
+    return exercicios.slice(0, 3).map((exercicio, index) => (
       <div key={index} className="mb-2 p-2 bg-gray-50 rounded">
         <div className="font-medium text-sm">
-          {exercicio.nome || exercicio.exercicio || 'Exercício'}
+          {exercicio.nome || exercicio.exercicio || `Exercício ${index + 1}`}
         </div>
         {exercicio.series && exercicio.repeticoes && (
           <div className="text-xs text-gray-600">
@@ -61,8 +76,58 @@ const TreinoWeekTable = ({ treinoData }: TreinoWeekTableProps) => {
           </div>
         )}
       </div>
-    )).slice(0, 3); // Limitar a 3 exercícios por célula para não ficar muito grande
+    ));
   };
+
+  const renderTreinoContent = (treinoDia: any) => {
+    if (!treinoDia) {
+      return <span className="text-gray-500">Sem treino</span>;
+    }
+
+    // Se tem exercícios estruturados
+    if (treinoDia.exercicios && Array.isArray(treinoDia.exercicios) && treinoDia.exercicios.length > 0) {
+      return (
+        <div>
+          {renderExercicios(treinoDia.exercicios)}
+          {treinoDia.exercicios.length > 3 && (
+            <div className="text-xs text-gray-500 mt-1">
+              +{treinoDia.exercicios.length - 3} exercícios
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Se tem descrição de texto
+    if (treinoDia.descricao && typeof treinoDia.descricao === 'string') {
+      return (
+        <div className="text-sm text-gray-700 max-w-xs">
+          {treinoDia.descricao.length > 100 
+            ? `${treinoDia.descricao.substring(0, 100)}...`
+            : treinoDia.descricao
+          }
+        </div>
+      );
+    }
+
+    // Se é um objeto com propriedades
+    if (typeof treinoDia === 'object') {
+      return (
+        <div className="text-sm text-gray-700">
+          <div>Treino personalizado disponível</div>
+          {treinoDia.foco && (
+            <div className="text-xs text-blue-600 mt-1">
+              Foco: {treinoDia.foco}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return <span className="text-gray-500">Dados disponíveis</span>;
+  };
+
+  console.log('TreinoWeekTable: Dados completos do treino:', treinoData);
 
   return (
     <Card className="w-full">
@@ -79,14 +144,17 @@ const TreinoWeekTable = ({ treinoData }: TreinoWeekTableProps) => {
               <TableRow>
                 <TableHead>Dia da Semana</TableHead>
                 <TableHead>Foco</TableHead>
-                <TableHead>Exercícios</TableHead>
+                <TableHead>Exercícios/Conteúdo</TableHead>
                 <TableHead>Duração</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {diasSemana.map((dia) => {
                 const treinoDiaRaw = treinoData[dia.key as keyof TreinoData];
+                console.log(`TreinoWeekTable: ${dia.nome} - dados brutos:`, treinoDiaRaw);
+                
                 const treinoDia = formatTreinoData(treinoDiaRaw);
+                console.log(`TreinoWeekTable: ${dia.nome} - dados formatados:`, treinoDia);
                 
                 return (
                   <TableRow key={dia.key}>
@@ -95,18 +163,7 @@ const TreinoWeekTable = ({ treinoData }: TreinoWeekTableProps) => {
                       {treinoDia?.foco || 'Não definido'}
                     </TableCell>
                     <TableCell className="max-w-xs">
-                      {treinoDia?.exercicios ? (
-                        <div>
-                          {renderExercicios(treinoDia.exercicios)}
-                          {treinoDia.exercicios.length > 3 && (
-                            <div className="text-xs text-gray-500 mt-1">
-                              +{treinoDia.exercicios.length - 3} exercícios
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-gray-500">Sem treino</span>
-                      )}
+                      {renderTreinoContent(treinoDia)}
                     </TableCell>
                     <TableCell>
                       {treinoDia?.duracao || 'Não definido'}

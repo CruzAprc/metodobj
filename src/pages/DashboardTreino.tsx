@@ -71,7 +71,7 @@ const DashboardTreino = () => {
         .eq('ativo', true)
         .order('created_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       console.log('Dashboard Treino: Consulta treino personalizado - dados:', treinoPersonalizado);
       console.log('Dashboard Treino: Consulta treino personalizado - erro:', treinoError);
@@ -80,6 +80,17 @@ const DashboardTreino = () => {
         console.error('Dashboard Treino: Erro ao carregar treino personalizado:', treinoError);
       } else if (treinoPersonalizado) {
         console.log('Dashboard Treino: Treino personalizado encontrado:', treinoPersonalizado);
+        
+        // Log específico das colunas dos dias da semana
+        console.log('Dashboard Treino: Dados por dia da semana:');
+        console.log('- Segunda-feira:', treinoPersonalizado.segunda_feira);
+        console.log('- Terça-feira:', treinoPersonalizado.terca_feira);
+        console.log('- Quarta-feira:', treinoPersonalizado.quarta_feira);
+        console.log('- Quinta-feira:', treinoPersonalizado.quinta_feira);
+        console.log('- Sexta-feira:', treinoPersonalizado.sexta_feira);
+        console.log('- Sábado:', treinoPersonalizado.sabado);
+        console.log('- Domingo:', treinoPersonalizado.domingo);
+        
         setTreinoData(treinoPersonalizado);
         
         // Extract quiz_data if it exists and has the right structure

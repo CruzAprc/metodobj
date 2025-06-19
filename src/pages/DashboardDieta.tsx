@@ -130,7 +130,6 @@ const DashboardDieta = () => {
     try {
       console.log('🔍 Carregando dados da tabela dieta para usuário:', user.id);
       
-      // Mudança: removendo .single() e buscando a dieta ativa mais recente
       const { data, error } = await supabase
         .from('dieta')
         .select('*')
@@ -146,7 +145,7 @@ const DashboardDieta = () => {
       }
         
       if (data && data.length > 0) {
-        const dietaAtiva = data[0]; // Pega a primeira (mais recente)
+        const dietaAtiva = data[0];
         console.log('✅ Dados da dieta encontrados:', dietaAtiva);
         console.log('🆔 Universal ID da dieta:', dietaAtiva.universal_id);
         
@@ -159,18 +158,13 @@ const DashboardDieta = () => {
           calorias_totais: dietaAtiva.calorias_totais,
           created_at: dietaAtiva.created_at,
           updated_at: dietaAtiva.updated_at,
-          // Mapear as refeições das colunas específicas da tabela seguindo o formato do UI
+          // Mapear as refeições das colunas específicas da tabela
           refeicoes: {
-            cafeDaManha: dietaAtiva.cafe_da_manha && Object.keys(dietaAtiva.cafe_da_manha).length > 0 ? 
-              formatMealData(dietaAtiva.cafe_da_manha, 'Café da Manhã') : null,
-            almoco: dietaAtiva.almoco && Object.keys(dietaAtiva.almoco).length > 0 ? 
-              formatMealData(dietaAtiva.almoco, 'Almoço') : null,
-            lanche: dietaAtiva.lanche && Object.keys(dietaAtiva.lanche).length > 0 ? 
-              formatMealData(dietaAtiva.lanche, 'Lanche') : null,
-            jantar: dietaAtiva.jantar && Object.keys(dietaAtiva.jantar).length > 0 ? 
-              formatMealData(dietaAtiva.jantar, 'Jantar') : null,
-            ceia: dietaAtiva.ceia && Object.keys(dietaAtiva.ceia).length > 0 ? 
-              formatMealData(dietaAtiva.ceia, 'Ceia') : null
+            cafeDaManha: formatMealData(dietaAtiva.cafe_da_manha, 'Café da Manhã', '07:00'),
+            almoco: formatMealData(dietaAtiva.almoco, 'Almoço', '12:30'),
+            lanche: formatMealData(dietaAtiva.lanche, 'Lanche da Tarde', '16:00'),
+            jantar: formatMealData(dietaAtiva.jantar, 'Jantar', '19:30'),
+            ceia: formatMealData(dietaAtiva.ceia, 'Ceia', '21:30')
           }
         };
         
@@ -187,17 +181,82 @@ const DashboardDieta = () => {
     }
   };
 
-  // Função para formatar os dados da refeição seguindo o padrão do UI
-  const formatMealData = (mealData: any, mealName: string) => {
-    if (!mealData || typeof mealData !== 'object') return null;
+  // Função para formatar os dados da refeição a partir do texto
+  const formatMealData = (mealText: string, mealName: string, defaultTime: string) => {
+    if (!mealText || typeof mealText !== 'string' || mealText.trim() === '') return null;
     
-    return {
-      nome: mealData.nome || mealName,
-      horario: mealData.horario || '--:--',
-      calorias: mealData.calorias || 0,
-      macros: mealData.macros || { proteina: 0, carboidrato: 0, gordura: 0 },
-      alimentos: mealData.alimentos || []
-    };
+    console.log(`📝 Formatando dados da refeição ${mealName}:`, mealText);
+    
+    try {
+      // Extrair informações do texto estruturado
+      const lines = mealText.split('\n').filter(line => line.trim() !== '');
+      
+      let horario = defaultTime;
+      let calorias = 0;
+      let macros = { proteina: 0, carboidrato: 0, gordura: 0 };
+      let alimentos = [];
+      
+      // Extrair horário se estiver presente
+      const horarioMatch = mealText.match(/\((\d{1,2}h\d{2})\)/);
+      if (horarioMatch) {
+        horario = horarioMatch[1].replace('h', ':');
+      }
+      
+      // Extrair calorias
+      const caloriasMatch = mealText.match(/Calorias:\s*(\d+)\s*kcal/i);
+      if (caloriasMatch) {
+        calorias = parseInt(caloriasMatch[1]);
+      }
+      
+      // Extrair macros
+      const proteinaMatch = mealText.match(/Proteínas:\s*(\d+)g/i);
+      const carboidratoMatch = mealText.match(/Carboidratos:\s*(\d+)g/i);
+      const gorduraMatch = mealText.match(/Gorduras:\s*(\d+)g/i);
+      
+      if (proteinaMatch) macros.proteina = parseInt(proteinaMatch[1]);
+      if (carboidratoMatch) macros.carboidrato = parseInt(carboidratoMatch[1]);
+      if (gorduraMatch) macros.gordura = parseInt(gorduraMatch[1]);
+      
+      // Extrair alimentos
+      const alimentosSection = mealText.match(/Alimentos:(.*?)(?:Substituições:|Macros:|$)/s);
+      if (alimentosSection) {
+        const alimentosText = alimentosSection[1];
+        const alimentosLines = alimentosText.split('\n')
+          .filter(line => line.trim().startsWith('- '))
+          .map(line => line.replace('- ', '').trim());
+        
+        alimentos = alimentosLines.map(alimento => {
+          // Tentar extrair quantidade e nome
+          const parts = alimento.split(' ');
+          return {
+            nome: alimento,
+            quantidade: '1 porção',
+            calorias: Math.round(calorias / Math.max(alimentosLines.length, 1)) // Distribuir calorias
+          };
+        });
+      }
+      
+      const formattedMeal = {
+        nome: mealName,
+        horario: horario,
+        calorias: calorias,
+        macros: macros,
+        alimentos: alimentos
+      };
+      
+      console.log(`✅ Refeição ${mealName} formatada:`, formattedMeal);
+      return formattedMeal;
+      
+    } catch (error) {
+      console.error(`❌ Erro ao formatar dados da refeição ${mealName}:`, error);
+      return {
+        nome: mealName,
+        horario: defaultTime,
+        calorias: 0,
+        macros: { proteina: 0, carboidrato: 0, gordura: 0 },
+        alimentos: [{ nome: 'Dados não disponíveis', quantidade: '', calorias: 0 }]
+      };
+    }
   };
 
   // Simular carregamento de dieta atualizada

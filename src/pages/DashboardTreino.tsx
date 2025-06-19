@@ -61,7 +61,7 @@ const DashboardTreino = () => {
     if (!user) return;
     
     try {
-      console.log('Dashboard Treino: Iniciando carregamento de dados para usuário:', user.id);
+      console.log('DashboardTreino: Iniciando carregamento de dados para usuário:', user.id);
       
       // Buscar treino personalizado da tabela treino
       const { data: treinoPersonalizado, error: treinoError } = await supabase
@@ -73,35 +73,49 @@ const DashboardTreino = () => {
         .limit(1)
         .maybeSingle();
 
-      console.log('Dashboard Treino: Consulta treino personalizado - dados:', treinoPersonalizado);
-      console.log('Dashboard Treino: Consulta treino personalizado - erro:', treinoError);
+      console.log('DashboardTreino: Resultado da consulta treino personalizado:');
+      console.log('- Dados:', treinoPersonalizado);
+      console.log('- Erro:', treinoError);
 
-      if (treinoError && treinoError.code !== 'PGRST116') {
-        console.error('Dashboard Treino: Erro ao carregar treino personalizado:', treinoError);
-      } else if (treinoPersonalizado) {
-        console.log('Dashboard Treino: Treino personalizado encontrado:', treinoPersonalizado);
+      if (treinoError) {
+        console.error('DashboardTreino: Erro ao carregar treino personalizado:', treinoError);
+        if (treinoError.code !== 'PGRST116') {
+          setError('Erro ao carregar treino personalizado');
+        }
+      }
+
+      if (treinoPersonalizado) {
+        console.log('DashboardTreino: Treino personalizado encontrado!');
+        console.log('DashboardTreino: Dados completos do treino:', JSON.stringify(treinoPersonalizado, null, 2));
         
         // Log específico das colunas dos dias da semana
-        console.log('Dashboard Treino: Dados por dia da semana:');
-        console.log('- Segunda-feira:', treinoPersonalizado.segunda_feira);
-        console.log('- Terça-feira:', treinoPersonalizado.terca_feira);
-        console.log('- Quarta-feira:', treinoPersonalizado.quarta_feira);
-        console.log('- Quinta-feira:', treinoPersonalizado.quinta_feira);
-        console.log('- Sexta-feira:', treinoPersonalizado.sexta_feira);
-        console.log('- Sábado:', treinoPersonalizado.sabado);
-        console.log('- Domingo:', treinoPersonalizado.domingo);
+        console.log('DashboardTreino: Verificando dados por dia:');
+        const dias = ['segunda_feira', 'terca_feira', 'quarta_feira', 'quinta_feira', 'sexta_feira', 'sabado', 'domingo'];
+        dias.forEach(dia => {
+          const dadosDia = treinoPersonalizado[dia as keyof TreinoData];
+          console.log(`- ${dia}:`, dadosDia);
+          if (dadosDia) {
+            console.log(`  Tipo: ${typeof dadosDia}`);
+            if (typeof dadosDia === 'object') {
+              console.log(`  Conteúdo:`, JSON.stringify(dadosDia, null, 2));
+            }
+          }
+        });
         
         setTreinoData(treinoPersonalizado);
         
         // Extract quiz_data if it exists and has the right structure
         if (treinoPersonalizado.quiz_data && isQuizData(treinoPersonalizado.quiz_data)) {
+          console.log('DashboardTreino: Quiz data encontrado no treino:', treinoPersonalizado.quiz_data);
           setWorkoutData({ quiz_data: treinoPersonalizado.quiz_data });
         }
+      } else {
+        console.log('DashboardTreino: Nenhum treino personalizado encontrado');
       }
 
-      // Se não houver treino personalizado OU se houve erro, busca dados do quiz
-      if (!treinoPersonalizado || treinoError) {
-        console.log('Dashboard Treino: Buscando dados do quiz como fallback');
+      // Se não houver treino personalizado, busca dados do quiz
+      if (!treinoPersonalizado) {
+        console.log('DashboardTreino: Buscando dados do quiz como fallback');
         
         const { data: quizData, error: quizError } = await supabase
           .from('user_quiz_data')
@@ -110,21 +124,22 @@ const DashboardTreino = () => {
           .eq('quiz_type', 'treino')
           .maybeSingle();
           
-        console.log('Dashboard Treino: Dados do quiz:', quizData);
-        console.log('Dashboard Treino: Erro do quiz:', quizError);
+        console.log('DashboardTreino: Resultado da consulta quiz:');
+        console.log('- Dados:', quizData);
+        console.log('- Erro:', quizError);
           
         if (quizData) {
-          console.log('Dashboard Treino: Dados do quiz carregados:', quizData);
+          console.log('DashboardTreino: Dados do quiz carregados:', quizData);
           setWorkoutData(quizData);
         }
         
         if (quizError && quizError.code !== 'PGRST116') {
-          console.error('Dashboard Treino: Erro ao carregar dados do quiz:', quizError);
-          setError('Erro ao carregar dados do treino');
+          console.error('DashboardTreino: Erro ao carregar dados do quiz:', quizError);
+          setError('Erro ao carregar dados do quiz');
         }
       }
     } catch (err) {
-      console.error('Dashboard Treino: Erro inesperado:', err);
+      console.error('DashboardTreino: Erro inesperado:', err);
       setError('Erro inesperado ao carregar dados');
     } finally {
       setLoading(false);
@@ -438,9 +453,102 @@ const DashboardTreino = () => {
 
       {/* Conteúdo principal */}
       <div className="max-w-6xl mx-auto p-4 space-y-6">
-        {workoutData && workoutData.quiz_data ? (
+        {/* Verificar se há dados de treino para exibir */}
+        {treinoData ? (
           <>
-            {/* Perfil de Treino */}
+            {workoutData && workoutData.quiz_data && (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-2xl p-6 shadow-lg border border-blue-100"
+              >
+                <div className="flex items-center space-x-3 mb-6">
+                  <User className="text-blue-600" size={24} />
+                  <h3 className="text-xl font-bold text-gray-800">Seu Perfil de Treino</h3>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-blue-50 p-4 rounded-xl">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Activity className="text-blue-600" size={18} />
+                      <span className="font-semibold text-gray-700">Experiência</span>
+                    </div>
+                    <p className="text-gray-600">{getExperienciaTexto(workoutData.quiz_data.experiencia)}</p>
+                  </div>
+
+                  <div className="bg-green-50 p-4 rounded-xl">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Calendar className="text-green-600" size={18} />
+                      <span className="font-semibold text-gray-700">Frequência</span>
+                    </div>
+                    <p className="text-gray-600">{getFrequenciaTexto(workoutData.quiz_data.frequencia)}</p>
+                  </div>
+
+                  <div className="bg-purple-50 p-4 rounded-xl">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Target className="text-purple-600" size={18} />
+                      <span className="font-semibold text-gray-700">Objetivo</span>
+                    </div>
+                    <p className="text-gray-600">{getObjetivoTexto(workoutData.quiz_data.objetivo)}</p>
+                  </div>
+
+                  <div className="bg-orange-50 p-4 rounded-xl">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Clock className="text-orange-600" size={18} />
+                      <span className="font-semibold text-gray-700">Tempo por Treino</span>
+                    </div>
+                    <p className="text-gray-600">{getTempoTexto(workoutData.quiz_data.tempo_disponivel)}</p>
+                  </div>
+                </div>
+
+                {/* Limitações */}
+                {workoutData.quiz_data.limitacoes && workoutData.quiz_data.limitacoes.length > 0 && (
+                  <div className="mt-4 bg-red-50 p-4 rounded-xl">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Shield className="text-red-600" size={18} />
+                      <span className="font-semibold text-gray-700">Limitações</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {workoutData.quiz_data.limitacoes.map((limitacao: string, index: number) => (
+                        <span key={index} className="bg-red-100 text-red-700 px-3 py-1 rounded-lg text-sm">
+                          {limitacao}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Preferências */}
+                {workoutData.quiz_data.preferencias && workoutData.quiz_data.preferencias.length > 0 && (
+                  <div className="mt-4 bg-indigo-50 p-4 rounded-xl">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Dumbbell className="text-indigo-600" size={18} />
+                      <span className="font-semibold text-gray-700">Preferências de Treino</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {workoutData.quiz_data.preferencias.map((preferencia: string, index: number) => (
+                        <span key={index} className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-sm">
+                          {preferencia}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* Tabela de Treinos da Semana */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <TreinoWeekTable treinoData={treinoData} />
+            </motion.div>
+          </>
+        ) : workoutData && workoutData.quiz_data ? (
+          <>
+            {/* ... keep existing code (perfil de treino sem treino personalizado) */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -451,6 +559,7 @@ const DashboardTreino = () => {
                 <h3 className="text-xl font-bold text-gray-800">Seu Perfil de Treino</h3>
               </div>
               
+              {/* ... keep existing code (grid com dados do perfil) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-blue-50 p-4 rounded-xl">
                   <div className="flex items-center space-x-2 mb-2">
@@ -485,7 +594,7 @@ const DashboardTreino = () => {
                 </div>
               </div>
 
-              {/* Limitações */}
+              {/* ... keep existing code (limitações e preferências) */}
               {workoutData.quiz_data.limitacoes && workoutData.quiz_data.limitacoes.length > 0 && (
                 <div className="mt-4 bg-red-50 p-4 rounded-xl">
                   <div className="flex items-center space-x-2 mb-2">
@@ -502,7 +611,6 @@ const DashboardTreino = () => {
                 </div>
               )}
 
-              {/* Preferências */}
               {workoutData.quiz_data.preferencias && workoutData.quiz_data.preferencias.length > 0 && (
                 <div className="mt-4 bg-indigo-50 p-4 rounded-xl">
                   <div className="flex items-center space-x-2 mb-2">
@@ -520,44 +628,33 @@ const DashboardTreino = () => {
               )}
             </motion.div>
 
-            {/* Tabela de Treinos da Semana */}
-            {treinoData ? (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-              >
-                <TreinoWeekTable treinoData={treinoData} />
-              </motion.div>
-            ) : (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-white rounded-2xl p-6 shadow-lg border border-blue-100"
-              >
-                <div className="flex items-center space-x-3 mb-6">
-                  <Calendar className="text-blue-600" size={24} />
-                  <h3 className="text-xl font-bold text-gray-800">Cronograma Semanal</h3>
-                </div>
-                
-                <div className="text-center py-8">
-                  <Dumbbell className="text-blue-400 mx-auto mb-4" size={48} />
-                  <h4 className="text-lg font-bold text-gray-600 mb-2">Plano Personalizado em Preparação</h4>
-                  <p className="text-gray-500 mb-4">
-                    Com base no seu perfil, o Basa está criando seu plano de treino ideal!
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-white rounded-2xl p-6 shadow-lg border border-blue-100"
+            >
+              <div className="flex items-center space-x-3 mb-6">
+                <Calendar className="text-blue-600" size={24} />
+                <h3 className="text-xl font-bold text-gray-800">Cronograma Semanal</h3>
+              </div>
+              
+              <div className="text-center py-8">
+                <Dumbbell className="text-blue-400 mx-auto mb-4" size={48} />
+                <h4 className="text-lg font-bold text-gray-600 mb-2">Plano Personalizado em Preparação</h4>
+                <p className="text-gray-500 mb-4">
+                  Com base no seu perfil, o Basa está criando seu plano de treino ideal!
+                </p>
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl max-w-md mx-auto">
+                  <p className="text-sm text-gray-600">
+                    💪 Treino personalizado para {getObjetivoTexto(workoutData.quiz_data.objetivo).toLowerCase()}
                   </p>
-                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl max-w-md mx-auto">
-                    <p className="text-sm text-gray-600">
-                      💪 Treino personalizado para {getObjetivoTexto(workoutData.quiz_data.objetivo).toLowerCase()}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-2">
-                      Quiz concluído • Aguardando plano personalizado
-                    </p>
-                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Quiz concluído • Aguardando plano personalizado
+                  </p>
                 </div>
-              </motion.div>
-            )}
+              </div>
+            </motion.div>
           </>
         ) : (
           <div className="text-center py-12">

@@ -31,6 +31,8 @@ interface DietData {
   ceia: any;
   created_at: string;
   updated_at: string;
+  user_id: string;
+  ativa: boolean;
 }
 
 interface MealData {
@@ -48,7 +50,6 @@ const DashboardDieta = () => {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  // Configuração das refeições
   const refeicoes = [
     {
       id: 'cafe_da_manha',
@@ -104,7 +105,12 @@ const DashboardDieta = () => {
   }, [user]);
 
   const loadDietData = async () => {
-    if (!user) return;
+    if (!user) {
+      console.error('❌ Usuário não autenticado');
+      setError('Usuário não autenticado');
+      setLoading(false);
+      return;
+    }
     
     setLoading(true);
     setError(null);
@@ -112,7 +118,7 @@ const DashboardDieta = () => {
     try {
       console.log('🔍 Carregando dados da dieta para usuário:', user.id);
       
-      const { data, error } = await supabase
+      const { data, error: queryError } = await supabase
         .from('dieta')
         .select('*')
         .eq('user_id', user.id)
@@ -120,13 +126,13 @@ const DashboardDieta = () => {
         .order('created_at', { ascending: false })
         .limit(1);
         
-      if (error) {
-        console.error('❌ Erro ao carregar dados da dieta:', error);
-        throw error;
+      if (queryError) {
+        console.error('❌ Erro ao carregar dados da dieta:', queryError);
+        throw new Error(`Erro na consulta: ${queryError.message}`);
       }
         
       if (data && data.length > 0) {
-        const dietaAtiva = data[0];
+        const dietaAtiva = data[0] as DietData;
         console.log('✅ Dados da dieta carregados:', dietaAtiva);
         setDietData(dietaAtiva);
       } else {
@@ -135,7 +141,7 @@ const DashboardDieta = () => {
       }
     } catch (err: any) {
       console.error('💥 Erro ao carregar dieta:', err);
-      setError(`Erro ao carregar dieta: ${err.message}`);
+      setError(`Erro ao carregar dieta: ${err.message || 'Erro desconhecido'}`);
     } finally {
       setLoading(false);
     }
@@ -151,7 +157,6 @@ const DashboardDieta = () => {
       };
     }
 
-    // Se é uma string, tentar extrair informações básicas
     if (typeof mealData === 'string') {
       const caloriasMatch = mealData.match(/(\d+)\s*kcal/i);
       const calorias = caloriasMatch ? parseInt(caloriasMatch[1]) : 0;
@@ -165,8 +170,7 @@ const DashboardDieta = () => {
       };
     }
 
-    // Se é um objeto, usar os dados estruturados
-    if (typeof mealData === 'object') {
+    if (typeof mealData === 'object' && mealData !== null) {
       return {
         nome: mealName,
         horario: mealData.horario || defaultTime,
@@ -245,7 +249,6 @@ const DashboardDieta = () => {
       />
 
       <div className="max-w-4xl mx-auto p-4">
-        {/* Navegação rápida */}
         <div className="flex gap-3 mb-6">
           <button
             onClick={() => navigate('/dashboard')}
@@ -328,7 +331,6 @@ const DashboardDieta = () => {
                 transition={{ delay: index * 0.1 }}
                 className={`bg-gradient-to-br ${tipoRefeicao.cor} rounded-2xl p-6 border shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-105`}
               >
-                {/* Header da refeição */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
@@ -346,7 +348,6 @@ const DashboardDieta = () => {
                   <span className="text-2xl">{tipoRefeicao.emoji}</span>
                 </div>
 
-                {/* Informações da refeição */}
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-pink-600">Calorias:</span>

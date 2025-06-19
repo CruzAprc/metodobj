@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +16,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import Header from "@/components/Header";
+import TreinoWeekTable from "@/components/TreinoWeekTable";
 import { Tables } from "@/integrations/supabase/types";
 
 interface QuizData {
@@ -63,7 +63,7 @@ const DashboardTreino = () => {
     try {
       console.log('Dashboard Treino: Iniciando carregamento de dados para usuário:', user.id);
       
-      // Buscar treino personalizado da tabela treino - corrigindo a consulta
+      // Buscar treino personalizado da tabela treino
       const { data: treinoPersonalizado, error: treinoError } = await supabase
         .from('treino')
         .select('*')
@@ -78,7 +78,6 @@ const DashboardTreino = () => {
 
       if (treinoError && treinoError.code !== 'PGRST116') {
         console.error('Dashboard Treino: Erro ao carregar treino personalizado:', treinoError);
-        // Não definir erro ainda, vamos tentar buscar dados do quiz
       } else if (treinoPersonalizado) {
         console.log('Dashboard Treino: Treino personalizado encontrado:', treinoPersonalizado);
         setTreinoData(treinoPersonalizado);
@@ -427,7 +426,7 @@ const DashboardTreino = () => {
       />
 
       {/* Conteúdo principal */}
-      <div className="max-w-4xl mx-auto p-4 space-y-6">
+      <div className="max-w-6xl mx-auto p-4 space-y-6">
         {workoutData && workoutData.quiz_data ? (
           <>
             {/* Perfil de Treino */}
@@ -510,8 +509,16 @@ const DashboardTreino = () => {
               )}
             </motion.div>
 
-            {/* Treino Personalizado ou Cronograma Semanal */}
-            {treinoData ? renderTreinoPersonalizado() : (
+            {/* Tabela de Treinos da Semana */}
+            {treinoData ? (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <TreinoWeekTable treinoData={treinoData} />
+              </motion.div>
+            ) : (
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

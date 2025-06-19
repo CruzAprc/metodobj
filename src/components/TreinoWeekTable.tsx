@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tables } from "@/integrations/supabase/types";
@@ -23,6 +22,52 @@ const TreinoWeekTable = ({ treinoData }: TreinoWeekTableProps) => {
     { key: 'domingo', nome: 'Domingo', color: 'from-red-500 to-red-600', icon: '🏃‍♂️' }
   ];
 
+  const parseWorkoutText = (text: string) => {
+    console.log('TreinoWeekTable: Parseando texto do treino:', text);
+    
+    if (!text || typeof text !== 'string') {
+      return { foco: '', tempo: '', exercicios: [], observacoes: '' };
+    }
+
+    const lines = text.split('\n').filter(line => line.trim());
+    const result = { foco: '', tempo: '', exercicios: [], observacoes: '' };
+    
+    // Extrair foco
+    const focoMatch = text.match(/Foco:\s*(.+?)(?:\n|Tempo:|$)/i);
+    if (focoMatch) {
+      result.foco = focoMatch[1].trim();
+    }
+    
+    // Extrair tempo
+    const tempoMatch = text.match(/Tempo:\s*(.+?)(?:\n|\d+\.|$)/i);
+    if (tempoMatch) {
+      result.tempo = tempoMatch[1].trim();
+    }
+    
+    // Extrair exercícios (numerados)
+    const exercicioRegex = /(\d+)\.\s*(.+?)\s*-\s*(\d+x\d+)\s*-\s*Descanso\s*(\d+s)/g;
+    let match;
+    
+    while ((match = exercicioRegex.exec(text)) !== null) {
+      const [, numero, nome, series, descanso] = match;
+      result.exercicios.push({
+        numero: parseInt(numero),
+        nome: nome.trim(),
+        series: series.trim(),
+        descanso: descanso.trim()
+      });
+    }
+    
+    // Extrair observações/cardio
+    const cardioMatch = text.match(/Cardio Extra[^:]*:([\s\S]*?)(?:\n\n|$)/i);
+    if (cardioMatch) {
+      result.observacoes = cardioMatch[1].trim();
+    }
+    
+    console.log('TreinoWeekTable: Resultado do parse:', result);
+    return result;
+  };
+
   const formatTreinoData = (treinoRaw: any): any => {
     console.log('TreinoWeekTable: Formatando dados do treino:', treinoRaw);
     
@@ -37,19 +82,11 @@ const TreinoWeekTable = ({ treinoData }: TreinoWeekTableProps) => {
       return treinoRaw;
     }
     
-    // Se é uma string, tenta parsear como JSON
+    // Se é uma string, tenta parsear o texto estruturado
     if (typeof treinoRaw === 'string') {
-      try {
-        const parsed = JSON.parse(treinoRaw);
-        console.log('TreinoWeekTable: JSON parseado com sucesso:', parsed);
-        return parsed;
-      } catch (error) {
-        console.log('TreinoWeekTable: Erro ao parsear JSON:', error);
-        return {
-          descricao: treinoRaw,
-          exercicios: []
-        };
-      }
+      const parsed = parseWorkoutText(treinoRaw);
+      console.log('TreinoWeekTable: Texto parseado com sucesso:', parsed);
+      return parsed;
     }
     
     return null;
@@ -70,39 +107,61 @@ const TreinoWeekTable = ({ treinoData }: TreinoWeekTableProps) => {
     return (
       <div className="space-y-3">
         {exercicios.map((exercicio, index) => (
-          <div key={index} className="bg-white/80 backdrop-blur-sm p-3 rounded-lg border border-gray-100/50 shadow-sm">
-            <div className="flex items-start justify-between">
+          <div key={index} className="bg-white/80 backdrop-blur-sm p-4 rounded-lg border border-gray-100/50 shadow-sm">
+            <div className="flex items-start justify-between mb-3">
               <div className="flex-1">
-                <h5 className="font-semibold text-gray-800 text-sm mb-2">
-                  {exercicio.nome || exercicio.exercicio || `Exercício ${index + 1}`}
-                </h5>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                    {exercicio.numero || index + 1}
+                  </span>
+                  <h5 className="font-bold text-gray-800 text-base">
+                    {exercicio.nome || exercicio.exercicio || `Exercício ${index + 1}`}
+                  </h5>
+                </div>
                 
-                <div className="flex flex-wrap gap-2">
-                  {exercicio.series && exercicio.repeticoes && (
-                    <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
-                      <Target size={10} />
-                      {exercicio.series}x{exercicio.repeticoes}
-                    </span>
-                  )}
-                  
-                  {exercicio.carga && (
-                    <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
-                      <Dumbbell size={10} />
-                      {exercicio.carga}
-                    </span>
+                <div className="flex flex-wrap gap-3 mt-3">
+                  {(exercicio.series || exercicio.repeticoes) && (
+                    <div className="bg-gradient-to-r from-blue-50 to-blue-100 px-3 py-2 rounded-lg border border-blue-200">
+                      <div className="flex items-center gap-2">
+                        <Target className="text-blue-600" size={14} />
+                        <div>
+                          <p className="text-xs text-blue-600 font-medium">REPETIÇÕES</p>
+                          <p className="text-sm font-bold text-blue-800">
+                            {exercicio.series || `${exercicio.series}x${exercicio.repeticoes}`}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   )}
                   
                   {exercicio.descanso && (
-                    <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
-                      <Clock size={10} />
-                      {exercicio.descanso}
-                    </span>
+                    <div className="bg-gradient-to-r from-orange-50 to-orange-100 px-3 py-2 rounded-lg border border-orange-200">
+                      <div className="flex items-center gap-2">
+                        <Clock className="text-orange-600" size={14} />
+                        <div>
+                          <p className="text-xs text-orange-600 font-medium">DESCANSO</p>
+                          <p className="text-sm font-bold text-orange-800">{exercicio.descanso}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {exercicio.carga && (
+                    <div className="bg-gradient-to-r from-green-50 to-green-100 px-3 py-2 rounded-lg border border-green-200">
+                      <div className="flex items-center gap-2">
+                        <Dumbbell className="text-green-600" size={14} />
+                        <div>
+                          <p className="text-xs text-green-600 font-medium">CARGA</p>
+                          <p className="text-sm font-bold text-green-800">{exercicio.carga}</p>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
                 
                 {exercicio.observacoes && (
-                  <div className="mt-2 bg-yellow-50 p-2 rounded border-l-2 border-yellow-400">
-                    <p className="text-xs text-yellow-800">
+                  <div className="mt-3 bg-yellow-50 p-3 rounded-lg border-l-4 border-yellow-400">
+                    <p className="text-sm text-yellow-800">
                       <span className="font-medium">Obs:</span> {exercicio.observacoes}
                     </p>
                   </div>
@@ -120,7 +179,8 @@ const TreinoWeekTable = ({ treinoData }: TreinoWeekTableProps) => {
     
     const hasWorkout = treinoDia && (
       (treinoDia.exercicios && Array.isArray(treinoDia.exercicios) && treinoDia.exercicios.length > 0) ||
-      (treinoDia.descricao && treinoDia.descricao.trim().length > 0)
+      (treinoDia.foco && treinoDia.foco.trim().length > 0) ||
+      (treinoDia.tempo && treinoDia.tempo.trim().length > 0)
     );
 
     console.log(`TreinoWeekTable: ${dia.nome} tem treino:`, hasWorkout);
@@ -129,103 +189,89 @@ const TreinoWeekTable = ({ treinoData }: TreinoWeekTableProps) => {
       <Card key={dia.key} className="h-full hover:shadow-lg transition-all duration-300 border-0 overflow-hidden">
         <div className={`h-2 bg-gradient-to-r ${dia.color}`}></div>
         
-        <CardHeader className="pb-3">
+        <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-bold text-gray-800 flex items-center gap-2">
-              <span className="text-xl">{dia.icon}</span>
+            <CardTitle className="text-lg font-bold text-gray-800 flex items-center gap-3">
+              <span className="text-2xl">{dia.icon}</span>
               <div>
                 <div>{dia.nome}</div>
                 {hasWorkout && (
                   <div className="text-xs text-green-600 font-medium mt-1 flex items-center gap-1">
-                    <PlayCircle size={10} />
+                    <PlayCircle size={12} />
                     Treino programado
                   </div>
                 )}
               </div>
             </CardTitle>
           </div>
-          
-          {/* Foco do Treino */}
-          {treinoDia?.foco && (
-            <div className="flex items-center gap-2 mt-2">
-              <div className="bg-blue-100 p-1.5 rounded-lg">
-                <Target className="text-blue-600" size={12} />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 font-medium">FOCO</p>
-                <p className="text-sm font-semibold text-blue-700">{treinoDia.foco}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Duração */}
-          {treinoDia?.duracao && (
-            <div className="flex items-center gap-2 mt-1">
-              <div className="bg-orange-100 p-1.5 rounded-lg">
-                <Clock className="text-orange-600" size={12} />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 font-medium">DURAÇÃO</p>
-                <p className="text-sm font-semibold text-orange-700">{treinoDia.duracao}</p>
-              </div>
-            </div>
-          )}
         </CardHeader>
 
         <CardContent className="pt-0 px-4 pb-4">
           {hasWorkout ? (
             <>
-              {/* Exercícios */}
+              {/* Foco como Subheadline */}
+              {treinoDia?.foco && (
+                <div className="mb-4 bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-xl border border-blue-100">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Target className="text-blue-600" size={18} />
+                    <span className="text-sm font-bold text-blue-700 uppercase tracking-wide">FOCO DO TREINO</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-800 leading-tight">{treinoDia.foco}</h3>
+                </div>
+              )}
+
+              {/* Tempo como Título */}
+              {treinoDia?.tempo && (
+                <div className="mb-4 bg-gradient-to-r from-orange-50 to-red-50 p-4 rounded-xl border border-orange-100">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Clock className="text-orange-600" size={18} />
+                    <span className="text-sm font-bold text-orange-700 uppercase tracking-wide">DURAÇÃO</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-800">{treinoDia.tempo}</h3>
+                </div>
+              )}
+
+              {/* Lista de Exercícios */}
               {treinoDia.exercicios && Array.isArray(treinoDia.exercicios) && treinoDia.exercicios.length > 0 ? (
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <Dumbbell className="text-gray-600" size={14} />
-                    <span className="text-sm font-semibold text-gray-700">
-                      {treinoDia.exercicios.length} Exercício{treinoDia.exercicios.length > 1 ? 's' : ''}
-                    </span>
+                <div className="mb-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Dumbbell className="text-gray-700" size={18} />
+                    <h4 className="text-lg font-bold text-gray-800">
+                      Exercícios ({treinoDia.exercicios.length})
+                    </h4>
                   </div>
                   {renderExercicios(treinoDia.exercicios)}
                 </div>
-              ) : treinoDia.descricao ? (
-                <div className="bg-gradient-to-br from-blue-50 to-purple-50 p-3 rounded-lg border border-blue-100">
-                  <div className="flex items-center gap-2 mb-2">
-                    <PlayCircle className="text-blue-600" size={14} />
-                    <span className="text-sm font-semibold text-blue-700">Treino Personalizado</span>
-                  </div>
-                  <p className="text-sm text-gray-700 leading-relaxed">
-                    {treinoDia.descricao}
-                  </p>
-                </div>
               ) : (
-                <div className="bg-gradient-to-br from-green-50 to-blue-50 p-3 rounded-lg border border-green-100">
+                <div className="mb-4 bg-gradient-to-br from-blue-50 to-purple-50 p-4 rounded-xl border border-blue-100">
                   <div className="flex items-center gap-2 mb-2">
-                    <Trophy className="text-green-600" size={14} />
-                    <span className="text-sm font-semibold text-green-700">Treino Disponível</span>
+                    <PlayCircle className="text-blue-600" size={16} />
+                    <span className="text-sm font-semibold text-blue-700">Treino Disponível</span>
                   </div>
-                  <p className="text-xs text-green-600">
-                    Seu treino personalizado está pronto
+                  <p className="text-sm text-gray-700">
+                    Seu treino personalizado está pronto para este dia
                   </p>
                 </div>
               )}
 
-              {/* Observações Gerais */}
+              {/* Observações Gerais/Cardio */}
               {treinoDia.observacoes && (
-                <div className="mt-3 bg-gradient-to-r from-yellow-50 to-orange-50 p-3 rounded-lg border-l-4 border-yellow-400">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Zap className="text-yellow-600" size={12} />
-                    <span className="text-xs font-semibold text-yellow-700">OBSERVAÇÕES</span>
+                <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-xl border-l-4 border-yellow-400">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Zap className="text-yellow-600" size={16} />
+                    <span className="text-sm font-bold text-yellow-700 uppercase tracking-wide">CARDIO EXTRA</span>
                   </div>
-                  <p className="text-sm text-yellow-800 leading-relaxed">
+                  <div className="text-sm text-yellow-800 leading-relaxed whitespace-pre-line">
                     {treinoDia.observacoes}
-                  </p>
+                  </div>
                 </div>
               )}
             </>
           ) : (
-            <div className="text-center py-8 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg">
-              <div className="text-3xl mb-2">😴</div>
-              <p className="text-gray-600 font-semibold">Dia de Descanso</p>
-              <p className="text-gray-400 text-sm">Recuperação é fundamental</p>
+            <div className="text-center py-8 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl">
+              <div className="text-4xl mb-3">😴</div>
+              <h4 className="text-lg font-bold text-gray-600 mb-1">Dia de Descanso</h4>
+              <p className="text-gray-500 text-sm">Recuperação é fundamental</p>
             </div>
           )}
         </CardContent>
@@ -236,7 +282,7 @@ const TreinoWeekTable = ({ treinoData }: TreinoWeekTableProps) => {
   // Calcular estatísticas
   const diasComTreino = diasSemana.filter(dia => {
     const treinoDia = formatTreinoData(treinoData[dia.key as keyof TreinoData]);
-    return treinoDia && ((treinoDia.exercicios && treinoDia.exercicios.length > 0) || treinoDia.descricao);
+    return treinoDia && ((treinoDia.exercicios && treinoDia.exercicios.length > 0) || treinoDia.foco || treinoDia.tempo);
   }).length;
 
   const totalExercicios = diasSemana.reduce((total, dia) => {

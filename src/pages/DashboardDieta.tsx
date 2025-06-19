@@ -129,7 +129,7 @@ const DashboardDieta = () => {
     if (!user) return;
     
     try {
-      console.log('Carregando dados reais da dieta para usuário:', user.id);
+      console.log('🔍 Carregando dados da tabela dieta para usuário:', user.id);
       
       const { data, error } = await supabase
         .from('dieta')
@@ -140,22 +140,30 @@ const DashboardDieta = () => {
         .maybeSingle();
         
       if (error) {
-        console.error('Erro ao carregar dados da dieta:', error);
+        console.error('❌ Erro ao carregar dados da dieta:', error);
+        setError(`Erro ao carregar dieta: ${error.message}`);
         return;
       }
         
       if (data) {
-        console.log('Dados da dieta encontrados:', data);
+        console.log('✅ Dados da dieta encontrados:', data);
+        console.log('🆔 Universal ID da dieta:', data.universal_id);
+        console.log('🥐 Café da manhã:', data.cafe_da_manha);
+        console.log('🍽️ Almoço:', data.almoco);
+        console.log('🥪 Lanche:', data.lanche);
+        console.log('🌙 Jantar:', data.jantar);
+        console.log('⭐ Ceia:', data.ceia);
         
-        // Processar os dados para o formato necessário
+        // Processar os dados da dieta real
         const processedDietData = {
           id: data.id,
+          universal_id: data.universal_id,
           nome_dieta: data.nome_dieta,
           descricao: data.descricao,
           calorias_totais: data.calorias_totais,
           created_at: data.created_at,
           updated_at: data.updated_at,
-          // Processar cada refeição das colunas específicas
+          // Mapear as refeições das colunas específicas da tabela
           refeicoes: {
             cafeDaManha: data.cafe_da_manha && Object.keys(data.cafe_da_manha).length > 0 ? data.cafe_da_manha : null,
             almoco: data.almoco && Object.keys(data.almoco).length > 0 ? data.almoco : null,
@@ -165,14 +173,16 @@ const DashboardDieta = () => {
           }
         };
         
-        console.log('Dados processados da dieta:', processedDietData);
+        console.log('🔄 Dados processados da dieta:', processedDietData);
         setRealDietData(processedDietData);
+        setError(null);
       } else {
-        console.log('Nenhuma dieta ativa encontrada para o usuário');
+        console.log('⚠️ Nenhuma dieta ativa encontrada para o usuário');
         setRealDietData(null);
       }
     } catch (error) {
-      console.error('Erro inesperado ao carregar dados da dieta:', error);
+      console.error('💥 Erro inesperado ao carregar dados da dieta:', error);
+      setError(`Erro inesperado: ${error.message}`);
     }
   };
 
@@ -366,170 +376,158 @@ const DashboardDieta = () => {
           </button>
         </div>
 
-        {dietData || realDietData ? (
-          <>
-            {/* Resumo diário com tema rosa */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl p-6 shadow-lg border border-pink-200 mb-6"
-            >
-              <div className="flex items-center space-x-3 mb-4">
-                <Calendar className="text-pink-500" size={24} />
-                <h2 className="text-xl font-bold text-pink-800">
-                  {getDietTitle()}
-                </h2>
-              </div>
-              
-              {getDietDescription() && (
-                <p className="text-pink-600 mb-4">{getDietDescription()}</p>
-              )}
-              
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-gradient-to-br from-pink-50 to-rose-100 rounded-xl">
-                  <p className="text-2xl font-bold text-pink-600">{calcularCaloriasTotais()}</p>
-                  <p className="text-sm text-pink-700">Calorias Totais</p>
-                </div>
-                <div className="text-center p-4 bg-gradient-to-br from-rose-50 to-pink-100 rounded-xl">
-                  <p className="text-2xl font-bold text-rose-600">5</p>
-                  <p className="text-sm text-rose-700">Refeições</p>
-                </div>
-                <div className="text-center p-4 bg-gradient-to-br from-pink-100 to-rose-100 rounded-xl">
-                  <p className="text-2xl font-bold text-pink-600">Saudável</p>
-                  <p className="text-sm text-pink-700">Objetivo</p>
-                </div>
-                <div className="text-center p-4 bg-gradient-to-br from-rose-100 to-pink-100 rounded-xl">
-                  <CheckCircle className="text-rose-600 mx-auto mb-1" size={24} />
-                  <p className="text-sm text-rose-700">
-                    {realDietData ? 'Plano Ativo' : 'Mock Data'}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Grid de refeições */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {refeicoes.map((tipoRefeicao, index) => {
-                const refeicaoData = currentDietData[tipoRefeicao.id];
-                
-                return (
-                  <motion.div
-                    key={tipoRefeicao.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className={`bg-gradient-to-br ${tipoRefeicao.cor} rounded-2xl p-6 border shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-105`}
-                  >
-                    {/* Header da refeição */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
-                          {tipoRefeicao.icon}
-                        </div>
-                        <div>
-                          <h4 className={`font-bold ${tipoRefeicao.corTexto}`}>
-                            {tipoRefeicao.nome}
-                          </h4>
-                          <p className="text-sm text-pink-600">
-                            {refeicaoData?.horario || '--:--'}
-                          </p>
-                        </div>
-                      </div>
-                      <span className="text-2xl">{tipoRefeicao.emoji}</span>
-                    </div>
-
-                    {/* Informações nutricionais */}
-                    {refeicaoData && (
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-pink-600">Calorias:</span>
-                          <span className={`font-bold ${tipoRefeicao.corTexto}`}>
-                            {refeicaoData.calorias} kcal
-                          </span>
-                        </div>
-                        
-                        {/* Macros */}
-                        {refeicaoData.macros && (
-                          <div className="grid grid-cols-3 gap-2 text-xs">
-                            <div className="text-center p-2 bg-white/60 rounded-lg">
-                              <p className="font-medium text-pink-700">Proteína</p>
-                              <p className={tipoRefeicao.corTexto}>{refeicaoData.macros.proteina}g</p>
-                            </div>
-                            <div className="text-center p-2 bg-white/60 rounded-lg">
-                              <p className="font-medium text-pink-700">Carbo</p>
-                              <p className={tipoRefeicao.corTexto}>{refeicaoData.macros.carboidrato}g</p>
-                            </div>
-                            <div className="text-center p-2 bg-white/60 rounded-lg">
-                              <p className="font-medium text-pink-700">Gordura</p>
-                              <p className={tipoRefeicao.corTexto}>{refeicaoData.macros.gordura}g</p>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Lista de alimentos */}
-                        {refeicaoData.alimentos && (
-                          <div className="space-y-2">
-                            <p className="text-sm font-medium text-pink-700">Alimentos:</p>
-                            <div className="space-y-1 max-h-32 overflow-y-auto">
-                              {refeicaoData.alimentos.map((alimento, idx) => (
-                                <div key={idx} className="text-xs bg-white/40 p-2 rounded-lg">
-                                  <div className="flex justify-between">
-                                    <span className="font-medium text-pink-800">{alimento.nome}</span>
-                                    <span className={tipoRefeicao.corTexto}>{alimento.calorias} kcal</span>
-                                  </div>
-                                  <p className="text-pink-600">{alimento.quantidade}</p>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {!refeicaoData && (
-                      <div className="text-center py-4">
-                        <p className="text-sm text-pink-600">Refeição não configurada</p>
-                      </div>
-                    )}
-                  </motion.div>
-                );
-              })}
+        {/* Resumo diário com tema rosa */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl p-6 shadow-lg border border-pink-200 mb-6"
+        >
+          <div className="flex items-center space-x-3 mb-4">
+            <Calendar className="text-pink-500" size={24} />
+            <h2 className="text-xl font-bold text-pink-800">
+              {getDietTitle()}
+            </h2>
+            {realDietData?.universal_id && (
+              <span className="text-xs bg-pink-100 text-pink-600 px-2 py-1 rounded">
+                ID: {realDietData.universal_id.slice(0, 8)}...
+              </span>
+            )}
+          </div>
+          
+          {getDietDescription() && (
+            <p className="text-pink-600 mb-4">{getDietDescription()}</p>
+          )}
+          
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center p-4 bg-gradient-to-br from-pink-50 to-rose-100 rounded-xl">
+              <p className="text-2xl font-bold text-pink-600">{calcularCaloriasTotais()}</p>
+              <p className="text-sm text-pink-700">Calorias Totais</p>
             </div>
-
-            {/* Footer com informações */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="mt-8 text-center"
-            >
-              <p className="text-sm text-pink-500">
-                💡 {realDietData 
-                  ? 'Sua dieta personalizada está ativa!' 
-                  : 'Complete o quiz alimentar para ver suas refeições personalizadas'
-                }
+            <div className="text-center p-4 bg-gradient-to-br from-rose-50 to-pink-100 rounded-xl">
+              <p className="text-2xl font-bold text-rose-600">5</p>
+              <p className="text-sm text-rose-700">Refeições</p>
+            </div>
+            <div className="text-center p-4 bg-gradient-to-br from-pink-100 to-rose-100 rounded-xl">
+              <p className="text-2xl font-bold text-pink-600">Saudável</p>
+              <p className="text-sm text-pink-700">Objetivo</p>
+            </div>
+            <div className="text-center p-4 bg-gradient-to-br from-rose-100 to-pink-100 rounded-xl">
+              <CheckCircle className="text-rose-600 mx-auto mb-1" size={24} />
+              <p className="text-sm text-rose-700">
+                {realDietData ? 'Plano Ativo' : 'Mock Data'}
               </p>
-              {realDietData && (
-                <p className="text-xs text-pink-400 mt-2">
-                  Última atualização: {new Date(realDietData.updated_at).toLocaleDateString('pt-BR')}
-                </p>
-              )}
-            </motion.div>
-          </>
-        ) : (
-          <div className="text-center py-12">
-            <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md mx-auto border border-pink-200">
-              <AlertCircle className="text-pink-400 mx-auto mb-4" size={48} />
-              <h3 className="text-xl font-bold text-pink-800 mb-2">Dieta em Preparação</h3>
-              <p className="text-pink-600 text-lg mb-4">Complete o quiz alimentar para ver suas refeições personalizadas aqui!</p>
-              <div className="bg-gradient-to-br from-pink-50 to-rose-100 p-4 rounded-xl">
-                <p className="text-sm text-pink-600">
-                  ✨ A Juju está esperando suas preferências para criar o plano perfeito!
-                </p>
-              </div>
             </div>
           </div>
-        )}
+        </motion.div>
+
+        {/* Grid de refeições */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {refeicoes.map((tipoRefeicao, index) => {
+            const refeicaoData = currentDietData[tipoRefeicao.id];
+            
+            return (
+              <motion.div
+                key={tipoRefeicao.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className={`bg-gradient-to-br ${tipoRefeicao.cor} rounded-2xl p-6 border shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-105`}
+              >
+                {/* Header da refeição */}
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm">
+                      {tipoRefeicao.icon}
+                    </div>
+                    <div>
+                      <h4 className={`font-bold ${tipoRefeicao.corTexto}`}>
+                        {tipoRefeicao.nome}
+                      </h4>
+                      <p className="text-sm text-pink-600">
+                        {refeicaoData?.horario || '--:--'}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-2xl">{tipoRefeicao.emoji}</span>
+                </div>
+
+                {/* Informações nutricionais */}
+                {refeicaoData && (
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-pink-600">Calorias:</span>
+                      <span className={`font-bold ${tipoRefeicao.corTexto}`}>
+                        {refeicaoData.calorias} kcal
+                      </span>
+                    </div>
+                    
+                    {/* Macros */}
+                    {refeicaoData.macros && (
+                      <div className="grid grid-cols-3 gap-2 text-xs">
+                        <div className="text-center p-2 bg-white/60 rounded-lg">
+                          <p className="font-medium text-pink-700">Proteína</p>
+                          <p className={tipoRefeicao.corTexto}>{refeicaoData.macros.proteina}g</p>
+                        </div>
+                        <div className="text-center p-2 bg-white/60 rounded-lg">
+                          <p className="font-medium text-pink-700">Carbo</p>
+                          <p className={tipoRefeicao.corTexto}>{refeicaoData.macros.carboidrato}g</p>
+                        </div>
+                        <div className="text-center p-2 bg-white/60 rounded-lg">
+                          <p className="font-medium text-pink-700">Gordura</p>
+                          <p className={tipoRefeicao.corTexto}>{refeicaoData.macros.gordura}g</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Lista de alimentos */}
+                    {refeicaoData.alimentos && (
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-pink-700">Alimentos:</p>
+                        <div className="space-y-1 max-h-32 overflow-y-auto">
+                          {refeicaoData.alimentos.map((alimento, idx) => (
+                            <div key={idx} className="text-xs bg-white/40 p-2 rounded-lg">
+                              <div className="flex justify-between">
+                                <span className="font-medium text-pink-800">{alimento.nome}</span>
+                                <span className={tipoRefeicao.corTexto}>{alimento.calorias} kcal</span>
+                              </div>
+                              <p className="text-pink-600">{alimento.quantidade}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {!refeicaoData && (
+                  <div className="text-center py-4">
+                    <p className="text-sm text-pink-600">Refeição não configurada</p>
+                  </div>
+                )}
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* Footer com informações */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="mt-8 text-center"
+        >
+          <p className="text-sm text-pink-500">
+            💡 {realDietData 
+              ? `Sua dieta personalizada está ativa! (ID: ${realDietData.universal_id?.slice(0, 8)}...)` 
+              : 'Complete o quiz alimentar para ver suas refeições personalizadas'
+            }
+          </p>
+          {realDietData && (
+            <p className="text-xs text-pink-400 mt-2">
+              Última atualização: {new Date(realDietData.updated_at).toLocaleDateString('pt-BR')}
+            </p>
+          )}
+        </motion.div>
       </div>
     </div>
   );

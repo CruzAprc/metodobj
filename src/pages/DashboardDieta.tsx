@@ -116,9 +116,9 @@ const DashboardDieta = () => {
     setError(null);
     
     try {
-      console.log('🔍 Carregando dados da dieta para usuário:', user.id);
+      console.log('🔍 Buscando dados da tabela dieta para usuário:', user.id);
       
-      const { data, error: queryError } = await supabase
+      const { data, error: supabaseError } = await supabase
         .from('dieta')
         .select('*')
         .eq('user_id', user.id)
@@ -126,21 +126,23 @@ const DashboardDieta = () => {
         .order('created_at', { ascending: false })
         .limit(1);
         
-      if (queryError) {
-        console.error('❌ Erro ao carregar dados da dieta:', queryError);
-        throw new Error(`Erro na consulta: ${queryError.message}`);
+      console.log('📊 Resposta da consulta dieta:', { data, error: supabaseError });
+        
+      if (supabaseError) {
+        console.error('❌ Erro na consulta Supabase:', supabaseError);
+        throw new Error(`Erro ao consultar dados: ${supabaseError.message}`);
       }
         
       if (data && data.length > 0) {
         const dietaAtiva = data[0] as DietData;
-        console.log('✅ Dados da dieta carregados:', dietaAtiva);
+        console.log('✅ Dieta ativa encontrada:', dietaAtiva);
         setDietData(dietaAtiva);
       } else {
-        console.log('⚠️ Nenhuma dieta ativa encontrada');
+        console.log('⚠️ Nenhuma dieta ativa encontrada na tabela dieta');
         setError('Nenhuma dieta ativa encontrada. Complete o quiz alimentar para gerar sua dieta personalizada.');
       }
     } catch (err: any) {
-      console.error('💥 Erro ao carregar dieta:', err);
+      console.error('💥 Erro ao carregar dados da dieta:', err);
       setError(`Erro ao carregar dieta: ${err.message || 'Erro desconhecido'}`);
     } finally {
       setLoading(false);
@@ -148,6 +150,8 @@ const DashboardDieta = () => {
   };
 
   const formatMealData = (mealData: any, mealName: string, defaultTime: string): MealData => {
+    console.log(`🍽️ Formatando dados da refeição ${mealName}:`, mealData);
+    
     if (!mealData) {
       return {
         nome: mealName,
@@ -158,16 +162,23 @@ const DashboardDieta = () => {
     }
 
     if (typeof mealData === 'string') {
-      const caloriasMatch = mealData.match(/(\d+)\s*kcal/i);
-      const calorias = caloriasMatch ? parseInt(caloriasMatch[1]) : 0;
-      
-      return {
-        nome: mealName,
-        horario: defaultTime,
-        calorias: calorias,
-        descricao: mealData.substring(0, 100) + (mealData.length > 100 ? '...' : ''),
-        alimentos: mealData.split('\n').filter(line => line.trim().startsWith('- ')).map(line => line.replace('- ', '').trim())
-      };
+      try {
+        // Tentar fazer parse se for string JSON
+        const parsedData = JSON.parse(mealData);
+        return formatMealData(parsedData, mealName, defaultTime);
+      } catch {
+        // Se não conseguir fazer parse, tratar como texto simples
+        const caloriasMatch = mealData.match(/(\d+)\s*kcal/i);
+        const calorias = caloriasMatch ? parseInt(caloriasMatch[1]) : 0;
+        
+        return {
+          nome: mealName,
+          horario: defaultTime,
+          calorias: calorias,
+          descricao: mealData.substring(0, 100) + (mealData.length > 100 ? '...' : ''),
+          alimentos: mealData.split('\n').filter(line => line.trim().startsWith('- ')).map(line => line.replace('- ', '').trim())
+        };
+      }
     }
 
     if (typeof mealData === 'object' && mealData !== null) {
@@ -175,8 +186,8 @@ const DashboardDieta = () => {
         nome: mealName,
         horario: mealData.horario || defaultTime,
         calorias: mealData.calorias || 0,
-        descricao: mealData.descricao || '',
-        alimentos: mealData.alimentos || []
+        descricao: mealData.descricao || mealData.description || '',
+        alimentos: mealData.alimentos || mealData.foods || []
       };
     }
 

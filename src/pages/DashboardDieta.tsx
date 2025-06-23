@@ -41,9 +41,9 @@ interface MealData {
   nome: string;
   horario: string;
   calorias: number;
-  descricao?: string;
-  alimentos?: string[];
-  substituicoes?: Array<{ original: string; opcoes: string[] }>;
+  descricao: string;
+  alimentos: string[];
+  substituicoes: Array<{ original: string; opcoes: string[] }>;
 }
 
 const DashboardDieta = () => {
@@ -159,7 +159,7 @@ const DashboardDieta = () => {
 
     console.log('📝 Parseando texto da refeição:', text);
 
-    // Extrair calorias do texto
+    // Extrair calorias do texto usando regex mais específica
     const caloriasMatch = text.match(/(\d+)\s*kcal/i);
     const calorias = caloriasMatch ? parseInt(caloriasMatch[1]) : 0;
 
@@ -168,33 +168,45 @@ const DashboardDieta = () => {
     const mainPart = parts[0] || '';
     const substitutionPart = parts[1] || '';
 
-    // Extrair alimentos principais (remover o nome da refeição do início)
-    let alimentosText = mainPart.replace(/^[^:]+:\s*/, '').trim();
+    // Extrair alimentos principais - melhor parsing
+    let alimentosText = mainPart;
     
-    // Limpar texto de calorias para extrair apenas os alimentos
+    // Remover o nome da refeição do início (ex: "Café da Manhã:")
+    alimentosText = alimentosText.replace(/^[^:]+:\s*/, '').trim();
+    
+    // Remover informações de calorias
     alimentosText = alimentosText.replace(/\d+\s*kcal/gi, '').trim();
     
-    // Dividir alimentos por vírgulas e limpar
+    // Dividir por vírgulas e limpar cada item
     const alimentos = alimentosText
-      .split(/[,.]/)
-      .map(item => item.trim())
-      .filter(item => item.length > 3 && !item.match(/^\d+\s*(g|ml|kcal)/i))
+      .split(',')
       .map(item => {
-        // Limpar números e unidades do início dos itens
-        return item.replace(/^\d+\s*(g|ml|unidade|unidades|fatia|fatias)?\s*/i, '').trim();
+        // Limpar cada item removendo espaços extras e pontos
+        return item.trim().replace(/\.$/, '').trim();
+      })
+      .filter(item => item.length > 2) // Remover itens muito pequenos
+      .map(item => {
+        // Manter as quantidades mas limpar formatação
+        return item.replace(/^\s*[-•]\s*/, '').trim();
       })
       .filter(item => item.length > 0);
 
-    // Extrair substituições de forma mais organizada
+    // Extrair substituições com parsing melhorado
     const substituicoes: Array<{ original: string; opcoes: string[] }> = [];
     if (substitutionPart) {
-      const substitutionPairs = substitutionPart.split(',');
-      substitutionPairs.forEach(pair => {
-        if (pair.includes('→')) {
-          const [original, replacement] = pair.split('→');
-          if (original && replacement) {
+      // Dividir por vírgulas ou pontos para pegar cada substituição
+      const substitutionItems = substitutionPart.split(/[,.]/).filter(item => item.trim().length > 0);
+      
+      substitutionItems.forEach(item => {
+        // Procurar pelo padrão "original → substituição1 / substituição2"
+        if (item.includes('→')) {
+          const [original, replacements] = item.split('→');
+          if (original && replacements) {
             const originalClean = original.trim();
-            const replacementOptions = replacement.split('/').map(opt => opt.trim()).filter(opt => opt.length > 0);
+            const replacementOptions = replacements
+              .split('/')
+              .map(opt => opt.trim())
+              .filter(opt => opt.length > 0);
             
             if (originalClean && replacementOptions.length > 0) {
               substituicoes.push({
@@ -207,12 +219,15 @@ const DashboardDieta = () => {
       });
     }
 
-    // Criar descrição limpa
-    const descricao = alimentos.length > 0 ? `${alimentos.length} itens principais` : 'Refeição configurada';
+    // Criar descrição melhor estruturada
+    const descricao = alimentos.length > 0 
+      ? alimentos.join(', ') 
+      : 'Refeição não configurada';
 
-    console.log('✅ Resultado do parsing:', { alimentos, substituicoes, calorias, descricao });
+    const result = { alimentos, substituicoes, calorias, descricao };
+    console.log('✅ Resultado do parsing:', result);
 
-    return { alimentos, substituicoes, calorias, descricao };
+    return result;
   };
 
   const formatMealData = (mealData: any, mealName: string, defaultTime: string): MealData => {
@@ -441,9 +456,14 @@ const DashboardDieta = () => {
                     <div className="space-y-3">
                       <p className="text-sm font-semibold text-pink-700">Descrição:</p>
                       <div className="bg-white/60 p-3 rounded-lg border border-pink-100">
-                        <p className="text-sm text-pink-800 leading-relaxed">
-                          {refeicaoData.alimentos.join(', ')}
-                        </p>
+                        <div className="text-sm text-pink-800 leading-relaxed space-y-1">
+                          {refeicaoData.alimentos.map((alimento, idx) => (
+                            <div key={idx} className="flex items-start">
+                              <span className="text-pink-500 mr-2">•</span>
+                              <span>{alimento}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -454,12 +474,15 @@ const DashboardDieta = () => {
                       <div className="space-y-2 max-h-32 overflow-y-auto">
                         {refeicaoData.substituicoes.map((sub, idx) => (
                           <div key={idx} className="bg-white/40 p-3 rounded-lg border border-pink-50">
-                            <p className="text-xs font-medium text-pink-700 mb-1">
-                              <strong>{sub.original}</strong> →
-                            </p>
-                            <p className="text-xs text-pink-600">
-                              {sub.opcoes.join(' / ')}
-                            </p>
+                            <div className="text-xs">
+                              <p className="font-medium text-pink-700 mb-1">
+                                <strong>{sub.original}</strong>
+                              </p>
+                              <p className="text-pink-600">
+                                <span className="text-pink-500">→ </span>
+                                {sub.opcoes.join(' / ')}
+                              </p>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -493,7 +516,7 @@ const DashboardDieta = () => {
               Última atualização: {new Date(dietData.updated_at).toLocaleDateString('pt-BR')}
             </p>
           )}
-        </motion.div>
+        </div>
       </div>
     </div>
   );

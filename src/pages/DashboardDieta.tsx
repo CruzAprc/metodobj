@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -11,7 +12,9 @@ import {
   CheckCircle,
   AlertCircle,
   Home,
-  ChefHat
+  ChefHat,
+  Clock,
+  Zap
 } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -40,6 +43,7 @@ interface MealData {
   calorias: number;
   descricao?: string;
   alimentos?: string[];
+  substituicoes?: string[];
 }
 
 const DashboardDieta = () => {
@@ -116,18 +120,7 @@ const DashboardDieta = () => {
     
     try {
       console.log('🔍 Buscando dados da tabela dieta para usuário:', user.id);
-      console.log('📋 Executando consulta na tabela dieta...');
       
-      // Buscar todas as dietas do usuário para debug
-      const { data: allDietas, error: debugError } = await supabase
-        .from('dieta')
-        .select('*')
-        .eq('user_id', user.id);
-        
-      console.log('🔍 TODAS as dietas do usuário:', allDietas);
-      console.log('❓ Erro na consulta debug:', debugError);
-        
-      // Buscar dieta ativa específica
       const { data, error: supabaseError } = await supabase
         .from('dieta')
         .select('*')
@@ -137,8 +130,6 @@ const DashboardDieta = () => {
         .limit(1);
         
       console.log('📊 Resposta da consulta dieta ativa:', { data, error: supabaseError });
-      console.log('🎯 Dados retornados:', data);
-      console.log('⚠️ Erro retornado:', supabaseError);
         
       if (supabaseError) {
         console.error('❌ Erro na consulta Supabase:', supabaseError);
@@ -148,31 +139,9 @@ const DashboardDieta = () => {
       if (data && data.length > 0) {
         const dietaAtiva = data[0] as DietData;
         console.log('✅ Dieta ativa encontrada:', dietaAtiva);
-        console.log('🆔 Universal ID da dieta:', dietaAtiva.universal_id);
-        console.log('📝 Nome da dieta:', dietaAtiva.nome_dieta);
-        console.log('🍽️ Dados das refeições:');
-        console.log('  - Café da manhã:', dietaAtiva.cafe_da_manha);
-        console.log('  - Almoço:', dietaAtiva.almoco);
-        console.log('  - Lanche:', dietaAtiva.lanche);
-        console.log('  - Jantar:', dietaAtiva.jantar);
-        console.log('  - Ceia:', dietaAtiva.ceia);
-        
         setDietData(dietaAtiva);
       } else {
         console.log('⚠️ Nenhuma dieta ativa encontrada na tabela dieta');
-        console.log('💡 Verificando se existe alguma dieta inativa...');
-        
-        // Verificar se existe alguma dieta inativa
-        const { data: inactiveDietas } = await supabase
-          .from('dieta')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('ativa', false);
-          
-        if (inactiveDietas && inactiveDietas.length > 0) {
-          console.log('📋 Dietas inativas encontradas:', inactiveDietas);
-        }
-        
         setError('Nenhuma dieta ativa encontrada. Complete o quiz alimentar para gerar sua dieta personalizada.');
       }
     } catch (err: any) {
@@ -183,40 +152,77 @@ const DashboardDieta = () => {
     }
   };
 
+  const parseTextMeal = (text: string): { alimentos: string[], substituicoes: string[], calorias: number } => {
+    if (!text || typeof text !== 'string') {
+      return { alimentos: [], substituicoes: [], calorias: 0 };
+    }
+
+    // Extrair calorias do texto
+    const caloriasMatch = text.match(/(\d+)\s*kcal/i);
+    const calorias = caloriasMatch ? parseInt(caloriasMatch[1]) : 0;
+
+    // Dividir o texto em partes principais
+    const parts = text.split(/Substituições?:/i);
+    const mainPart = parts[0] || '';
+    const substitutionPart = parts[1] || '';
+
+    // Extrair alimentos principais (remover o nome da refeição do início)
+    let alimentosText = mainPart.replace(/^[^:]+:\s*/, '').trim();
+    
+    // Dividir alimentos por vírgulas e limpar
+    const alimentos = alimentosText
+      .split(',')
+      .map(item => item.trim())
+      .filter(item => item.length > 0 && !item.match(/^\d+\s*kcal/i));
+
+    // Extrair substituições
+    const substituicoes: string[] = [];
+    if (substitutionPart) {
+      const substitutionPairs = substitutionPart.split(',');
+      substitutionPairs.forEach(pair => {
+        if (pair.includes('→')) {
+          const [original, replacement] = pair.split('→');
+          if (replacement) {
+            const replacementOptions = replacement.split('/').map(opt => opt.trim());
+            replacementOptions.forEach(option => {
+              if (option && !substituicoes.includes(option)) {
+                substituicoes.push(option);
+              }
+            });
+          }
+        }
+      });
+    }
+
+    return { alimentos, substituicoes, calorias };
+  };
+
   const formatMealData = (mealData: any, mealName: string, defaultTime: string): MealData => {
     console.log(`🍽️ Formatando dados da refeição ${mealName}:`, mealData);
     
     if (!mealData) {
-      console.log(`⚠️ Dados da refeição ${mealName} estão vazios`);
       return {
         nome: mealName,
         horario: defaultTime,
         calorias: 0,
-        descricao: 'Refeição não configurada'
+        descricao: 'Refeição não configurada',
+        alimentos: [],
+        substituicoes: []
       };
     }
 
     if (typeof mealData === 'string') {
-      console.log(`📝 Dados da refeição ${mealName} são string, tentando parse...`);
-      try {
-        // Tentar fazer parse se for string JSON
-        const parsedData = JSON.parse(mealData);
-        console.log(`✅ Parse bem-sucedido para ${mealName}:`, parsedData);
-        return formatMealData(parsedData, mealName, defaultTime);
-      } catch {
-        console.log(`📄 Tratando ${mealName} como texto simples`);
-        // Se não conseguir fazer parse, tratar como texto simples
-        const caloriasMatch = mealData.match(/(\d+)\s*kcal/i);
-        const calorias = caloriasMatch ? parseInt(caloriasMatch[1]) : 0;
-        
-        return {
-          nome: mealName,
-          horario: defaultTime,
-          calorias: calorias,
-          descricao: mealData.substring(0, 100) + (mealData.length > 100 ? '...' : ''),
-          alimentos: mealData.split('\n').filter(line => line.trim().startsWith('- ')).map(line => line.replace('- ', '').trim())
-        };
-      }
+      console.log(`📝 Processando texto da refeição ${mealName}`);
+      const { alimentos, substituicoes, calorias } = parseTextMeal(mealData);
+      
+      return {
+        nome: mealName,
+        horario: defaultTime,
+        calorias: calorias,
+        descricao: alimentos.length > 0 ? `Refeição com ${alimentos.length} itens` : 'Refeição configurada',
+        alimentos: alimentos,
+        substituicoes: substituicoes
+      };
     }
 
     if (typeof mealData === 'object' && mealData !== null) {
@@ -226,16 +232,18 @@ const DashboardDieta = () => {
         horario: mealData.horario || defaultTime,
         calorias: mealData.calorias || 0,
         descricao: mealData.descricao || mealData.description || '',
-        alimentos: mealData.alimentos || mealData.foods || []
+        alimentos: mealData.alimentos || mealData.foods || [],
+        substituicoes: mealData.substituicoes || []
       };
     }
 
-    console.log(`❓ Tipo de dados não reconhecido para ${mealName}:`, typeof mealData);
     return {
       nome: mealName,
       horario: defaultTime,
       calorias: 0,
-      descricao: 'Dados não disponíveis'
+      descricao: 'Dados não disponíveis',
+      alimentos: [],
+      substituicoes: []
     };
   };
 
@@ -391,41 +399,59 @@ const DashboardDieta = () => {
                       <h4 className={`font-bold ${tipoRefeicao.corTexto}`}>
                         {tipoRefeicao.nome}
                       </h4>
-                      <p className="text-sm text-pink-600">
+                      <div className="flex items-center gap-1 text-sm text-pink-600">
+                        <Clock size={12} />
                         {refeicaoData.horario}
-                      </p>
+                      </div>
                     </div>
                   </div>
                   <span className="text-2xl">{tipoRefeicao.emoji}</span>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-pink-600">Calorias:</span>
+                    <span className="text-sm text-pink-600 flex items-center gap-1">
+                      <Zap size={12} />
+                      Calorias:
+                    </span>
                     <span className={`font-bold ${tipoRefeicao.corTexto}`}>
                       {refeicaoData.calorias} kcal
                     </span>
                   </div>
                   
-                  {refeicaoData.descricao && (
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-pink-700">Descrição:</p>
-                      <div className="text-xs bg-white/40 p-2 rounded-lg">
-                        <p className="text-pink-800">{refeicaoData.descricao}</p>
+                  {refeicaoData.alimentos && refeicaoData.alimentos.length > 0 && (
+                    <div className="space-y-3">
+                      <p className="text-sm font-semibold text-pink-700 flex items-center gap-1">
+                        🍽️ Alimentos:
+                      </p>
+                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                        {refeicaoData.alimentos.map((alimento, idx) => (
+                          <div key={idx} className="bg-white/60 p-3 rounded-lg border border-pink-100">
+                            <span className="text-sm font-medium text-pink-800">• {alimento}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}
 
-                  {refeicaoData.alimentos && refeicaoData.alimentos.length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium text-pink-700">Alimentos:</p>
+                  {refeicaoData.substituicoes && refeicaoData.substituicoes.length > 0 && (
+                    <div className="space-y-3">
+                      <p className="text-sm font-semibold text-pink-700 flex items-center gap-1">
+                        🔄 Opções de substituição:
+                      </p>
                       <div className="space-y-1 max-h-32 overflow-y-auto">
-                        {refeicaoData.alimentos.map((alimento, idx) => (
-                          <div key={idx} className="text-xs bg-white/40 p-2 rounded-lg">
-                            <span className="font-medium text-pink-800">{alimento}</span>
+                        {refeicaoData.substituicoes.map((sub, idx) => (
+                          <div key={idx} className="bg-white/40 p-2 rounded-lg">
+                            <span className="text-xs font-medium text-pink-700">→ {sub}</span>
                           </div>
                         ))}
                       </div>
+                    </div>
+                  )}
+
+                  {(!refeicaoData.alimentos || refeicaoData.alimentos.length === 0) && (
+                    <div className="text-center py-4">
+                      <p className="text-sm text-pink-600 italic">Refeição não configurada</p>
                     </div>
                   )}
                 </div>

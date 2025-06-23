@@ -154,6 +154,9 @@ const AppJujuDashboard = () => {
   const [todayProgress, setTodayProgress] = useState<any>(null);
   const [diasNoApp, setDiasNoApp] = useState(0);
   const [evaluationUnlocked, setEvaluationUnlocked] = useState(false);
+  // Novos estados para verificar quizzes
+  const [quizAlimentarCompleto, setQuizAlimentarCompleto] = useState(false);
+  const [quizTreinoCompleto, setQuizTreinoCompleto] = useState(false);
   const {
     user,
     signOut
@@ -183,13 +186,13 @@ const AppJujuDashboard = () => {
     if (!userData) return 0;
     let progress = 0;
 
-    // Quiz alimentar (20%)
-    if (userData.quiz_alimentar_concluido) {
+    // Quiz alimentar (20%) - usar novo estado
+    if (quizAlimentarCompleto) {
       progress += 20;
     }
 
-    // Quiz treino (20%) - using the new approach to check for workout quiz data
-    if (workoutData) {
+    // Quiz treino (20%) - usar novo estado
+    if (quizTreinoCompleto) {
       progress += 20;
     }
 
@@ -314,8 +317,81 @@ const AppJujuDashboard = () => {
       loadUserPhotos();
       loadTodayProgress();
       checkEvaluationAccess();
+      checkQuizStatus(); // Nova função para verificar status dos quizzes
     }
   }, [user]);
+
+  // Nova função para verificar status dos quizzes
+  const checkQuizStatus = async () => {
+    if (!user) return;
+    
+    try {
+      console.log('🔍 Verificando status dos quizzes para usuário:', user.id);
+      
+      // Verificar quiz alimentar na tabela user_quiz_data
+      const { data: quizAlimentarData, error: errorAlimentar } = await supabase
+        .from('user_quiz_data')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('quiz_type', 'alimentar')
+        .maybeSingle();
+        
+      console.log('📊 Dados quiz alimentar encontrados:', quizAlimentarData);
+      console.log('❌ Erro quiz alimentar:', errorAlimentar);
+      
+      // Verificar quiz treino na tabela user_quiz_data
+      const { data: quizTreinoData, error: errorTreino } = await supabase
+        .from('user_quiz_data')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('quiz_type', 'treino')
+        .maybeSingle();
+        
+      console.log('💪 Dados quiz treino encontrados:', quizTreinoData);
+      console.log('❌ Erro quiz treino:', errorTreino);
+      
+      // Verificar também se existe dieta ativa (confirma quiz alimentar)
+      const { data: dietaAtiva } = await supabase
+        .from('dieta')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('ativa', true)
+        .maybeSingle();
+        
+      console.log('🥗 Dieta ativa encontrada:', dietaAtiva);
+      
+      // Verificar também se existe treino ativo (confirma quiz treino)
+      const { data: treinoAtivo } = await supabase
+        .from('treino')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('ativo', true)
+        .maybeSingle();
+        
+      console.log('🏋️ Treino ativo encontrado:', treinoAtivo);
+      
+      // Atualizar estados baseado nos dados encontrados
+      const alimentarCompleto = !!(quizAlimentarData || dietaAtiva);
+      const treinoCompleto = !!(quizTreinoData || treinoAtivo);
+      
+      console.log('✅ Status final dos quizzes:', {
+        alimentarCompleto,
+        treinoCompleto,
+        baseadoEm: {
+          quizAlimentarData: !!quizAlimentarData,
+          dietaAtiva: !!dietaAtiva,
+          quizTreinoData: !!quizTreinoData,
+          treinoAtivo: !!treinoAtivo
+        }
+      });
+      
+      setQuizAlimentarCompleto(alimentarCompleto);
+      setQuizTreinoCompleto(treinoCompleto);
+      
+    } catch (error) {
+      console.error('❌ Erro ao verificar status dos quizzes:', error);
+    }
+  };
 
   const loadUserData = async () => {
     if (!user) return;
@@ -457,6 +533,7 @@ const AppJujuDashboard = () => {
   const handleProfileUpdate = () => {
     loadUserData();
     loadPersonalData();
+    checkQuizStatus(); // Recarregar status dos quizzes também
   };
 
   // Function to handle logout with confirmation
@@ -806,14 +883,14 @@ const AppJujuDashboard = () => {
                           <div className="flex justify-center gap-3 sm:gap-4 pt-2">
                             <div className="text-center">
                               <p className="text-xs text-gray-400">Quiz Alimentar</p>
-                              <p className={`text-sm font-bold ${userData.quiz_alimentar_concluido ? 'text-green-600' : 'text-gray-400'}`}>
-                                {userData.quiz_alimentar_concluido ? '✓ Concluído' : '○ Pendente'}
+                              <p className={`text-sm font-bold ${quizAlimentarCompleto ? 'text-green-600' : 'text-gray-400'}`}>
+                                {quizAlimentarCompleto ? '✓ Concluído' : '○ Pendente'}
                               </p>
                             </div>
                             <div className="text-center">
                               <p className="text-xs text-gray-400">Quiz Treino</p>
-                              <p className={`text-sm font-bold ${userData.quiz_treino_concluido ? 'text-green-600' : 'text-gray-400'}`}>
-                                {userData.quiz_treino_concluido ? '✓ Concluído' : '○ Pendente'}
+                              <p className={`text-sm font-bold ${quizTreinoCompleto ? 'text-green-600' : 'text-gray-400'}`}>
+                                {quizTreinoCompleto ? '✓ Concluído' : '○ Pendente'}
                               </p>
                             </div>
                           </div>

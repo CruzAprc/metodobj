@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -516,7 +515,7 @@ const DashboardDieta = () => {
               Última atualização: {new Date(dietData.updated_at).toLocaleDateString('pt-BR')}
             </p>
           )}
-        </div>
+        </motion.div>
       </div>
     </div>
   );

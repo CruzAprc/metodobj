@@ -43,7 +43,7 @@ interface MealData {
   calorias: number;
   descricao?: string;
   alimentos?: string[];
-  substituicoes?: string[];
+  substituicoes?: Array<{ original: string; opcoes: string[] }>;
 }
 
 const DashboardDieta = () => {
@@ -152,10 +152,12 @@ const DashboardDieta = () => {
     }
   };
 
-  const parseTextMeal = (text: string): { alimentos: string[], substituicoes: string[], calorias: number } => {
+  const parseTextMeal = (text: string): { alimentos: string[], substituicoes: Array<{ original: string; opcoes: string[] }>, calorias: number, descricao: string } => {
     if (!text || typeof text !== 'string') {
-      return { alimentos: [], substituicoes: [], calorias: 0 };
+      return { alimentos: [], substituicoes: [], calorias: 0, descricao: '' };
     }
+
+    console.log('📝 Parseando texto da refeição:', text);
 
     // Extrair calorias do texto
     const caloriasMatch = text.match(/(\d+)\s*kcal/i);
@@ -169,32 +171,48 @@ const DashboardDieta = () => {
     // Extrair alimentos principais (remover o nome da refeição do início)
     let alimentosText = mainPart.replace(/^[^:]+:\s*/, '').trim();
     
+    // Limpar texto de calorias para extrair apenas os alimentos
+    alimentosText = alimentosText.replace(/\d+\s*kcal/gi, '').trim();
+    
     // Dividir alimentos por vírgulas e limpar
     const alimentos = alimentosText
-      .split(',')
+      .split(/[,.]/)
       .map(item => item.trim())
-      .filter(item => item.length > 0 && !item.match(/^\d+\s*kcal/i));
+      .filter(item => item.length > 3 && !item.match(/^\d+\s*(g|ml|kcal)/i))
+      .map(item => {
+        // Limpar números e unidades do início dos itens
+        return item.replace(/^\d+\s*(g|ml|unidade|unidades|fatia|fatias)?\s*/i, '').trim();
+      })
+      .filter(item => item.length > 0);
 
-    // Extrair substituições
-    const substituicoes: string[] = [];
+    // Extrair substituições de forma mais organizada
+    const substituicoes: Array<{ original: string; opcoes: string[] }> = [];
     if (substitutionPart) {
       const substitutionPairs = substitutionPart.split(',');
       substitutionPairs.forEach(pair => {
         if (pair.includes('→')) {
           const [original, replacement] = pair.split('→');
-          if (replacement) {
-            const replacementOptions = replacement.split('/').map(opt => opt.trim());
-            replacementOptions.forEach(option => {
-              if (option && !substituicoes.includes(option)) {
-                substituicoes.push(option);
-              }
-            });
+          if (original && replacement) {
+            const originalClean = original.trim();
+            const replacementOptions = replacement.split('/').map(opt => opt.trim()).filter(opt => opt.length > 0);
+            
+            if (originalClean && replacementOptions.length > 0) {
+              substituicoes.push({
+                original: originalClean,
+                opcoes: replacementOptions
+              });
+            }
           }
         }
       });
     }
 
-    return { alimentos, substituicoes, calorias };
+    // Criar descrição limpa
+    const descricao = alimentos.length > 0 ? `${alimentos.length} itens principais` : 'Refeição configurada';
+
+    console.log('✅ Resultado do parsing:', { alimentos, substituicoes, calorias, descricao });
+
+    return { alimentos, substituicoes, calorias, descricao };
   };
 
   const formatMealData = (mealData: any, mealName: string, defaultTime: string): MealData => {
@@ -213,13 +231,13 @@ const DashboardDieta = () => {
 
     if (typeof mealData === 'string') {
       console.log(`📝 Processando texto da refeição ${mealName}`);
-      const { alimentos, substituicoes, calorias } = parseTextMeal(mealData);
+      const { alimentos, substituicoes, calorias, descricao } = parseTextMeal(mealData);
       
       return {
         nome: mealName,
         horario: defaultTime,
         calorias: calorias,
-        descricao: alimentos.length > 0 ? `Refeição com ${alimentos.length} itens` : 'Refeição configurada',
+        descricao: descricao,
         alimentos: alimentos,
         substituicoes: substituicoes
       };
@@ -388,7 +406,7 @@ const DashboardDieta = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className={`bg-gradient-to-br ${tipoRefeicao.cor} rounded-2xl p-6 border shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer hover:scale-105`}
+                className={`bg-gradient-to-br ${tipoRefeicao.cor} rounded-2xl p-6 border shadow-lg hover:shadow-xl transition-all duration-300`}
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
@@ -421,28 +439,27 @@ const DashboardDieta = () => {
                   
                   {refeicaoData.alimentos && refeicaoData.alimentos.length > 0 && (
                     <div className="space-y-3">
-                      <p className="text-sm font-semibold text-pink-700 flex items-center gap-1">
-                        🍽️ Alimentos:
-                      </p>
-                      <div className="space-y-2 max-h-40 overflow-y-auto">
-                        {refeicaoData.alimentos.map((alimento, idx) => (
-                          <div key={idx} className="bg-white/60 p-3 rounded-lg border border-pink-100">
-                            <span className="text-sm font-medium text-pink-800">• {alimento}</span>
-                          </div>
-                        ))}
+                      <p className="text-sm font-semibold text-pink-700">Descrição:</p>
+                      <div className="bg-white/60 p-3 rounded-lg border border-pink-100">
+                        <p className="text-sm text-pink-800 leading-relaxed">
+                          {refeicaoData.alimentos.join(', ')}
+                        </p>
                       </div>
                     </div>
                   )}
 
                   {refeicaoData.substituicoes && refeicaoData.substituicoes.length > 0 && (
                     <div className="space-y-3">
-                      <p className="text-sm font-semibold text-pink-700 flex items-center gap-1">
-                        🔄 Opções de substituição:
-                      </p>
-                      <div className="space-y-1 max-h-32 overflow-y-auto">
+                      <p className="text-sm font-semibold text-pink-700">🔄 Substituições:</p>
+                      <div className="space-y-2 max-h-32 overflow-y-auto">
                         {refeicaoData.substituicoes.map((sub, idx) => (
-                          <div key={idx} className="bg-white/40 p-2 rounded-lg">
-                            <span className="text-xs font-medium text-pink-700">→ {sub}</span>
+                          <div key={idx} className="bg-white/40 p-3 rounded-lg border border-pink-50">
+                            <p className="text-xs font-medium text-pink-700 mb-1">
+                              <strong>{sub.original}</strong> →
+                            </p>
+                            <p className="text-xs text-pink-600">
+                              {sub.opcoes.join(' / ')}
+                            </p>
                           </div>
                         ))}
                       </div>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -117,7 +116,18 @@ const DashboardDieta = () => {
     
     try {
       console.log('🔍 Buscando dados da tabela dieta para usuário:', user.id);
+      console.log('📋 Executando consulta na tabela dieta...');
       
+      // Buscar todas as dietas do usuário para debug
+      const { data: allDietas, error: debugError } = await supabase
+        .from('dieta')
+        .select('*')
+        .eq('user_id', user.id);
+        
+      console.log('🔍 TODAS as dietas do usuário:', allDietas);
+      console.log('❓ Erro na consulta debug:', debugError);
+        
+      // Buscar dieta ativa específica
       const { data, error: supabaseError } = await supabase
         .from('dieta')
         .select('*')
@@ -126,7 +136,9 @@ const DashboardDieta = () => {
         .order('created_at', { ascending: false })
         .limit(1);
         
-      console.log('📊 Resposta da consulta dieta:', { data, error: supabaseError });
+      console.log('📊 Resposta da consulta dieta ativa:', { data, error: supabaseError });
+      console.log('🎯 Dados retornados:', data);
+      console.log('⚠️ Erro retornado:', supabaseError);
         
       if (supabaseError) {
         console.error('❌ Erro na consulta Supabase:', supabaseError);
@@ -136,9 +148,31 @@ const DashboardDieta = () => {
       if (data && data.length > 0) {
         const dietaAtiva = data[0] as DietData;
         console.log('✅ Dieta ativa encontrada:', dietaAtiva);
+        console.log('🆔 Universal ID da dieta:', dietaAtiva.universal_id);
+        console.log('📝 Nome da dieta:', dietaAtiva.nome_dieta);
+        console.log('🍽️ Dados das refeições:');
+        console.log('  - Café da manhã:', dietaAtiva.cafe_da_manha);
+        console.log('  - Almoço:', dietaAtiva.almoco);
+        console.log('  - Lanche:', dietaAtiva.lanche);
+        console.log('  - Jantar:', dietaAtiva.jantar);
+        console.log('  - Ceia:', dietaAtiva.ceia);
+        
         setDietData(dietaAtiva);
       } else {
         console.log('⚠️ Nenhuma dieta ativa encontrada na tabela dieta');
+        console.log('💡 Verificando se existe alguma dieta inativa...');
+        
+        // Verificar se existe alguma dieta inativa
+        const { data: inactiveDietas } = await supabase
+          .from('dieta')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('ativa', false);
+          
+        if (inactiveDietas && inactiveDietas.length > 0) {
+          console.log('📋 Dietas inativas encontradas:', inactiveDietas);
+        }
+        
         setError('Nenhuma dieta ativa encontrada. Complete o quiz alimentar para gerar sua dieta personalizada.');
       }
     } catch (err: any) {
@@ -153,6 +187,7 @@ const DashboardDieta = () => {
     console.log(`🍽️ Formatando dados da refeição ${mealName}:`, mealData);
     
     if (!mealData) {
+      console.log(`⚠️ Dados da refeição ${mealName} estão vazios`);
       return {
         nome: mealName,
         horario: defaultTime,
@@ -162,11 +197,14 @@ const DashboardDieta = () => {
     }
 
     if (typeof mealData === 'string') {
+      console.log(`📝 Dados da refeição ${mealName} são string, tentando parse...`);
       try {
         // Tentar fazer parse se for string JSON
         const parsedData = JSON.parse(mealData);
+        console.log(`✅ Parse bem-sucedido para ${mealName}:`, parsedData);
         return formatMealData(parsedData, mealName, defaultTime);
       } catch {
+        console.log(`📄 Tratando ${mealName} como texto simples`);
         // Se não conseguir fazer parse, tratar como texto simples
         const caloriasMatch = mealData.match(/(\d+)\s*kcal/i);
         const calorias = caloriasMatch ? parseInt(caloriasMatch[1]) : 0;
@@ -182,6 +220,7 @@ const DashboardDieta = () => {
     }
 
     if (typeof mealData === 'object' && mealData !== null) {
+      console.log(`📊 Dados da refeição ${mealName} são objeto:`, mealData);
       return {
         nome: mealName,
         horario: mealData.horario || defaultTime,
@@ -191,6 +230,7 @@ const DashboardDieta = () => {
       };
     }
 
+    console.log(`❓ Tipo de dados não reconhecido para ${mealName}:`, typeof mealData);
     return {
       nome: mealName,
       horario: defaultTime,

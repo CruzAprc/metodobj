@@ -65,7 +65,7 @@ const DashboardTreino = () => {
         setTreinoData(treinoAtivo);
       } else {
         console.log('⚠️ Nenhum treino ativo encontrado');
-        setError('Nenhum treino ativo encontrado. Complete o quiz de treino para gerar seu plano personalizado.');
+        setError('Basa e seu time está montando seu treino personalizado');
       }
     } catch (err: any) {
       console.error('💥 Erro ao carregar treino:', err);
@@ -196,7 +196,7 @@ const DashboardTreino = () => {
           >
             <Dumbbell className="text-gray-400 mx-auto mb-4" size={48} />
             <h3 className="text-xl font-bold text-gray-600 mb-2">Nenhum treino encontrado</h3>
-            <p className="text-gray-500 mb-6">Complete o quiz de treino para gerar seu plano personalizado</p>
+            <p className="text-gray-500 mb-6">Basa e seu time está montando seu treino personalizado</p>
             <button
               onClick={() => navigate('/quiz-treino')}
               className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all"

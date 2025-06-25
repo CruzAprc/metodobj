@@ -141,7 +141,7 @@ const DashboardDieta = () => {
         setDietData(dietaAtiva);
       } else {
         console.log('⚠️ Nenhuma dieta ativa encontrada na tabela dieta');
-        setError('Nenhuma dieta ativa encontrada. Complete o quiz alimentar para gerar sua dieta personalizada.');
+        setError('Juju e sua equipe está montando a sua dieta personalizada');
       }
     } catch (err: any) {
       console.error('💥 Erro ao carregar dados da dieta:', err);

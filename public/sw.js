@@ -1,9 +1,9 @@
 // 🌸 JUJU GIRL FIT - SERVICE WORKER PWA
 // Cache Strategy: NETWORK FIRST para dados críticos, Cache apenas para assets estáticos
 
-const CACHE_NAME = 'juju-fit-v1.1.0';
-const STATIC_CACHE = 'juju-static-v1.1.0';
-const DYNAMIC_CACHE = 'juju-dynamic-v1.1.0';
+const CACHE_NAME = 'juju-fit-v1.2.0';
+const STATIC_CACHE = 'juju-static-v1.2.0';
+const DYNAMIC_CACHE = 'juju-dynamic-v1.2.0';
 
 // Assets para cache imediato (Cache First) - APENAS ASSETS ESTÁTICOS
 const STATIC_ASSETS = [
@@ -24,9 +24,20 @@ const NETWORK_ONLY = [
   '/storage/'
 ];
 
+// URLs que devem ser IGNORADAS pelo service worker (deixar passar direto)
+const BYPASS_SW = [
+  'fonts.googleapis.com',
+  'fonts.gstatic.com',
+  'cdn.jsdelivr.net',
+  'unpkg.com',
+  'cdnjs.cloudflare.com',
+  'google-analytics.com',
+  'googletagmanager.com'
+];
+
 // 🚀 INSTALAÇÃO DO SERVICE WORKER
 self.addEventListener('install', (event) => {
-  console.log('🌸 Juju Fit SW: Instalando versão atualizada...');
+  console.log('🌸 Juju Fit SW: Instalando versão v1.2.0...');
   
   event.waitUntil(
     Promise.all([
@@ -49,7 +60,7 @@ self.addEventListener('install', (event) => {
 
 // 🔄 ATIVAÇÃO DO SERVICE WORKER
 self.addEventListener('activate', (event) => {
-  console.log('🌸 Juju Fit SW: Ativando versão atualizada...');
+  console.log('🌸 Juju Fit SW: Ativando versão v1.2.0...');
   
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -81,6 +92,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
+  // BYPASS: Deixar recursos externos confiáveis passarem direto
+  if (shouldBypassServiceWorker(url)) {
+    console.log('🌐 Bypass SW (recurso externo):', request.url);
+    return; // Deixa o fetch normal acontecer
+  }
+  
   // NETWORK ONLY para APIs e dados críticos (Supabase, webhooks)
   if (isNetworkOnlyURL(url)) {
     console.log('🌐 Network Only (dados críticos):', request.url);
@@ -94,8 +111,8 @@ self.addEventListener('fetch', (event) => {
     if (request.headers.get('accept')?.includes('text/html')) {
       event.respondWith(networkFirstStrategy(request, DYNAMIC_CACHE));
     }
-    // CSS, JS, Images: Cache First
-    else if (isStaticAsset(request)) {
+    // CSS, JS, Images locais: Cache First
+    else if (isLocalStaticAsset(request)) {
       event.respondWith(cacheFirstStrategy(request, STATIC_CACHE));
     }
     // Outros GET: Network First sem cache agressivo
@@ -146,11 +163,9 @@ async function networkOnlyStrategy(request) {
 // 📡 ESTRATÉGIA: Network First (com cache limitado)
 async function networkFirstStrategy(request, cacheName, allowCache = true) {
   try {
-    console.log('📡 Tentando buscar dados frescos:', request.url);
-    
-    // Timeout de 3 segundos para dados em tempo real
+    // Timeout mais longo para recursos normais (10 segundos)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
     
     const networkResponse = await fetch(request, {
       signal: controller.signal
@@ -196,7 +211,7 @@ async function networkFirstStrategy(request, cacheName, allowCache = true) {
   }
 }
 
-// 💾 ESTRATÉGIA: Cache First (apenas para assets estáticos)
+// 💾 ESTRATÉGIA: Cache First (apenas para assets estáticos locais)
 async function cacheFirstStrategy(request, cacheName) {
   // Buscar do cache primeiro
   const cachedResponse = await caches.match(request);
@@ -265,9 +280,11 @@ self.addEventListener('notificationclick', (event) => {
 });
 
 // 🔍 HELPERS
-function isStaticAsset(request) {
+function isLocalStaticAsset(request) {
   const url = new URL(request.url);
-  return /\.(css|js|png|jpg|jpeg|svg|gif|woff|woff2|ttf|ico)$/i.test(url.pathname);
+  // Apenas assets servidos pelo próprio domínio
+  return url.origin === self.location.origin && 
+         /\.(css|js|png|jpg|jpeg|svg|gif|woff|woff2|ttf|ico)$/i.test(url.pathname);
 }
 
 function isNetworkOnlyURL(url) {
@@ -277,6 +294,10 @@ function isNetworkOnlyURL(url) {
   );
 }
 
+function shouldBypassServiceWorker(url) {
+  return BYPASS_SW.some(pattern => url.href.includes(pattern));
+}
+
 // 📱 MESSAGE HANDLING
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
@@ -284,4 +305,4 @@ self.addEventListener('message', (event) => {
   }
 });
 
-console.log('🌸 Juju Girl Fit Service Worker v1.1.0 carregado - Dados sempre frescos!'); 
+console.log('🌸 Juju Girl Fit Service Worker v1.2.0 carregado - Recursos externos liberados!'); 

@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Header from '../components/Header';
 import OptimizedImage from '../components/OptimizedImage';
 import { Camera, Calendar, TrendingUp, Lock, CheckCircle, Upload, X } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { compressImage, preloadImage, getCachedImage, setCachedImage } from '@/utils/imageUtils';
 
 interface EvaluationAccess {

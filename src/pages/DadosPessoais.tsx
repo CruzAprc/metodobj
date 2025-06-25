@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { 
+  ArrowRight, User, Calendar, Ruler, 
+  Weight, UserCheck, ArrowLeft 
+} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -22,6 +27,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useForm } from 'react-hook-form';
+import { gradients, colors } from '@/theme/colors';
+import LoadingState, { LoadingButton } from '@/components/LoadingState';
 
 interface FormData {
   nome_completo: string;
@@ -245,75 +252,138 @@ const DadosPessoais = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-sky-50 flex flex-col items-center py-8 px-4">
+    <div className="min-h-screen flex items-center justify-center p-2 sm:p-4 mobile-safe-area" style={{ background: gradients.background }}>
       <div className="w-full max-w-2xl">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-500 to-sky-500 bg-clip-text text-transparent mb-2">
-            Seus Dados Pessoais 📋
-          </h1>
-          <p className="text-gray-600">
-            Vamos conhecer você melhor para criar o plano perfeito!
-          </p>
-        </div>
+        
+        {/* Header com navegação responsivo */}
+        <motion.div 
+          className="bg-white/90 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl border border-pink-200/30 p-4 sm:p-6 mb-4 sm:mb-6"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-pink-400 to-pink-500 flex items-center justify-center text-white">
+                <User className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
+              <div>
+                <h1 className="text-base sm:text-lg font-bold" style={{ color: colors.primary[600] }}>
+                  Dados Pessoais
+                </h1>
+                <p className="text-xs sm:text-sm text-gray-500">
+                  Etapa 1 de 3
+                </p>
+              </div>
+            </div>
+            
+            <button
+              onClick={() => navigate('/onboarding')}
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-gray-600 hover:text-gray-800 hover:bg-white/50 transition-all min-h-[44px]"
+            >
+              <ArrowLeft size={16} />
+              <span className="hidden sm:inline">Voltar</span>
+            </button>
+          </div>
+        </motion.div>
 
-        {/* Formulário */}
-        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8">
+        {/* Título principal responsivo */}
+        <motion.div 
+          className="text-center mb-6 sm:mb-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4 leading-tight" style={{ color: colors.primary[700] }}>
+            Seus Dados Pessoais
+          </h2>
+          <p className="text-gray-600 text-base sm:text-lg max-w-xl mx-auto px-4">
+            Vamos conhecer você melhor para criar o plano perfeito! 📋
+          </p>
+        </motion.div>
+
+        {/* Formulário responsivo */}
+        <motion.div 
+          className="bg-white/90 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl border border-pink-200/30 p-4 sm:p-6 md:p-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {/* Nome Completo */}
-              <FormField
-                control={form.control}
-                name="nome_completo"
-                rules={{ required: "Nome completo é obrigatório" }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-semibold text-gray-700">
-                      Nome Completo *
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Seu nome completo"
-                        className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <FormField
+                  control={form.control}
+                  name="nome_completo"
+                  rules={{ required: "Nome completo é obrigatório" }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-bold flex items-center gap-2" style={{ color: colors.primary[700] }}>
+                        <User size={16} />
+                        Nome Completo *
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Digite seu nome completo"
+                          className="px-3 sm:px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition-all text-sm sm:text-base min-h-[44px]"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </motion.div>
 
               {/* Data de Nascimento */}
-              <FormField
-                control={form.control}
-                name="data_nascimento"
-                rules={{ required: "Data de nascimento é obrigatória" }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-semibold text-gray-700">
-                      Data de Nascimento *
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="date"
-                        className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <FormField
+                  control={form.control}
+                  name="data_nascimento"
+                  rules={{ required: "Data de nascimento é obrigatória" }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-bold flex items-center gap-2" style={{ color: colors.primary[700] }}>
+                        <Calendar size={16} />
+                        Data de Nascimento *
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          className="px-3 sm:px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition-all text-sm sm:text-base min-h-[44px]"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </motion.div>
 
               {/* Altura e Peso */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <motion.div 
+                className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
                 <FormField
                   control={form.control}
                   name="altura"
                   rules={{ required: "Altura é obrigatória" }}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-semibold text-gray-700">
+                      <FormLabel className="text-sm font-bold flex items-center gap-2" style={{ color: colors.primary[700] }}>
+                        <Ruler size={16} />
                         Altura (cm) *
                       </FormLabel>
                       <FormControl>
@@ -322,7 +392,7 @@ const DadosPessoais = () => {
                           placeholder="Ex: 165"
                           min="100"
                           max="250"
-                          className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
+                          className="px-3 sm:px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition-all text-sm sm:text-base min-h-[44px]"
                           {...field}
                         />
                       </FormControl>
@@ -337,7 +407,8 @@ const DadosPessoais = () => {
                   rules={{ required: "Peso atual é obrigatório" }}
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-semibold text-gray-700">
+                      <FormLabel className="text-sm font-bold flex items-center gap-2" style={{ color: colors.primary[700] }}>
+                        <Weight size={16} />
                         Peso Atual (kg) *
                       </FormLabel>
                       <FormControl>
@@ -347,7 +418,7 @@ const DadosPessoais = () => {
                           min="30"
                           max="300"
                           step="0.1"
-                          className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all"
+                          className="px-3 sm:px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition-all text-sm sm:text-base min-h-[44px]"
                           {...field}
                         />
                       </FormControl>
@@ -355,45 +426,69 @@ const DadosPessoais = () => {
                     </FormItem>
                   )}
                 />
-              </div>
+              </motion.div>
 
               {/* Sexo */}
-              <FormField
-                control={form.control}
-                name="sexo"
-                rules={{ required: "Sexo é obrigatório" }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-semibold text-gray-700">
-                      Sexo *
-                    </FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all">
-                          <SelectValue placeholder="Selecione seu sexo" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="feminino">Feminino</SelectItem>
-                        <SelectItem value="masculino">Masculino</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <FormField
+                  control={form.control}
+                  name="sexo"
+                  rules={{ required: "Sexo é obrigatório" }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-bold flex items-center gap-2" style={{ color: colors.primary[700] }}>
+                        <UserCheck size={16} />
+                        Sexo *
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="px-3 sm:px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition-all text-sm sm:text-base min-h-[44px]">
+                            <SelectValue placeholder="Selecione seu sexo" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="feminino">👩 Feminino</SelectItem>
+                          <SelectItem value="masculino">👨 Masculino</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </motion.div>
 
               {/* Botão de Submit */}
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-pink-500 to-sky-500 hover:from-pink-600 hover:to-sky-600 text-white font-semibold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed h-auto"
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
               >
-                {isSubmitting ? 'Salvando...' : 'Salvar e Continuar 💪'}
-              </Button>
+                <LoadingButton
+                  type="submit"
+                  loading={isSubmitting}
+                  className="w-full bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 
+                           text-white font-bold py-3 sm:py-4 px-4 sm:px-6 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl 
+                           transition-all duration-300 transform hover:scale-[1.02] h-auto min-h-[48px] text-sm sm:text-base"
+                >
+                  <div className="flex items-center justify-center gap-2 sm:gap-3">
+                    <span>Salvar e Continuar</span>
+                    <ArrowRight size={18} />
+                  </div>
+                </LoadingButton>
+                
+                <div className="text-center mt-4">
+                  <p className="text-xs sm:text-sm text-gray-500">
+                    📋 Dados Pessoais • Próximo: Alimentar
+                  </p>
+                </div>
+              </motion.div>
             </form>
           </Form>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

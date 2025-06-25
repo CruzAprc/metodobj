@@ -1,96 +1,319 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  ArrowRight, ArrowLeft, CheckCircle, Apple, 
+  Target, Utensils, Heart, Clock, Activity, 
+  AlertTriangle, Pill, Calendar, DollarSign
+} from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import Header from "@/components/Header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from 'sonner';
+import { gradients, colors } from '@/theme/colors';
+import LoadingState, { LoadingButton } from '@/components/LoadingState';
 
 interface QuizData {
   objetivo: string;
   restricoes: string[];
-  preferenciasAlimentares: string[];
   frequenciaRefeicoes: string;
   nivelAtividade: string;
-  alergias: string[];
   suplementos: string[];
-  horarioPreferencia: string;
   orcamento: string;
 }
 
+const quizSteps = [
+  {
+    pergunta: 1,
+    titulo: 'Qual é o seu principal objetivo?',
+    subtitulo: 'Queremos criar uma dieta personalizada para seus sonhos',
+    icon: <Target className="w-6 h-6" />,
+    opcoes: [
+      { id: 'Perder peso', texto: 'Perder Peso', subtexto: 'Reduzir medidas e peso', emoji: '⚖️', color: 'from-pink-400 to-rose-500' },
+      { id: 'Ganhar massa muscular', texto: 'Ganhar Massa', subtexto: 'Aumentar músculos', emoji: '💪', color: 'from-pink-400 to-rose-500' },
+      { id: 'Manter o peso atual', texto: 'Manter Peso', subtexto: 'Equilíbrio saudável', emoji: '⚖️', color: 'from-pink-400 to-rose-500' },
+      { id: 'Melhorar a saúde geral', texto: 'Saúde Geral', subtexto: 'Bem-estar completo', emoji: '❤️', color: 'from-pink-400 to-rose-500' },
+      { id: 'Aumentar energia e disposição', texto: 'Mais Energia', subtexto: 'Vitalidade diária', emoji: '⚡', color: 'from-pink-400 to-rose-500' }
+    ],
+    campo: 'objetivo' as keyof QuizData
+  },
+  {
+    pergunta: 2,
+    titulo: 'Você tem alguma restrição ou alergia alimentar?',
+    subtitulo: 'Vamos adaptar sua dieta às suas necessidades e garantir sua segurança',
+    icon: <AlertTriangle className="w-6 h-6" />,
+    opcoes: [
+      { id: 'vegetariano', texto: 'Vegetariano', subtexto: 'Não consumo carne', emoji: '🥬', color: 'from-pink-400 to-rose-500' },
+      { id: 'vegano', texto: 'Vegano', subtexto: 'Nada de origem animal', emoji: '🌱', color: 'from-pink-400 to-rose-500' },
+      { id: 'sem-gluten', texto: 'Sem Glúten', subtexto: 'Livre de glúten', emoji: '🚫', color: 'from-pink-400 to-rose-500' },
+      { id: 'sem-lactose', texto: 'Sem Lactose', subtexto: 'Intolerante à lactose', emoji: '🥛', color: 'from-pink-400 to-rose-500' },
+      { id: 'oleaginosas', texto: 'Alergia a Oleaginosas', subtexto: 'Castanhas, amendoim', emoji: '🥜', color: 'from-pink-400 to-rose-500' },
+      { id: 'frutos-mar', texto: 'Alergia a Frutos do Mar', subtexto: 'Camarão, caranguejo', emoji: '🦐', color: 'from-pink-400 to-rose-500' },
+      { id: 'ovos', texto: 'Alergia a Ovos', subtexto: 'Alergia a ovos', emoji: '🥚', color: 'from-pink-400 to-rose-500' },
+      { id: 'low-carb', texto: 'Low Carb', subtexto: 'Baixo carboidrato', emoji: '🥩', color: 'from-pink-400 to-rose-500' },
+      { id: 'nenhuma', texto: 'Nenhuma', subtexto: 'Posso comer de tudo', emoji: '✅', color: 'from-pink-400 to-rose-500' }
+    ],
+    campo: 'restricoes' as keyof QuizData,
+    multipla: true
+  },
+  {
+    pergunta: 3,
+    titulo: 'Quantas refeições você faz por dia?',
+    subtitulo: 'Vamos organizar sua rotina alimentar ideal',
+    icon: <Utensils className="w-6 h-6" />,
+    opcoes: [
+      { id: '3', texto: '3 refeições', subtexto: 'Básico tradicional', emoji: '🍽️', color: 'from-pink-400 to-rose-500' },
+      { id: '4', texto: '4 refeições', subtexto: 'Mais equilibrado', emoji: '🥗', color: 'from-pink-400 to-rose-500' },
+      { id: '5', texto: '5 refeições', subtexto: 'Metabolismo ativo', emoji: '🍎', color: 'from-pink-400 to-rose-500' },
+      { id: '6+', texto: '6+ refeições', subtexto: 'Alta frequência', emoji: '⏰', color: 'from-pink-400 to-rose-500' }
+    ],
+    campo: 'frequenciaRefeicoes' as keyof QuizData
+  },
+  {
+    pergunta: 4,
+    titulo: 'Qual seu nível de atividade física?',
+    subtitulo: 'Precisamos ajustar suas calorias à sua rotina',
+    icon: <Activity className="w-6 h-6" />,
+    opcoes: [
+      { id: 'sedentario', texto: 'Sedentário', subtexto: 'Pouca atividade', emoji: '📺', color: 'from-pink-400 to-rose-500' },
+      { id: 'levemente-ativo', texto: 'Levemente Ativo', subtexto: '1-3 dias/semana', emoji: '🚶', color: 'from-pink-400 to-rose-500' },
+      { id: 'moderadamente-ativo', texto: 'Moderado', subtexto: '3-5 dias/semana', emoji: '🏃', color: 'from-pink-400 to-rose-500' },
+      { id: 'altamente-ativo', texto: 'Muito Ativo', subtexto: '6-7 dias/semana', emoji: '🏋️', color: 'from-pink-400 to-rose-500' }
+    ],
+    campo: 'nivelAtividade' as keyof QuizData
+  },
+  {
+    pergunta: 5,
+    titulo: 'Você usa algum suplemento?',
+    subtitulo: 'Vamos incluir seus suplementos no plano alimentar',
+    icon: <Pill className="w-6 h-6" />,
+    opcoes: [
+      { id: 'whey', texto: 'Whey Protein', subtexto: 'Proteína do soro', emoji: '🥤', color: 'from-pink-400 to-rose-500' },
+      { id: 'creatina', texto: 'Creatina', subtexto: 'Para performance', emoji: '💪', color: 'from-pink-400 to-rose-500' },
+      { id: 'vitaminas', texto: 'Vitaminas', subtexto: 'Complexos vitamínicos', emoji: '💊', color: 'from-pink-400 to-rose-500' },
+      { id: 'omega3', texto: 'Ômega 3', subtexto: 'Ácidos graxos', emoji: '🐟', color: 'from-pink-400 to-rose-500' },
+      { id: 'bcaa', texto: 'BCAA', subtexto: 'Aminoácidos', emoji: '⚡', color: 'from-pink-400 to-rose-500' },
+      { id: 'nenhum', texto: 'Nenhum', subtexto: 'Não uso suplementos', emoji: '🚫', color: 'from-pink-400 to-rose-500' }
+    ],
+    campo: 'suplementos' as keyof QuizData,
+    multipla: true
+  },
+  {
+    pergunta: 6,
+    titulo: 'Qual seu orçamento mensal para alimentação?',
+    subtitulo: 'Vamos criar um plano que cabe no seu bolso',
+    icon: <DollarSign className="w-6 h-6" />,
+    opcoes: [
+      { id: 'ate-300', texto: 'Até R$ 300', subtexto: 'Econômico', emoji: '💵', color: 'from-pink-400 to-rose-500' },
+      { id: '300-500', texto: 'R$ 300-500', subtexto: 'Moderado', emoji: '💶', color: 'from-pink-400 to-rose-500' },
+      { id: '500-800', texto: 'R$ 500-800', subtexto: 'Confortável', emoji: '💷', color: 'from-pink-400 to-rose-500' },
+      { id: '800-1200', texto: 'R$ 800-1200', subtexto: 'Amplo', emoji: '💴', color: 'from-pink-400 to-rose-500' },
+      { id: 'acima-1200', texto: 'Acima R$ 1200', subtexto: 'Premium', emoji: '💎', color: 'from-pink-400 to-rose-500' },
+      { id: 'sem-limite', texto: 'Sem Limite', subtexto: 'Investimento total', emoji: '🏆', color: 'from-pink-400 to-rose-500' }
+    ],
+    campo: 'orcamento' as keyof QuizData
+  }
+];
+
 const QuizAlimentar = () => {
   const navigate = useNavigate();
+  const { pergunta } = useParams<{ pergunta: string }>();
   const { user } = useAuth();
-
-  const [objetivo, setObjetivo] = useState('');
-  const [restricoes, setRestricoes] = useState<string[]>([]);
-  const [preferenciasAlimentares, setPreferenciasAlimentares] = useState<string[]>([]);
-  const [frequenciaRefeicoes, setFrequenciaRefeicoes] = useState('');
-  const [nivelAtividade, setNivelAtividade] = useState('');
-  const [alergias, setAlergias] = useState<string[]>([]);
-  const [suplementos, setSuplementos] = useState<string[]>([]);
-  const [horarioPreferencia, setHorarioPreferencia] = useState('');
-  const [orcamento, setOrcamento] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCheckingExisting, setIsCheckingExisting] = useState(true);
+  const [quizData, setQuizData] = useState<QuizData>({
+    objetivo: '',
+    restricoes: [],
+    frequenciaRefeicoes: '',
+    nivelAtividade: '',
+    suplementos: [],
+    orcamento: ''
+  });
+
+  const currentPergunta = parseInt(pergunta || '1');
+  const currentStep = quizSteps.find(step => step.pergunta === currentPergunta);
+  const progress = (currentPergunta / quizSteps.length) * 100;
+
+  // TODOS OS HOOKS DEVEM ESTAR AQUI - ANTES DE QUALQUER LÓGICA CONDICIONAL
+  const isMultipleChoice = currentStep?.multipla || false;
+  const currentValue = currentStep ? quizData[currentStep.campo] : '';
+  
+  // Validação mais robusta para verificar se há seleção
+  const hasSelection = React.useMemo(() => {
+    if (!currentStep) return false;
+    
+    if (isMultipleChoice) {
+      return Array.isArray(currentValue) && currentValue.length > 0;
+    } else {
+      return currentValue !== '' && currentValue !== null && currentValue !== undefined;
+    }
+  }, [currentValue, isMultipleChoice, currentStep]);
 
   useEffect(() => {
-    console.log('Quiz alimentar visualizado');
-  }, []);
+    const checkQuizCompletion = async () => {
+      if (!user) {
+        console.log('Quiz Alimentar: Usuário não logado');
+        setIsCheckingExisting(false);
+        return;
+      }
 
-  const handleRestricaoChange = (value: string, checked: boolean) => {
-    setRestricoes(prev => checked ? [...prev, value] : prev.filter(item => item !== value));
-  };
+      try {
+        console.log('Quiz Alimentar: Verificando quiz existente...', {
+          userId: user.id,
+          currentRoute: window.location.pathname,
+          isSpecificQuestion: !!pergunta
+        });
+        
+        const { data: existingQuiz, error } = await supabase
+          .from('user_quiz_data')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('quiz_type', 'alimentar')
+          .maybeSingle();
 
-  const handlePreferenciaChange = (value: string, checked: boolean) => {
-    setPreferenciasAlimentares(prev => checked ? [...prev, value] : prev.filter(item => item !== value));
-  };
+        console.log('Quiz Alimentar: Resultado da verificação:', {
+          data: existingQuiz,
+          error: error,
+          hasCompletedAt: !!existingQuiz?.completed_at,
+          isAccessingSpecificQuestion: !!pergunta
+        });
 
-  const handleAlergiaChange = (value: string, checked: boolean) => {
-    setAlergias(prev => checked ? [...prev, value] : prev.filter(item => item !== value));
-  };
+        if (error && error.code !== 'PGRST116') {
+          console.error('Quiz Alimentar: Erro ao verificar quiz existente:', error);
+          setIsCheckingExisting(false);
+          return;
+        }
 
-  const handleSuplementoChange = (value: string, checked: boolean) => {
-    setSuplementos(prev => checked ? [...prev, value] : prev.filter(item => item !== value));
+        if (!pergunta && existingQuiz && existingQuiz.completed_at) {
+          console.log('Quiz Alimentar: Quiz completado + acesso sem pergunta específica -> redirecionando para quiz-treino');
+          navigate('/quiz-treino/1');
+          return;
+        }
+
+        console.log('Quiz Alimentar: Permitindo preenchimento do quiz');
+        
+        if (existingQuiz && existingQuiz.quiz_data) {
+          console.log('Quiz Alimentar: Carregando dados existentes para edição');
+          const data = existingQuiz.quiz_data as any;
+          if (data && typeof data === 'object') {
+            // Unir alergias antigas com restrições para manter compatibilidade
+            const restricoesExistentes = Array.isArray(data.restricoes) ? data.restricoes : [];
+            const alergiasExistentes = Array.isArray(data.alergias) ? data.alergias : [];
+            const todasRestricoes = [...new Set([...restricoesExistentes, ...alergiasExistentes])];
+            
+            setQuizData({
+              objetivo: data.objetivo || '',
+              restricoes: todasRestricoes,
+              frequenciaRefeicoes: data.frequenciaRefeicoes || '',
+              nivelAtividade: data.nivelAtividade || '',
+              suplementos: Array.isArray(data.suplementos) ? data.suplementos : [],
+              orcamento: data.orcamento || ''
+            });
+          }
+        }
+
+        setIsCheckingExisting(false);
+      } catch (error) {
+        console.error('Quiz Alimentar: Erro inesperado ao verificar quiz:', error);
+        setIsCheckingExisting(false);
+      }
+    };
+
+    checkQuizCompletion();
+  }, [user, navigate, pergunta]);
+
+  const handleOptionSelect = (opcaoId: string) => {
+    if (!currentStep) return;
+
+    const { campo, multipla } = currentStep;
+    
+    console.log('handleOptionSelect - Debug:', {
+      opcaoId,
+      campo,
+      multipla,
+      currentQuizData: quizData[campo]
+    });
+
+    if (multipla) {
+      setQuizData(prev => {
+        const currentValues = prev[campo] as string[];
+        const newValues = currentValues.includes(opcaoId)
+          ? currentValues.filter(id => id !== opcaoId)
+          : [...currentValues, opcaoId];
+        
+        console.log('Multipla escolha - Novos valores:', newValues);
+        
+        return { ...prev, [campo]: newValues };
+      });
+    } else {
+      console.log('Escolha única - Definindo valor:', opcaoId);
+      setQuizData(prev => ({ ...prev, [campo]: opcaoId }));
+    }
   };
 
   const updateCompleteProfile = async (quizData: QuizData) => {
-    if (!user) return;
+    if (!user) {
+      throw new Error('Usuário não encontrado');
+    }
 
     try {
-      console.log('Atualizando perfil consolidado com dados do quiz alimentar:', quizData);
+      console.log('📝 Processando dados para perfil completo:', quizData);
+
+      // Extrair alergias das restrições para manter compatibilidade
+      const restricoes = quizData.restricoes || [];
+      const alergiaIds = ['oleaginosas', 'frutos-mar', 'ovos', 'sem-lactose', 'sem-gluten'];
+      const alergiasSelecionadas = restricoes.filter(restricao => alergiaIds.includes(restricao));
+      const restricoesPuras = restricoes.filter(restricao => !alergiaIds.includes(restricao));
 
       const profileData = {
         user_id: user.id,
         objetivo_alimentar: quizData.objetivo,
-        restricoes_alimentares: quizData.restricoes,
-        preferencias_alimentares: quizData.preferenciasAlimentares,
+        restricoes_alimentares: restricoesPuras,
+        preferencias_alimentares: [], // Valor padrão para campo removido
         frequencia_refeicoes: quizData.frequenciaRefeicoes,
         nivel_atividade: quizData.nivelAtividade,
-        alergias: quizData.alergias,
+        alergias: alergiasSelecionadas, // Mantém alergias separadas para webhook
         suplementos: quizData.suplementos,
-        horario_preferencia: quizData.horarioPreferencia,
+        horario_preferencia: 'flexivel', // Valor padrão para campo removido
         orcamento: quizData.orcamento,
         quiz_alimentar_completed: true,
         updated_at: new Date().toISOString()
       };
 
-      const { error } = await supabase
-        .from('user_complete_profile')
-        .upsert(profileData, { onConflict: 'user_id' });
+      console.log('📝 Dados do perfil a serem salvos:', profileData);
 
-      if (error) {
-        console.error('Erro ao atualizar perfil consolidado:', error);
-        throw error;
+      // Verificar se perfil já existe
+      const { data: existingProfile } = await supabase
+        .from('user_complete_profile')
+        .select('user_id')
+        .eq('user_id', user.id)
+        .single();
+
+      let error = null;
+
+      if (existingProfile) {
+        // Atualizar perfil existente
+        const result = await supabase
+          .from('user_complete_profile')
+          .update(profileData)
+          .eq('user_id', user.id);
+        error = result.error;
+      } else {
+        // Inserir novo perfil
+        const result = await supabase
+          .from('user_complete_profile')
+          .insert(profileData);
+        error = result.error;
       }
 
-      console.log('Perfil consolidado atualizado com dados do quiz alimentar');
-    } catch (error) {
-      console.error('Erro ao atualizar perfil consolidado:', error);
-      throw error;
+      if (error) {
+        console.error('❌ Erro ao atualizar perfil consolidado:', error);
+        throw new Error(`Erro ao atualizar perfil: ${error.message}`);
+      }
+
+      console.log('✅ Perfil consolidado atualizado com sucesso');
+    } catch (error: any) {
+      console.error('❌ Erro crítico ao atualizar perfil consolidado:', error);
+      throw new Error(`Falha ao atualizar perfil: ${error.message}`);
     }
   };
 
@@ -100,7 +323,6 @@ const QuizAlimentar = () => {
     try {
       console.log('Verificando se todos os dados estão completos para envio ao webhook...');
       
-      // Buscar dados completos do perfil
       const { data: completeProfile, error } = await supabase
         .from('user_complete_profile')
         .select('*')
@@ -115,7 +337,6 @@ const QuizAlimentar = () => {
       if (completeProfile && completeProfile.all_data_completed && !completeProfile.webhook_sent) {
         console.log('Todos os dados completos! Enviando para webhook...');
         
-        // Buscar dados do usuário para o webhook
         const { data: userData } = await supabase
           .from('teste_app')
           .select('email, nome')
@@ -173,7 +394,6 @@ const QuizAlimentar = () => {
           webhookResult = await webhookResponse.json();
           console.log('Dados enviados com sucesso para o webhook');
           
-          // Marcar como enviado
           await supabase
             .from('user_complete_profile')
             .update({
@@ -194,380 +414,371 @@ const QuizAlimentar = () => {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSubmit = async (data: QuizData) => {
     if (!user) {
       console.error('Usuário não logado');
       return;
     }
 
-    if (!objetivo || !frequenciaRefeicoes || !nivelAtividade || !horarioPreferencia || !orcamento) {
-      console.error('Todos os campos obrigatórios devem ser preenchidos');
-      toast.error('Todos os campos obrigatórios devem ser preenchidos');
+    console.log('🔍 Dados para submissão:', data);
+
+    // Verificar se campos obrigatórios estão preenchidos
+    const requiredFields = ['objetivo', 'frequenciaRefeicoes', 'nivelAtividade', 'orcamento'];
+    const missingFields = requiredFields.filter(field => !data[field as keyof QuizData]);
+    
+    if (missingFields.length > 0) {
+      console.error('Campos obrigatórios faltando:', missingFields);
+      toast.error(`Campos obrigatórios faltando: ${missingFields.join(', ')}`);
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const quizData = {
-        objetivo,
-        restricoes,
-        preferenciasAlimentares,
-        frequenciaRefeicoes,
-        nivelAtividade,
-        alergias,
-        suplementos,
-        horarioPreferencia,
-        orcamento
-      };
-
-      // Gerar universal_id para este quiz
+      console.log('💾 Salvando no banco de dados...');
       const universalId = crypto.randomUUID();
 
-      // Salvar no banco de dados (manter compatibilidade)
-      const { error: dbError } = await supabase
+      // Primeiro, verificar se já existe um registro
+      const { data: existingRecord } = await supabase
         .from('user_quiz_data')
-        .insert({
-          user_id: user.id,
-          quiz_type: 'alimentar',
-          quiz_data: quizData,
-          universal_id: universalId,
-          completed_at: new Date().toISOString()
-        });
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('quiz_type', 'alimentar')
+        .single();
 
-      if (dbError) {
-        console.error('Erro ao salvar quiz:', dbError);
-        throw dbError;
+      let dbError = null;
+
+      if (existingRecord) {
+        // Atualizar registro existente
+        const { error } = await supabase
+          .from('user_quiz_data')
+          .update({
+            quiz_data: data as any,
+            completed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', user.id)
+          .eq('quiz_type', 'alimentar');
+        dbError = error;
+      } else {
+        // Inserir novo registro
+        const { error } = await supabase
+          .from('user_quiz_data')
+          .insert({
+            user_id: user.id,
+            quiz_type: 'alimentar',
+            quiz_data: data as any,
+            universal_id: universalId,
+            completed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+        dbError = error;
       }
 
-      // Atualizar perfil consolidado
-      await updateCompleteProfile(quizData);
+      if (dbError) {
+        console.error('❌ Erro ao salvar no banco:', dbError);
+        throw new Error(`Erro no banco de dados: ${dbError.message}`);
+      }
+      console.log('✅ Salvo no banco com sucesso');
 
-      // Verificar e enviar dados completos se necessário
+      console.log('📝 Atualizando perfil completo...');
+      await updateCompleteProfile(data);
+      console.log('✅ Perfil atualizado com sucesso');
+
+      console.log('🌐 Enviando para webhook...');
       await sendCompleteDataToWebhook();
+      console.log('✅ Webhook enviado com sucesso');
 
-      console.log('Quiz salvo com sucesso!');
-      
-      // Registrar evento de conclusão
+      console.log('📊 Logando evento...');
       await supabase.rpc('log_user_event', {
         p_user_id: user.id,
         p_event_type: 'quiz_alimentar_completed',
-        p_event_data: quizData
+        p_event_data: JSON.parse(JSON.stringify(data))
       });
+      console.log('✅ Evento logado com sucesso');
 
-      toast.success('Quiz alimentar concluído com sucesso!');
-      
-      // Redirecionar para quiz de treino
+      toast.success('Dados alimentares salvos com sucesso!');
       navigate('/quiz-treino/1');
-    } catch (error) {
-      console.error('Erro ao salvar quiz:', error);
-      toast.error('Erro ao salvar quiz alimentar');
+      
+    } catch (error: any) {
+      console.error('❌ Erro detalhado ao salvar:', {
+        message: error.message,
+        error: error,
+        stack: error.stack
+      });
+      toast.error(`Erro ao salvar dados: ${error.message || 'Erro desconhecido'}`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-white py-6 px-4 sm:px-6 lg:px-8">
-      <Header 
-        showBack={true} 
-        onBack={() => navigate('/dados-pessoais')}
-        title="Questionário Alimentar"
+  const handleNext = async () => {
+    if (!currentStep) return;
+
+    const { campo, multipla } = currentStep;
+    const value = quizData[campo];
+    
+    console.log('handleNext - Debug:', {
+      campo,
+      multipla,
+      value,
+      valueType: typeof value,
+      isArray: Array.isArray(value),
+      arrayLength: Array.isArray(value) ? value.length : 'N/A',
+      currentPergunta,
+      totalSteps: quizSteps.length
+    });
+    
+    // Validação mais específica
+    let hasValidSelection = false;
+    
+    if (multipla) {
+      hasValidSelection = Array.isArray(value) && value.length > 0;
+    } else {
+      hasValidSelection = value !== '' && value !== null && value !== undefined;
+    }
+    
+    console.log('hasValidSelection:', hasValidSelection);
+    
+    if (!hasValidSelection) {
+      toast.error('Por favor, selecione uma opção antes de continuar');
+      return;
+    } 
+    if (currentPergunta < quizSteps.length) {
+      console.log('Navegando para próxima pergunta:', currentPergunta + 1);
+      navigate(`/quiz-alimentar/${currentPergunta + 1}`);
+    } else {
+      console.log('Finalizando quiz...');
+      await handleSubmit(quizData);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentPergunta > 1) {
+      navigate(`/quiz-alimentar/${currentPergunta - 1}`);
+    } else {
+      navigate('/dados-pessoais');
+    }
+  };
+
+  if (isCheckingExisting) {
+    return (
+      <LoadingState 
+        fullScreen={true} 
+        message="Verificando dados..." 
+        type="heartbeat"
+        size="lg"
       />
-      
-      <div className="max-w-4xl mx-auto space-y-6 mt-6">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-500 to-pink-600 bg-clip-text text-transparent mb-2">
-            Questionário Alimentar
-          </h1>
-          <p className="text-gray-600">
-            Nos conte sobre seus hábitos alimentares para criarmos sua dieta personalizada
-          </p>
+    );
+  }
+
+
+  
+  console.log('Render - Debug Estado:', {
+    currentStep: currentStep?.campo,
+    currentValue,
+    isMultipleChoice,
+    hasSelection,
+    pergunta: currentPergunta
+  });
+
+  if (!currentStep) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: gradients.background }}>
+        <div className="text-center">
+          <p className="text-red-500 mb-4">Pergunta não encontrada</p>
+          <button 
+            onClick={() => navigate('/quiz-alimentar/1')}
+            className="text-pink-600 underline"
+          >
+            Voltar ao início
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-2 sm:p-4" style={{ background: gradients.background }}>
+      <div className="w-full max-w-2xl">
+        
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl border border-pink-200/30 p-3 sm:p-6 mb-3 sm:mb-6">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-white">
+                {currentStep.icon}
+              </div>
+              <div>
+                <h1 className="text-base sm:text-lg font-bold text-pink-700">
+                  Alimentação - Juju
+                </h1>
+                <p className="text-xs sm:text-sm text-gray-500">
+                  Pergunta {currentPergunta} de {quizSteps.length}
+                </p>
+              </div>
+            </div>
+            
+            <div className="text-right">
+              <div className="text-xl sm:text-2xl font-bold text-pink-600">
+                {Math.round(progress)}%
+              </div>
+              <div className="text-xs text-gray-500">Completo</div>
+            </div>
+          </div>
+
+          <div className="w-full bg-pink-100 rounded-full h-2 sm:h-3 overflow-hidden">
+            <motion.div
+              className="h-full bg-gradient-to-r from-pink-400 to-rose-500 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            />
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Objetivo */}
-          <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
-                🎯 Qual é o seu principal objetivo?
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RadioGroup value={objetivo} onValueChange={setObjetivo} className="space-y-3">
-                {[
-                  'Perder peso',
-                  'Ganhar massa muscular',
-                  'Manter o peso atual',
-                  'Melhorar a saúde geral',
-                  'Aumentar energia e disposição'
-                ].map((option) => (
-                  <div key={option} className="flex items-center space-x-2">
-                    <RadioGroupItem value={option} id={`objetivo-${option}`} />
-                    <Label htmlFor={`objetivo-${option}`} className="font-medium">
-                      {option}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </CardContent>
-          </Card>
-
-          {/* Restrições Alimentares */}
-          <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
-                🚫 Restrições Alimentares
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {[
-                { value: 'vegetariano', label: 'Vegetariano', desc: 'Não consumo carne' },
-                { value: 'vegano', label: 'Vegano', desc: 'Não consumo produtos de origem animal' },
-                { value: 'sem-gluten', label: 'Sem Glúten', desc: 'Não consumo glúten' },
-                { value: 'sem-lactose', label: 'Sem Lactose', desc: 'Não consumo lactose' },
-                { value: 'low-carb', label: 'Low Carb', desc: 'Prefiro baixo carboidrato' },
-                { value: 'nenhuma', label: 'Nenhuma restrição', desc: 'Posso comer de tudo' }
-              ].map((item) => (
-                <div key={item.value} className="flex items-start space-x-3 p-3 rounded-lg bg-pink-50/50">
-                  <Checkbox
-                    id={`restricao-${item.value}`}
-                    checked={restricoes.includes(item.value)}
-                    onCheckedChange={(checked) => handleRestricaoChange(item.value, checked as boolean)}
-                  />
-                  <div className="space-y-1">
-                    <Label htmlFor={`restricao-${item.value}`} className="font-medium text-gray-800">
-                      {item.label}
-                    </Label>
-                    <p className="text-sm text-gray-600">{item.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Preferências Alimentares */}
-          <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
-                ❤️ Preferências Alimentares
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {[
-                { value: 'rica-proteina', label: 'Rica em Proteína', desc: 'Prefiro alimentos ricos em proteína' },
-                { value: 'muitas-fibras', label: 'Rica em Fibras', desc: 'Gosto de alimentos com muitas fibras' },
-                { value: 'comida-caseira', label: 'Comida Caseira', desc: 'Prefiro preparar minhas refeições' },
-                { value: 'praticidade', label: 'Praticidade', desc: 'Prefiro opções rápidas e práticas' },
-                { value: 'organicos', label: 'Alimentos Orgânicos', desc: 'Prefiro alimentos orgânicos' }
-              ].map((item) => (
-                <div key={item.value} className="flex items-start space-x-3 p-3 rounded-lg bg-pink-50/50">
-                  <Checkbox
-                    id={`preferencia-${item.value}`}
-                    checked={preferenciasAlimentares.includes(item.value)}
-                    onCheckedChange={(checked) => handlePreferenciaChange(item.value, checked as boolean)}
-                  />
-                  <div className="space-y-1">
-                    <Label htmlFor={`preferencia-${item.value}`} className="font-medium text-gray-800">
-                      {item.label}
-                    </Label>
-                    <p className="text-sm text-gray-600">{item.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Frequência de Refeições */}
-          <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
-                🍽️ Quantas refeições você faz por dia?
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RadioGroup value={frequenciaRefeicoes} onValueChange={setFrequenciaRefeicoes} className="space-y-3">
-                {[
-                  { value: '3', label: '3 refeições por dia' },
-                  { value: '4', label: '4 refeições por dia' },
-                  { value: '5', label: '5 refeições por dia' },
-                  { value: '6+', label: '6 ou mais refeições por dia' }
-                ].map((option) => (
-                  <div key={option.value} className="flex items-center space-x-2">
-                    <RadioGroupItem value={option.value} id={`freq-${option.value}`} />
-                    <Label htmlFor={`freq-${option.value}`} className="font-medium">
-                      {option.label}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </CardContent>
-          </Card>
-
-          {/* Nível de Atividade */}
-          <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
-                💪 Qual seu nível de atividade física?
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RadioGroup value={nivelAtividade} onValueChange={setNivelAtividade} className="space-y-3">
-                {[
-                  { value: 'sedentario', label: 'Sedentário', desc: 'Pouca ou nenhuma atividade física' },
-                  { value: 'levemente-ativo', label: 'Levemente Ativo', desc: 'Exercício leve 1-3 dias/semana' },
-                  { value: 'moderadamente-ativo', label: 'Moderadamente Ativo', desc: 'Exercício moderado 3-5 dias/semana' },
-                  { value: 'altamente-ativo', label: 'Altamente Ativo', desc: 'Exercício intenso 6-7 dias/semana' }
-                ].map((option) => (
-                  <div key={option.value} className="flex items-start space-x-2 p-3 rounded-lg bg-pink-50/50">
-                    <RadioGroupItem value={option.value} id={`atividade-${option.value}`} className="mt-1" />
-                    <div className="space-y-1">
-                      <Label htmlFor={`atividade-${option.value}`} className="font-medium text-gray-800">
-                        {option.label}
-                      </Label>
-                      <p className="text-sm text-gray-600">{option.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </RadioGroup>
-            </CardContent>
-          </Card>
-
-          {/* Alergias */}
-          <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
-                ⚠️ Você tem alguma alergia alimentar?
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {[
-                { value: 'lactose', label: 'Lactose', desc: 'Sou alérgico(a) à lactose' },
-                { value: 'gluten', label: 'Glúten', desc: 'Sou alérgico(a) ao glúten' },
-                { value: 'oleaginosas', label: 'Oleaginosas', desc: 'Alergia a castanhas, amendoim, etc.' },
-                { value: 'frutos-mar', label: 'Frutos do Mar', desc: 'Alergia a camarão, caranguejo, etc.' },
-                { value: 'ovos', label: 'Ovos', desc: 'Sou alérgico(a) a ovos' },
-                { value: 'nenhuma', label: 'Não tenho alergias', desc: 'Não possuo alergias alimentares' }
-              ].map((item) => (
-                <div key={item.value} className="flex items-start space-x-3 p-3 rounded-lg bg-pink-50/50">
-                  <Checkbox
-                    id={`alergia-${item.value}`}
-                    checked={alergias.includes(item.value)}
-                    onCheckedChange={(checked) => handleAlergiaChange(item.value, checked as boolean)}
-                  />
-                  <div className="space-y-1">
-                    <Label htmlFor={`alergia-${item.value}`} className="font-medium text-gray-800">
-                      {item.label}
-                    </Label>
-                    <p className="text-sm text-gray-600">{item.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Suplementos */}
-          <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
-                💊 Você usa algum suplemento?
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {[
-                { value: 'whey', label: 'Whey Protein', desc: 'Utilizo whey protein regularmente' },
-                { value: 'creatina', label: 'Creatina', desc: 'Utilizo creatina regularmente' },
-                { value: 'vitaminas', label: 'Vitaminas', desc: 'Tomo complexos vitamínicos' },
-                { value: 'omega3', label: 'Ômega 3', desc: 'Suplemento com ômega 3' },
-                { value: 'bcaa', label: 'BCAA', desc: 'Utilizo aminoácidos essenciais' },
-                { value: 'nenhum', label: 'Não uso suplementos', desc: 'Não utilizo nenhum suplemento' }
-              ].map((item) => (
-                <div key={item.value} className="flex items-start space-x-3 p-3 rounded-lg bg-pink-50/50">
-                  <Checkbox
-                    id={`suplemento-${item.value}`}
-                    checked={suplementos.includes(item.value)}
-                    onCheckedChange={(checked) => handleSuplementoChange(item.value, checked as boolean)}
-                  />
-                  <div className="space-y-1">
-                    <Label htmlFor={`suplemento-${item.value}`} className="font-medium text-gray-800">
-                      {item.label}
-                    </Label>
-                    <p className="text-sm text-gray-600">{item.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          {/* Horário de Preferência */}
-          <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
-                🕐 Em qual período você prefere fazer suas principais refeições?
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RadioGroup value={horarioPreferencia} onValueChange={setHorarioPreferencia} className="space-y-3">
-                {[
-                  { value: 'manha-cedo', label: 'Manhã cedo (6h-9h)' },
-                  { value: 'manha-tarde', label: 'Meio da manhã (9h-12h)' },
-                  { value: 'almoco-tradicional', label: 'Almoço tradicional (12h-14h)' },
-                  { value: 'tarde', label: 'Tarde (14h-18h)' },
-                  { value: 'noite', label: 'Noite (18h-21h)' },
-                  { value: 'flexivel', label: 'Horários flexíveis' }
-                ].map((option) => (
-                  <div key={option.value} className="flex items-center space-x-2">
-                    <RadioGroupItem value={option.value} id={`horario-${option.value}`} />
-                    <Label htmlFor={`horario-${option.value}`} className="font-medium">
-                      {option.label}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </CardContent>
-          </Card>
-
-          {/* Orçamento */}
-          <Card className="bg-white/80 backdrop-blur-sm border-pink-200 shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-xl text-gray-800 flex items-center gap-2">
-                💰 Qual seu orçamento mensal para alimentação?
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RadioGroup value={orcamento} onValueChange={setOrcamento} className="space-y-3">
-                {[
-                  { value: 'ate-300', label: 'Até R$ 300' },
-                  { value: '300-500', label: 'R$ 300 - R$ 500' },
-                  { value: '500-800', label: 'R$ 500 - R$ 800' },
-                  { value: '800-1200', label: 'R$ 800 - R$ 1.200' },
-                  { value: 'acima-1200', label: 'Acima de R$ 1.200' },
-                  { value: 'sem-limite', label: 'Sem limite específico' }
-                ].map((option) => (
-                  <div key={option.value} className="flex items-center space-x-2">
-                    <RadioGroupItem value={option.value} id={`orcamento-${option.value}`} />
-                    <Label htmlFor={`orcamento-${option.value}`} className="font-medium">
-                      {option.label}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </CardContent>
-          </Card>
-
-          {/* Botão de Envio */}
-          <div className="pt-6">
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full fitness-button text-lg py-6"
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl border border-pink-200/30 p-4 sm:p-8">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentPergunta}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+              className="space-y-6 sm:space-y-8"
             >
-              {isSubmitting ? 'Processando...' : 'Finalizar Questionário 🚀'}
-            </Button>
+              
+              <div className="text-center space-y-2 sm:space-y-3">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-pink-700 leading-tight">
+                  {currentStep.titulo}
+                </h2>
+                <p className="text-gray-600 text-base sm:text-lg px-2">
+                  {currentStep.subtitulo}
+                </p>
+                <div className="text-sm text-gray-500">
+                  {isMultipleChoice ? '✨ Selecione todas que se aplicam' : '🎯 Escolha uma opção'}
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
+                {currentStep.opcoes.map((opcao, index) => {
+                  const isSelected = isMultipleChoice
+                    ? Array.isArray(currentValue) && currentValue.includes(opcao.id)
+                    : currentValue === opcao.id;
+
+                  return (
+                    <motion.button
+                      key={opcao.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleOptionSelect(opcao.id)}
+                      className={`relative group p-4 sm:p-6 rounded-xl sm:rounded-2xl border-2 text-left transition-all duration-300 overflow-hidden min-h-[80px] sm:min-h-[100px] ${
+                        isSelected
+                          ? 'border-pink-400 bg-gradient-to-br from-pink-50 to-rose-50 shadow-lg'
+                          : 'border-gray-200 bg-white hover:border-pink-300 hover:shadow-md'
+                      }`}
+                      disabled={isSubmitting}
+                    >
+                      {isSelected && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className={`absolute inset-0 bg-gradient-to-br ${opcao.color} opacity-10`}
+                        />
+                      )}
+                      
+                      <div className="relative flex items-center space-x-3 sm:space-x-4">
+                        <div className={`text-2xl sm:text-3xl transform transition-transform duration-300 flex-shrink-0 ${
+                          isSelected ? 'scale-110' : 'group-hover:scale-105'
+                        }`}>
+                          {opcao.emoji}
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className={`font-bold text-base sm:text-lg mb-1 leading-tight ${
+                            isSelected ? 'text-pink-700' : 'text-gray-800'
+                          }`}>
+                            {opcao.texto}
+                          </div>
+                          <div className="text-sm text-gray-600 leading-relaxed">
+                            {opcao.subtexto}
+                          </div>
+                        </div>
+                        
+                        {isSelected && (
+                          <motion.div
+                            initial={{ scale: 0, rotate: -180 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{ type: "spring", stiffness: 200 }}
+                            className="text-pink-500 flex-shrink-0"
+                          >
+                            <CheckCircle size={20} />
+                          </motion.div>
+                        )}
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        <div className="flex justify-between items-center mt-4 sm:mt-8 gap-3 sm:gap-4">
+          <button
+            onClick={handlePrevious}
+            disabled={isSubmitting}
+            className="flex items-center justify-center gap-2 px-6 sm:px-8 py-3 rounded-xl sm:rounded-2xl font-medium transition-all duration-300
+                     text-gray-600 hover:text-gray-800 hover:bg-white/50 backdrop-blur-sm
+                     disabled:opacity-50 disabled:cursor-not-allowed border border-gray-200 text-sm sm:text-base min-h-[48px] flex-1 max-w-[140px]"
+          >
+            <ArrowLeft size={16} />
+            <span>Voltar</span>
+          </button>
+
+          <LoadingButton
+            onClick={handleNext}
+            loading={isSubmitting}
+            disabled={!hasSelection}
+            className={`flex items-center justify-center gap-2 px-6 sm:px-8 py-3 rounded-xl sm:rounded-2xl font-medium
+                     transition-all duration-300 shadow-lg flex-1 text-sm sm:text-base min-h-[48px]
+                     ${hasSelection 
+                       ? 'bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white transform hover:scale-105 active:scale-95' 
+                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                     }`}
+          >
+            <span>
+              {hasSelection 
+                ? (currentPergunta === quizSteps.length ? 'Finalizar' : 'Continuar')
+                : 'Selecione uma opção'
+              }
+            </span>
+            {!isSubmitting && hasSelection && <ArrowRight size={16} />}
+          </LoadingButton>
+        </div>
+
+        <div className="text-center mt-4 sm:mt-6 space-y-2">
+          <div className="flex justify-center gap-1 sm:gap-2">
+            {quizSteps.map((_, index) => (
+              <motion.div
+                key={index}
+                className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
+                  index + 1 <= currentPergunta 
+                    ? 'bg-pink-400 w-6 sm:w-8' 
+                    : 'bg-gray-300 w-1.5 sm:w-2'
+                }`}
+                animate={{
+                  scale: index + 1 === currentPergunta ? 1.2 : 1
+                }}
+              />
+            ))}
           </div>
-        </form>
+          <p className="text-xs text-gray-500 px-4">
+            🌸 Alimentação - Juju • Próximo: Treino
+          </p>
+        </div>
       </div>
     </div>
   );

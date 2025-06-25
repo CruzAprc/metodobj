@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -51,28 +50,49 @@
 
   body {
     @apply bg-gradient-to-br from-pink-100 to-white text-foreground font-inter;
+    /* Melhorias para mobile */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Safe areas para iOS */
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* Otimizações para touch devices */
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Remove outline padrão e adiciona focus melhorado */
+  button:focus, 
+  input:focus, 
+  textarea:focus, 
+  select:focus {
+    outline: none;
+    @apply ring-2 ring-pink-400 ring-opacity-50;
   }
 }
 
 /* Importar fonte Inter do Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-/* Classes personalizadas do tema feminino */
+/* Classes personalizadas do tema feminino - RESPONSIVAS */
 @layer components {
   .fitness-card {
-    @apply bg-gradient-to-r from-white/90 to-pink-50/80 backdrop-blur-sm rounded-3xl shadow-xl border border-pink-200/30 p-8 hover:shadow-2xl transition-all duration-300;
+    @apply bg-gradient-to-r from-white/90 to-pink-50/80 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl border border-pink-200/30 p-4 sm:p-8 hover:shadow-2xl transition-all duration-300;
   }
   
   .fitness-button {
-    @apply bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white font-medium py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] relative overflow-hidden;
+    @apply bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white font-medium py-3 sm:py-4 px-4 sm:px-6 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] relative overflow-hidden min-h-[44px] text-sm sm:text-base;
   }
   
   .fitness-button-outline {
-    @apply border-2 border-pink-500 text-pink-600 font-medium py-3 px-8 rounded-2xl hover:bg-pink-500 hover:text-white transition-all duration-300;
+    @apply border-2 border-pink-500 text-pink-600 font-medium py-2 sm:py-3 px-6 sm:px-8 rounded-xl sm:rounded-2xl hover:bg-pink-500 hover:text-white transition-all duration-300 min-h-[44px] text-sm sm:text-base;
   }
   
   .fitness-input {
-    @apply w-full px-5 py-4 rounded-2xl bg-pink-50/60 text-gray-800 placeholder-gray-500 border border-pink-200/50 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-pink-300 transition-all duration-300 font-medium;
+    @apply w-full px-3 sm:px-5 py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-pink-50/60 text-gray-800 placeholder-gray-500 border border-pink-200/50 focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-pink-300 transition-all duration-300 font-medium text-sm sm:text-base min-h-[44px];
   }
   
   .fitness-gradient-bg {
@@ -84,15 +104,55 @@
   }
   
   .performance-card {
-    @apply bg-gradient-to-br from-pink-500 to-pink-600 text-white rounded-3xl p-6 shadow-2xl;
+    @apply bg-gradient-to-br from-pink-500 to-pink-600 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl;
   }
   
   .progress-indicator {
-    @apply bg-pink-100 rounded-full h-2 overflow-hidden;
+    @apply bg-pink-100 rounded-full h-1.5 sm:h-2 overflow-hidden;
   }
   
   .progress-fill {
     @apply bg-gradient-to-r from-pink-400 to-pink-500 h-full transition-all duration-500 ease-out;
+  }
+
+  /* Novas classes para mobile app */
+  .mobile-safe-area {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  .mobile-padding {
+    @apply px-4 sm:px-6 md:px-8;
+  }
+
+  .mobile-text {
+    @apply text-sm sm:text-base md:text-lg;
+  }
+
+  .mobile-title {
+    @apply text-lg sm:text-xl md:text-2xl lg:text-3xl;
+  }
+
+  .mobile-card {
+    @apply rounded-xl sm:rounded-2xl md:rounded-3xl p-3 sm:p-4 md:p-6;
+  }
+
+  .mobile-button {
+    @apply py-3 px-4 sm:py-4 sm:px-6 rounded-xl sm:rounded-2xl min-h-[44px] text-sm sm:text-base font-medium transition-all duration-200 active:scale-95;
+  }
+
+  .mobile-grid {
+    @apply grid gap-3 sm:gap-4 md:gap-6;
+  }
+
+  .responsive-quiz-option {
+    @apply p-4 sm:p-6 rounded-xl sm:rounded-2xl min-h-[80px] sm:min-h-[100px] text-left transition-all duration-300 border-2;
   }
 }
 
@@ -124,21 +184,42 @@
   }
 }
 
-.animate-float {
-  animation: float 3s ease-in-out infinite;
+/* Animações com reduced motion support */
+@media (prefers-reduced-motion: no-preference) {
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  .animate-slide-in-up {
+    animation: slide-in-up 0.8s ease-out;
+  }
+
+  .animate-sparkle {
+    animation: sparkle 2s infinite;
+  }
 }
 
-.animate-slide-in-up {
-  animation: slide-in-up 0.8s ease-out;
+/* Reduced motion fallbacks */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-slide-in-up,
+  .animate-sparkle {
+    animation: none;
+  }
 }
 
-.animate-sparkle {
-  animation: sparkle 2s infinite;
+/* Efeito de hover especial para cards - apenas em desktop */
+@media (hover: hover) {
+  .fitness-card-hover {
+    @apply transition-all duration-300 hover:scale-105 hover:shadow-2xl;
+  }
 }
 
-/* Efeito de hover especial para cards */
-.fitness-card-hover {
-  @apply transition-all duration-300 hover:scale-105 hover:shadow-2xl;
+/* Para touch devices, usar active state */
+@media (hover: none) {
+  .fitness-card-hover {
+    @apply transition-all duration-200 active:scale-95;
+  }
 }
 
 /* Gradiente para textos de destaque */
@@ -149,12 +230,26 @@
   background-clip: text;
 }
 
-/* Logo circular */
+/* Logo circular responsivo */
 .fitness-logo {
-  @apply flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-pink-400 to-pink-500 shadow-lg animate-float;
+  @apply flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r from-pink-400 to-pink-500 shadow-lg animate-float;
 }
 
 /* Elementos decorativos */
 .decoration-sparkle {
   @apply absolute opacity-20 animate-sparkle;
+}
+
+/* Media queries para breakpoints customizados */
+@media (max-width: 374px) {
+  .mobile-xs {
+    @apply text-xs px-2 py-2;
+  }
+}
+
+/* Landscape mode para mobiles */
+@media (max-height: 500px) and (orientation: landscape) {
+  .landscape-mobile {
+    @apply py-2 space-y-2;
+  }
 }

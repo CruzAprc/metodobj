@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react';
+import { 
+  ArrowRight, ArrowLeft, CheckCircle, Dumbbell, 
+  Timer, Target, Activity, Zap, Trophy, User
+} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { gradients, colors } from '@/theme/colors';
+import LoadingState, { LoadingButton } from '@/components/LoadingState';
 
 interface QuizData {
   experiencia: string;
@@ -19,45 +24,53 @@ const quizSteps = [
   {
     pergunta: 1,
     titulo: 'Qual sua experiência com musculação?',
+    subtitulo: 'Queremos personalizar seu treino com base no seu nível atual',
+    icon: <Dumbbell className="w-6 h-6" />,
     opcoes: [
-      { id: 'iniciante', texto: 'Iniciante (nunca treinei)', emoji: '🆕' },
-      { id: 'basico', texto: 'Básico (menos de 6 meses)', emoji: '📚' },
-      { id: 'intermediario', texto: 'Intermediário (6 meses - 2 anos)', emoji: '💪' },
-      { id: 'avancado', texto: 'Avançado (mais de 2 anos)', emoji: '🏆' }
+      { id: 'iniciante', texto: 'Iniciante', subtexto: 'Nunca treinei', emoji: '🆕', color: 'from-green-400 to-green-500' },
+      { id: 'basico', texto: 'Básico', subtexto: 'Menos de 6 meses', emoji: '📚', color: 'from-blue-400 to-blue-500' },
+      { id: 'intermediario', texto: 'Intermediário', subtexto: '6 meses - 2 anos', emoji: '💪', color: 'from-purple-400 to-purple-500' },
+      { id: 'avancado', texto: 'Avançado', subtexto: 'Mais de 2 anos', emoji: '🏆', color: 'from-orange-400 to-orange-500' }
     ],
     campo: 'experiencia' as keyof QuizData
   },
   {
     pergunta: 2,
     titulo: 'Quantas vezes por semana você pode treinar?',
+    subtitulo: 'Vamos criar um cronograma que se encaixe na sua rotina',
+    icon: <Timer className="w-6 h-6" />,
     opcoes: [
-      { id: '2_vezes', texto: '2 vezes por semana', emoji: '✌️' },
-      { id: '3_vezes', texto: '3 vezes por semana', emoji: '🔥' },
-      { id: '4_vezes', texto: '4 vezes por semana', emoji: '💪' },
-      { id: '5_mais', texto: '5 ou mais vezes', emoji: '🚀' }
+      { id: '2_vezes', texto: '2x por semana', subtexto: 'Treino básico', emoji: '✌️', color: 'from-cyan-400 to-cyan-500' },
+      { id: '3_vezes', texto: '3x por semana', subtexto: 'Ritmo ideal', emoji: '🔥', color: 'from-pink-400 to-pink-500' },
+      { id: '4_vezes', texto: '4x por semana', subtexto: 'Treino intenso', emoji: '💪', color: 'from-indigo-400 to-indigo-500' },
+      { id: '5_mais', texto: '5+ vezes', subtexto: 'Dedicação total', emoji: '🚀', color: 'from-red-400 to-red-500' }
     ],
     campo: 'frequencia' as keyof QuizData
   },
   {
     pergunta: 3,
     titulo: 'Qual seu principal objetivo no treino?',
+    subtitulo: 'Cada objetivo requer uma abordagem específica de treino',
+    icon: <Target className="w-6 h-6" />,
     opcoes: [
-      { id: 'ganhar_massa', texto: 'Ganhar massa muscular', emoji: '💪' },
-      { id: 'definir', texto: 'Definição muscular', emoji: '✨' },
-      { id: 'forca', texto: 'Ganhar força', emoji: '🏋️' },
-      { id: 'hipertrofia', texto: 'Hipertrofia', emoji: '💥' }
+      { id: 'ganhar_massa', texto: 'Ganhar Massa', subtexto: 'Músculos maiores', emoji: '💪', color: 'from-emerald-400 to-emerald-500' },
+      { id: 'definir', texto: 'Definição', subtexto: 'Músculos definidos', emoji: '✨', color: 'from-amber-400 to-amber-500' },
+      { id: 'forca', texto: 'Ganhar Força', subtexto: 'Potência máxima', emoji: '🏋️', color: 'from-slate-400 to-slate-500' },
+      { id: 'hipertrofia', texto: 'Hipertrofia', subtexto: 'Volume + definição', emoji: '💥', color: 'from-violet-400 to-violet-500' }
     ],
     campo: 'objetivo' as keyof QuizData
   },
   {
     pergunta: 4,
     titulo: 'Você tem alguma limitação física?',
+    subtitulo: 'Vamos adaptar os exercícios para manter você segura',
+    icon: <Activity className="w-6 h-6" />,
     opcoes: [
-      { id: 'nenhuma', texto: 'Nenhuma limitação', emoji: '✅' },
-      { id: 'joelho', texto: 'Problemas no joelho', emoji: '🦵' },
-      { id: 'costas', texto: 'Problemas nas costas', emoji: '🔄' },
-      { id: 'ombro', texto: 'Problemas no ombro', emoji: '🤷' },
-      { id: 'outras', texto: 'Outras limitações', emoji: '⚠️' }
+      { id: 'nenhuma', texto: 'Nenhuma limitação', subtexto: 'Estou 100%', emoji: '✅', color: 'from-green-400 to-green-500' },
+      { id: 'joelho', texto: 'Problemas no joelho', subtexto: 'Cuidado especial', emoji: '🦵', color: 'from-yellow-400 to-yellow-500' },
+      { id: 'costas', texto: 'Problemas nas costas', subtexto: 'Exercícios adaptados', emoji: '🔄', color: 'from-orange-400 to-orange-500' },
+      { id: 'ombro', texto: 'Problemas no ombro', subtexto: 'Movimentos seguros', emoji: '🤷', color: 'from-red-400 to-red-500' },
+      { id: 'outras', texto: 'Outras limitações', subtexto: 'Personalização total', emoji: '⚠️', color: 'from-gray-400 to-gray-500' }
     ],
     campo: 'limitacoes' as keyof QuizData,
     multipla: true
@@ -65,11 +78,13 @@ const quizSteps = [
   {
     pergunta: 5,
     titulo: 'Que tipo de treino de musculação você prefere?',
+    subtitulo: 'Escolha os estilos que mais te motivam a treinar',
+    icon: <Zap className="w-6 h-6" />,
     opcoes: [
-      { id: 'musculacao_tradicional', texto: 'Musculação tradicional', emoji: '🏋️' },
-      { id: 'powerlifting', texto: 'Powerlifting', emoji: '💪' },
-      { id: 'bodybuilding', texto: 'Bodybuilding', emoji: '🏆' },
-      { id: 'hiit_muscular', texto: 'HIIT com pesos', emoji: '🔥' }
+      { id: 'musculacao_tradicional', texto: 'Tradicional', subtexto: 'Séries e repetições', emoji: '🏋️', color: 'from-blue-400 to-blue-500' },
+      { id: 'powerlifting', texto: 'Powerlifting', subtexto: 'Força e técnica', emoji: '💪', color: 'from-red-400 to-red-500' },
+      { id: 'bodybuilding', texto: 'Bodybuilding', subtexto: 'Estética e volume', emoji: '🏆', color: 'from-yellow-400 to-yellow-500' },
+      { id: 'hiit_muscular', texto: 'HIIT com pesos', subtexto: 'Intensidade máxima', emoji: '🔥', color: 'from-orange-400 to-orange-500' }
     ],
     campo: 'preferencias' as keyof QuizData,
     multipla: true
@@ -77,11 +92,13 @@ const quizSteps = [
   {
     pergunta: 6,
     titulo: 'Quanto tempo você tem por treino?',
+    subtitulo: 'Vamos otimizar cada minuto do seu treino',
+    icon: <User className="w-6 h-6" />,
     opcoes: [
-      { id: '30_min', texto: '30 minutos', emoji: '⏰' },
-      { id: '45_min', texto: '45 minutos', emoji: '⏱️' },
-      { id: '60_min', texto: '1 hora', emoji: '🕐' },
-      { id: '90_min', texto: '1h30 ou mais', emoji: '⏳' }
+      { id: '30_min', texto: '30 minutos', subtexto: 'Treino express', emoji: '⏰', color: 'from-cyan-400 to-cyan-500' },
+      { id: '45_min', texto: '45 minutos', subtexto: 'Tempo equilibrado', emoji: '⏱️', color: 'from-green-400 to-green-500' },
+      { id: '60_min', texto: '1 hora', subtexto: 'Treino completo', emoji: '🕐', color: 'from-blue-400 to-blue-500' },
+      { id: '90_min', texto: '1h30 ou mais', subtexto: 'Dedicação total', emoji: '⏳', color: 'from-purple-400 to-purple-500' }
     ],
     campo: 'tempo_disponivel' as keyof QuizData
   }
@@ -104,6 +121,22 @@ const QuizTreino = () => {
 
   const currentPergunta = parseInt(pergunta || '1');
   const currentStep = quizSteps.find(step => step.pergunta === currentPergunta);
+  const progress = (currentPergunta / quizSteps.length) * 100;
+
+  // Mover todos os hooks para antes dos returns condicionais
+  const isMultipleChoice = currentStep?.multipla || false;
+  const currentValue = currentStep ? quizData[currentStep.campo] : '';
+  
+  // Validação mais robusta para verificar se há seleção
+  const hasSelection = React.useMemo(() => {
+    if (!currentStep) return false;
+    
+    if (isMultipleChoice) {
+      return Array.isArray(currentValue) && currentValue.length > 0;
+    } else {
+      return currentValue !== '' && currentValue !== null && currentValue !== undefined;
+    }
+  }, [currentValue, isMultipleChoice, currentStep]);
 
   // Verificar se o usuário já completou o quiz
   useEffect(() => {
@@ -182,12 +215,12 @@ const QuizTreino = () => {
   // Mostrar loading enquanto verifica dados existentes
   if (isCheckingExisting) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Verificando dados do quiz...</p>
-        </div>
-      </div>
+      <LoadingState 
+        fullScreen={true} 
+        message="Verificando dados do quiz..." 
+        type="heartbeat"
+        size="lg"
+      />
     );
   }
 
@@ -487,12 +520,12 @@ const QuizTreino = () => {
 
   if (!currentStep) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: gradients.background }}>
         <div className="text-center">
           <p className="text-red-500 mb-4">Pergunta não encontrada</p>
           <button 
             onClick={() => navigate('/quiz-treino/1')}
-            className="text-blue-600 underline"
+            className="text-pink-600 underline"
           >
             Voltar ao início
           </button>
@@ -501,26 +534,185 @@ const QuizTreino = () => {
     );
   }
 
-  const isMultipleChoice = currentStep.multipla;
-  const currentValue = quizData[currentStep.campo];
-  const hasSelection = isMultipleChoice 
-    ? Array.isArray(currentValue) && currentValue.length > 0
-    : currentValue !== '';
-
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-3xl p-6 sm:p-8 shadow-xl">
+    <div className="min-h-screen flex items-center justify-center p-2 sm:p-4" style={{ background: gradients.background }}>
+      <div className="w-full max-w-2xl">
         
-        {/* Progress bar */}
-        <div className="flex justify-center mb-6 sm:mb-8">
-          <div className="flex space-x-2">
+        {/* Header com progresso - COR AZUL BASA responsivo */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl border border-blue-200/30 p-3 sm:p-6 mb-3 sm:mb-6">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white">
+                {currentStep.icon}
+              </div>
+              <div>
+                <h1 className="text-base sm:text-lg font-bold text-blue-700">
+                  Quiz de Treino - Basa
+                </h1>
+                <p className="text-xs sm:text-sm text-gray-500">
+                  Pergunta {currentPergunta} de {quizSteps.length}
+                </p>
+              </div>
+            </div>
+            
+            <div className="text-right">
+              <div className="text-xl sm:text-2xl font-bold text-blue-600">
+                {Math.round(progress)}%
+              </div>
+              <div className="text-xs text-gray-500">Completo</div>
+            </div>
+          </div>
+
+          {/* Barra de progresso - COR AZUL responsiva */}
+          <div className="w-full bg-blue-100 rounded-full h-2 sm:h-3 overflow-hidden">
+            <motion.div
+              className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${progress}%` }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            />
+          </div>
+        </div>
+
+        {/* Conteúdo principal responsivo */}
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl sm:rounded-3xl shadow-xl border border-blue-200/30 p-4 sm:p-8">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentPergunta}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+              className="space-y-6 sm:space-y-8"
+            >
+              
+              {/* Título da pergunta responsivo */}
+              <div className="text-center space-y-2 sm:space-y-3">
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-700 leading-tight">
+                  {currentStep.titulo}
+                </h2>
+                <p className="text-gray-600 text-base sm:text-lg px-2">
+                  {currentStep.subtitulo}
+                </p>
+                <div className="text-sm text-gray-500">
+                  {isMultipleChoice ? '✨ Selecione todas que se aplicam' : '🎯 Escolha uma opção'}
+                </div>
+              </div>
+
+              {/* Opções responsivas */}
+              <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
+                {currentStep.opcoes.map((opcao, index) => {
+                  const isSelected = isMultipleChoice
+                    ? Array.isArray(currentValue) && currentValue.includes(opcao.id)
+                    : currentValue === opcao.id;
+
+                  return (
+                    <motion.button
+                      key={opcao.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => handleOptionSelect(opcao.id)}
+                      className={`relative group p-4 sm:p-6 rounded-xl sm:rounded-2xl border-2 text-left transition-all duration-300 overflow-hidden min-h-[80px] sm:min-h-[100px] ${
+                        isSelected
+                          ? 'border-blue-400 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg'
+                          : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-md'
+                      }`}
+                      disabled={isSubmitting}
+                    >
+                      {/* Background gradient para opções selecionadas */}
+                      {isSelected && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className={`absolute inset-0 bg-gradient-to-br ${opcao.color} opacity-10`}
+                        />
+                      )}
+                      
+                      <div className="relative flex items-center space-x-3 sm:space-x-4">
+                        <div className={`text-2xl sm:text-3xl transform transition-transform duration-300 flex-shrink-0 ${
+                          isSelected ? 'scale-110' : 'group-hover:scale-105'
+                        }`}>
+                          {opcao.emoji}
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className={`font-bold text-base sm:text-lg mb-1 leading-tight ${
+                            isSelected ? 'text-blue-700' : 'text-gray-800'
+                          }`}>
+                            {opcao.texto}
+                          </div>
+                          <div className="text-sm text-gray-600 leading-relaxed">
+                            {opcao.subtexto}
+                          </div>
+                        </div>
+                        
+                        {isSelected && (
+                          <motion.div
+                            initial={{ scale: 0, rotate: -180 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{ type: "spring", stiffness: 200 }}
+                            className="text-blue-500 flex-shrink-0"
+                          >
+                            <CheckCircle size={20} />
+                          </motion.div>
+                        )}
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Botões de navegação responsivos */}
+        <div className="flex justify-between items-center mt-4 sm:mt-8 gap-3 sm:gap-4">
+          <button
+            onClick={handlePrevious}
+            disabled={isSubmitting}
+            className="flex items-center gap-2 px-4 sm:px-6 py-3 rounded-xl sm:rounded-2xl font-medium transition-all duration-300
+                     text-gray-600 hover:text-gray-800 hover:bg-white/50 backdrop-blur-sm
+                     disabled:opacity-50 disabled:cursor-not-allowed border border-gray-200 text-sm sm:text-base min-h-[48px]"
+          >
+            <ArrowLeft size={16} />
+            <span className="hidden sm:inline">Voltar</span>
+            <span className="sm:hidden">←</span>
+          </button>
+
+          <LoadingButton
+            onClick={handleNext}
+            loading={isSubmitting}
+            disabled={!hasSelection}
+            className={`flex items-center gap-2 px-6 sm:px-8 py-3 rounded-xl sm:rounded-2xl font-medium
+                     transition-all duration-300 shadow-lg flex-1 max-w-xs text-sm sm:text-base min-h-[48px]
+                     ${hasSelection 
+                       ? 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white transform hover:scale-105 active:scale-95' 
+                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                     }`}
+          >
+            <span className="text-center">
+              {hasSelection 
+                ? (currentPergunta === quizSteps.length ? 'Finalizar Quiz' : 'Continuar')
+                : 'Selecione uma opção'
+              }
+            </span>
+            {!isSubmitting && hasSelection && <ArrowRight size={16} />}
+          </LoadingButton>
+        </div>
+
+        {/* Indicadores responsivos */}
+        <div className="text-center mt-4 sm:mt-6 space-y-2">
+          <div className="flex justify-center gap-1 sm:gap-2">
             {quizSteps.map((_, index) => (
               <motion.div
                 key={index}
-                className={`h-2 rounded-full transition-all duration-300 ${
+                className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
                   index + 1 <= currentPergunta 
-                    ? 'bg-blue-600 w-6' 
-                    : 'bg-slate-300 w-2'
+                    ? 'bg-blue-400 w-6 sm:w-8' 
+                    : 'bg-gray-300 w-1.5 sm:w-2'
                 }`}
                 animate={{
                   scale: index + 1 === currentPergunta ? 1.2 : 1
@@ -528,99 +720,8 @@ const QuizTreino = () => {
               />
             ))}
           </div>
-        </div>
-
-        {/* Conteúdo do quiz */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentPergunta}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-            className="space-y-6"
-          >
-            {/* Título */}
-            <div className="text-center space-y-2">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-800">
-                {currentStep.titulo}
-              </h2>
-              <p className="text-slate-600 text-sm">
-                {isMultipleChoice ? 'Selecione todas que se aplicam:' : 'Escolha uma opção:'}
-              </p>
-            </div>
-
-            {/* Opções */}
-            <div className="space-y-3">
-              {currentStep.opcoes.map((opcao) => {
-                const isSelected = isMultipleChoice
-                  ? Array.isArray(currentValue) && currentValue.includes(opcao.id)
-                  : currentValue === opcao.id;
-
-                return (
-                  <motion.button
-                    key={opcao.id}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleOptionSelect(opcao.id)}
-                    className={`w-full p-4 rounded-2xl border-2 text-left transition-all duration-300 ${
-                      isSelected
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50/30'
-                    }`}
-                    disabled={isSubmitting}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <span className="text-2xl">{opcao.emoji}</span>
-                      <span className="font-medium flex-1">{opcao.texto}</span>
-                      {isSelected && <CheckCircle size={20} className="text-blue-600" />}
-                    </div>
-                  </motion.button>
-                );
-              })}
-            </div>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Botões de navegação */}
-        <div className="flex justify-between items-center mt-8 space-x-4">
-          <button
-            onClick={handlePrevious}
-            disabled={isSubmitting}
-            className="flex items-center space-x-2 px-6 py-3 rounded-2xl font-medium transition-all
-                     text-slate-600 hover:text-slate-800 hover:bg-slate-100
-                     disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ArrowLeft size={18} />
-            <span>Voltar</span>
-          </button>
-
-          <button
-            onClick={handleNext}
-            disabled={!hasSelection || isSubmitting}
-            className="flex items-center space-x-2 px-6 py-3 rounded-2xl font-medium
-                     bg-gradient-to-r from-blue-600 to-blue-800 text-white
-                     hover:from-blue-700 hover:to-blue-900 
-                     transform hover:scale-105 active:scale-95
-                     transition-all duration-300 shadow-lg
-                     disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-          >
-            <span>
-              {isSubmitting 
-                ? 'Salvando...' 
-                : currentPergunta === quizSteps.length 
-                  ? 'Finalizar' 
-                  : 'Continuar'
-              }
-            </span>
-            {!isSubmitting && <ArrowRight size={18} />}
-          </button>
-        </div>
-
-        {/* Indicador de etapa */}
-        <div className="text-center mt-6">
-          <p className="text-xs text-slate-400">
-            Pergunta {currentPergunta} de {quizSteps.length} - Quiz Musculação
+          <p className="text-xs text-gray-500 px-4">
+            💪 Quiz de Treino - Basa • Próximo: Dashboard
           </p>
         </div>
       </div>

@@ -3,11 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { toast } from 'sonner';
+import { LoginFormData } from '@/types';
+import LoadingState, { LoadingButton, ImageWithLoading } from '@/components/LoadingState';
+import { gradients } from '@/theme/colors';
 
 const Login = () => {
   const navigate = useNavigate();
   const { signIn, user, loading } = useAuth();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: ''
   });
@@ -70,28 +73,27 @@ const Login = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen fitness-gradient-bg flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Carregando...</p>
-        </div>
-      </div>
+      <LoadingState 
+        fullScreen={true} 
+        message="Verificando autenticação..." 
+        type="heartbeat"
+        size="lg"
+      />
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center fitness-gradient-bg relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden" style={{ background: gradients.background }}>
       <div className="max-w-sm w-full mx-auto">
         <div className="fitness-card animate-slide-in-up">
           <div className="text-center mb-8">
-            {/* Logo */}
+            {/* Logo com loading otimizado */}
             <div className="flex items-center justify-center w-40 h-40 mx-auto mb-6">
-              <img 
-                src="/lovable-uploads/1880add2-ad7a-4dcf-aba6-659b952d3681.png" 
-                alt="Logo" 
+              <ImageWithLoading
+                src="/lovable-uploads/1880add2-ad7a-4dcf-aba6-659b952d3681.png"
+                alt="Logo Juju Girl Fit"
                 className="w-full h-full object-contain"
-                loading="eager"
-                fetchPriority="high"
+                containerClassName="w-40 h-40"
               />
             </div>
             
@@ -130,13 +132,13 @@ const Login = () => {
               />
             </div>
 
-            <button 
-              type="submit" 
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] text-lg disabled:opacity-50 disabled:cursor-not-allowed" 
-              disabled={isSubmitting}
+            <LoadingButton
+              type="submit"
+              loading={isSubmitting}
+              className="w-full bg-gradient-to-r from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700 text-white font-medium py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] text-lg"
             >
-              {isSubmitting ? 'Entrando...' : 'Entrar'}
-            </button>
+              Entrar
+            </LoadingButton>
           </form>
 
           <div className="mt-8 text-center">

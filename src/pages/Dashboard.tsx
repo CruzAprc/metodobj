@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import EditProfileModal from '@/components/EditProfileModal';
 import ProgressCalendar from '@/components/ProgressCalendar';
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 // Componente Dock Item

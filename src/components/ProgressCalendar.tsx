@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import { Dumbbell, Apple, Calendar as CalendarIcon } from 'lucide-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
 interface ProgressCalendarProps {
   userData: any;

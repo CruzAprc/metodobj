@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juju Girl Fit - Offline</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #fdf2f8 0%, #f7e6ff 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #1f2937;
+    }
+
+    .offline-container {
+      max-width: 400px;
+      text-align: center;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border-radius: 24px;
+      box-shadow: 0 20px 40px rgba(236, 72, 153, 0.1);
+      border: 1px solid rgba(236, 72, 153, 0.2);
+    }
+
+    .offline-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 1.5rem;
+      background: linear-gradient(135deg, #ec4899, #be185d);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: pulse 2s infinite;
+    }
+
+    .offline-icon svg {
+      width: 40px;
+      height: 40px;
+      color: white;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #be185d;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      font-size: 1rem;
+      color: #6b7280;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+
+    .retry-btn {
+      background: linear-gradient(135deg, #ec4899, #be185d);
+      color: white;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+      box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+    }
+
+    .retry-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(236, 72, 153, 0.4);
+    }
+
+    .features {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(236, 72, 153, 0.1);
+    }
+
+    .features h3 {
+      font-size: 1rem;
+      color: #be185d;
+      margin-bottom: 1rem;
+    }
+
+    .features ul {
+      list-style: none;
+      text-align: left;
+    }
+
+    .features li {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      color: #6b7280;
+    }
+
+    .features li:before {
+      content: "🌸";
+      margin-right: 0.5rem;
+    }
+
+    @media (max-width: 480px) {
+      .offline-container {
+        margin: 1rem;
+        padding: 1.5rem;
+      }
+      
+      h1 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="offline-container">
+    <div class="offline-icon">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+              d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25a9.75 9.75 0 110 19.5 9.75 9.75 0 010-19.5zM8.25 8.25l7.5 7.5m-7.5 0l7.5-7.5" />
+      </svg>
+    </div>
+    
+    <h1>Você está offline</h1>
+    <p>Não se preocupe! Suas informações estão salvas localmente e serão sincronizadas automaticamente quando a conexão for restabelecida.</p>
+    
+    <button class="retry-btn" onclick="location.reload()">
+      Tentar Novamente
+    </button>
+    
+    <div class="features">
+      <h3>Recursos disponíveis offline:</h3>
+      <ul>
+        <li>Visualizar dados salvos</li>
+        <li>Navegar pelo app</li>
+        <li>Dados serão sincronizados automaticamente</li>
+        <li>Cache inteligente de imagens</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Verificar conexão periodicamente
+    setInterval(() => {
+      if (navigator.onLine) {
+        location.reload();
+      }
+    }, 5000);
+
+    // Event listener para mudança de conexão
+    window.addEventListener('online', () => {
+      location.reload();
+    });
+
+    // Animação de loading no botão
+    document.querySelector('.retry-btn').addEventListener('click', function() {
+      this.textContent = 'Verificando...';
+      this.disabled = true;
+      
+      setTimeout(() => {
+        location.reload();
+      }, 1000);
+    });
+  </script>
+</body>
+</html> 

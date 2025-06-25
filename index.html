@@ -1,18 +1,40 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Meta tags otimizadas para mobile app -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Juju Fit" />
+    <meta name="application-name" content="Juju Girl Fit" />
+    <meta name="theme-color" content="#ec4899" />
+    <meta name="msapplication-navbutton-color" content="#ec4899" />
+    <meta name="msapplication-TileColor" content="#ec4899" />
+    
+    <!-- Prevent zoom on input focus (iOS) -->
+    <meta name="format-detection" content="telephone=no" />
+    
     <title>App da Juju - Treinos e Dietas Personalizados</title>
     <meta name="description" content="Plataforma de treinos e dietas personalizados para mulheres" />
     <meta name="author" content="App da Juju" />
+    
+    <!-- Preconnect para performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <!-- Favicon personalizado -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23a7c7e7'/><text x='50' y='60' font-size='40' text-anchor='middle' fill='white'>💪</text></svg>" type="image/svg+xml">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%23ec4899'/><text x='50' y='60' font-size='40' text-anchor='middle' fill='white'>💪</text></svg>" type="image/svg+xml">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><circle cx='90' cy='90' r='80' fill='%23ec4899'/><text x='90' y='110' font-size='60' text-anchor='middle' fill='white'>💪</text></svg>">
+    <link rel="apple-touch-icon" sizes="152x152" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 152 152'><circle cx='76' cy='76' r='70' fill='%23ec4899'/><text x='76' y='95' font-size='50' text-anchor='middle' fill='white'>💪</text></svg>">
     
     <!-- Meta tags para redes sociais -->
     <meta property="og:title" content="App da Juju - Treinos e Dietas Personalizados" />
@@ -23,10 +45,179 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="App da Juju - Treinos e Dietas Personalizados" />
     <meta name="twitter:description" content="Plataforma de treinos e dietas personalizados para mulheres que buscam resultados reais" />
+    
+    <style>
+      /* CSS crítico inline para evitar FOUC */
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background: linear-gradient(135deg, #fce7f3 0%, #ffffff 50%, #fdf2f8 100%);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+      
+      /* Loading spinner */
+      .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        color: #ec4899;
+      }
+      
+      /* Safe area support */
+      .safe-area {
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+    </style>
   </head>
 
-  <body>
-    <div id="root"></div>
+  <body class="safe-area">
+    <div id="root">
+      <div class="loading">
+        <div style="text-align: center;">
+          <div style="width: 60px; height: 60px; margin: 0 auto 16px; border-radius: 50%; background: linear-gradient(45deg, #ec4899, #f472b6); display: flex; align-items: center; justify-content: center; font-size: 24px;">
+            💪
+          </div>
+          <p style="margin: 0; font-size: 18px; font-weight: 600;">Carregando...</p>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      // 🌸 JUJU GIRL FIT - PWA SERVICE WORKER REGISTRATION
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', async () => {
+          try {
+            const registration = await navigator.serviceWorker.register('/sw.js', {
+              scope: '/'
+            });
+            
+            console.log('🌸 Juju Fit SW: Registrado com sucesso!', registration.scope);
+            
+            // Verificar se há atualizações
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              console.log('🔄 Nova versão do SW encontrada!');
+              
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('✨ Nova versão disponível!');
+                  
+                  // Mostrar notificação de atualização disponível
+                  if (confirm('Nova versão disponível! Deseja atualizar?')) {
+                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                    window.location.reload();
+                  }
+                }
+              });
+            });
+            
+            // Verificar quando o SW está controlando a página
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+              console.log('🔄 SW assumiu controle da página');
+              window.location.reload();
+            });
+            
+          } catch (error) {
+            console.error('❌ Erro ao registrar SW:', error);
+          }
+        });
+      }
+      
+      // 🎯 PWA INSTALL PROMPT
+      let deferredPrompt;
+      
+      window.addEventListener('beforeinstallprompt', (e) => {
+        console.log('📱 Install prompt disponível');
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Criar botão de instalação customizado
+        const installButton = document.createElement('button');
+        installButton.textContent = '📱 Instalar App';
+        installButton.style.cssText = `
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          background: linear-gradient(135deg, #ec4899, #be185d);
+          color: white;
+          border: none;
+          padding: 12px 20px;
+          border-radius: 25px;
+          font-weight: 600;
+          font-size: 14px;
+          cursor: pointer;
+          box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+          z-index: 1000;
+          transition: transform 0.2s;
+        `;
+        
+        installButton.addEventListener('mouseover', () => {
+          installButton.style.transform = 'translateY(-2px)';
+        });
+        
+        installButton.addEventListener('mouseout', () => {
+          installButton.style.transform = 'translateY(0)';
+        });
+        
+        installButton.addEventListener('click', async () => {
+          installButton.style.display = 'none';
+          deferredPrompt.prompt();
+          
+          const { outcome } = await deferredPrompt.userChoice;
+          console.log('📱 Install outcome:', outcome);
+          
+          deferredPrompt = null;
+        });
+        
+        document.body.appendChild(installButton);
+        
+        // Remover botão após 10 segundos se não usado
+        setTimeout(() => {
+          if (installButton.parentNode) {
+            installButton.remove();
+          }
+        }, 10000);
+      });
+      
+      // 📱 PWA INSTALL SUCCESS
+      window.addEventListener('appinstalled', () => {
+        console.log('🎉 PWA instalado com sucesso!');
+        deferredPrompt = null;
+        
+        // Analytics ou tracking do install
+        if (typeof gtag !== 'undefined') {
+          gtag('event', 'pwa_install', {
+            event_category: 'PWA',
+            event_label: 'App Installed'
+          });
+        }
+      });
+      
+      // 🌐 NETWORK STATUS
+      function updateNetworkStatus() {
+        const status = navigator.onLine ? 'online' : 'offline';
+        console.log('🌐 Status da rede:', status);
+        
+        if (!navigator.onLine) {
+          document.body.classList.add('offline');
+        } else {
+          document.body.classList.remove('offline');
+        }
+      }
+      
+      window.addEventListener('online', updateNetworkStatus);
+      window.addEventListener('offline', updateNetworkStatus);
+      updateNetworkStatus();
+    </script>
   </body>
 </html>

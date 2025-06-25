@@ -1,12 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Heart } from 'lucide-react';
+import LoadingAnimation from '@/components/LoadingAnimation';
 
 const Loading = () => {
-  const navigate = useNavigate();
-  const [currentMessage, setCurrentMessage] = useState(0);
   const [userName, setUserName] = useState('');
 
   // Recuperar o nome do usuário do localStorage
@@ -18,132 +14,12 @@ const Loading = () => {
     }
   }, []);
 
-  const messages = [
-    "Juju está preparando sua anamnese...",
-    "Montando o questionário perfeito para você...",
-    "Quase pronto! Preparando sua experiência personalizada...",
-    `Vamos começar ${userName}!`
-  ];
-
-  useEffect(() => {
-    const intervals = [2000, 2000, 2000, 1500]; // Duração de cada mensagem
-    
-    const timer = setTimeout(() => {
-      if (currentMessage < messages.length - 1) {
-        setCurrentMessage(currentMessage + 1);
-      } else {
-        // Após a última mensagem, navegar para o quiz
-        setTimeout(() => {
-          navigate('/quiz-alimentar/1');
-        }, 1000);
-      }
-    }, intervals[currentMessage]);
-
-    return () => clearTimeout(timer);
-  }, [currentMessage, navigate, userName]);
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50 flex flex-col justify-center items-center p-4 relative overflow-hidden">
-      
-      {/* EMOJI DA JUJU */}
-      <div className="mb-8 relative">
-        <div className="w-32 h-32 sm:w-40 sm:h-40 bg-gradient-to-br from-pink-400 to-pink-600 rounded-3xl flex items-center justify-center shadow-2xl">
-          <div className="text-8xl sm:text-9xl">👩‍⚕️</div>
-        </div>
-      </div>
-
-      {/* CONTEÚDO PRINCIPAL */}
-      <motion.div 
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
-        className="text-center space-y-6 max-w-md mx-auto"
-      >
-        
-        {/* Saudação com nome */}
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
-            Olá, <span className="bg-gradient-to-r from-pink-500 to-pink-600 bg-clip-text text-transparent">
-              {userName}!
-            </span>
-          </h1>
-        </motion.div>
-
-        {/* Área das mensagens */}
-        <div className="min-h-[80px] flex items-center justify-center">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentMessage}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5 }}
-              className="text-center"
-            >
-              <p className="text-lg sm:text-xl text-gray-700 font-medium leading-relaxed px-4">
-                {messages[currentMessage]}
-              </p>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
-        {/* Indicador de progresso */}
-        <div className="flex justify-center space-x-2 mt-8">
-          {messages.map((_, index) => (
-            <motion.div
-              key={index}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                index <= currentMessage 
-                  ? 'bg-gradient-to-r from-pink-400 to-pink-500 w-8' 
-                  : 'bg-gray-200 w-2'
-              }`}
-              animate={{
-                scale: index === currentMessage ? 1.1 : 1
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Loading spinner */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="flex justify-center mt-6"
-        >
-          <div className="relative">
-            <div className="w-12 h-12 border-4 border-pink-200 rounded-full animate-spin border-t-pink-500"></div>
-            <div className="absolute inset-0 w-12 h-12 border-4 border-transparent rounded-full animate-pulse border-t-pink-300"></div>
-          </div>
-        </motion.div>
-
-        {/* Mensagem motivacional */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          className="text-sm text-gray-500 mt-6 px-4"
-        >
-          ✨ Estamos personalizando tudo especialmente para você!
-        </motion.p>
-
-      </motion.div>
-
-      {/* ELEMENTOS DECORATIVOS */}
-      <div className="absolute top-20 right-10 opacity-20 animate-pulse">
-        <Sparkles size={40} className="text-pink-400" />
-      </div>
-      <div className="absolute bottom-20 left-10 opacity-20 animate-pulse delay-1000">
-        <Heart size={35} className="text-purple-400" />
-      </div>
-      <div className="absolute top-1/3 left-1/4 opacity-10 animate-pulse delay-500">
-        <div className="w-12 h-12 bg-gradient-to-br from-pink-300 to-pink-400 rounded-full" />
-      </div>
-    </div>
+    <LoadingAnimation
+      type="dieta"
+      userName={userName}
+      redirectTo="/quiz-alimentar/1"
+    />
   );
 };
 
